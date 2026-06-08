@@ -1,0 +1,32 @@
+{
+  "name": "banking-stack",
+  "private": true,
+  "description": "Banking Technical Challenges - Full-stack fintech monorepo",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "clean": "turbo clean",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "typecheck": "turbo typecheck",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "turbo build && changeset publish",
+    "docs:dev": "vitepress dev packages/docs",
+    "docs:build": "vitepress build packages/docs",
+    "docs:preview": "vitepress preview packages/docs"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.0",
+    "@types/node": "^20.11.0",
+    "prettier": "^3.2.0",
+    "prettier-plugin-tailwindcss": "^0.5.0",
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.0"
+  },
+  "packageManager": "pnpm@9.1.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

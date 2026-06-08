@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@banking/ledger": ["./packages/backend/ledger/src"],
+      "@banking/spi-simulator": ["./packages/backend/spi-simulator/src"],
+      "@banking/dict-simulator": ["./packages/backend/dict-simulator/src"],
+      "@banking/iso8583": ["./packages/backend/iso8583/src"],
+      "@banking/workflow-engine": ["./packages/backend/workflow-engine/src"],
+      "@banking/open-finance": ["./packages/backend/open-finance/src"],
+      "@banking/nfse": ["./packages/backend/nfse/src"],
+      "@banking/report-system": ["./packages/backend/report-system/src"],
+      "@banking/leaky-bucket": ["./packages/backend/leaky-bucket/src"],
+      "@banking/landing-page": ["./packages/frontend/landing-page/src"],
+      "@banking/kyc-system": ["./packages/frontend/kyc-system/src"],
+      "@banking/shared-ui": ["./packages/frontend/shared-ui/src"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".turbo"]
+}

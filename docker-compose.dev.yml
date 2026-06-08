@@ -1,0 +1,277 @@
+name: banking-stack-dev
+
+services:
+  # ── Backend Services ────────────────────────────────────────────────
+
+  ledger:
+    image: banking/ledger:dev
+    build:
+      context: .
+      dockerfile: packages/backend/ledger/Dockerfile
+    container_name: banking-ledger
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./packages/backend/ledger:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:mongo_secret_2024@mongodb:27017/banking_challenges?authSource=admin&replicaSet=rs0}
+      REDIS_URI: ${REDIS_URI:-redis://:redis_secret_2024@redis:6379}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - banking-net
+
+  spi-simulator:
+    image: banking/spi-simulator:dev
+    build:
+      context: .
+      dockerfile: packages/backend/spi-simulator/Dockerfile
+    container_name: banking-spi-simulator
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./packages/backend/spi-simulator:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:mongo_secret_2024@mongodb:27017/banking_challenges?authSource=admin&replicaSet=rs0}
+      REDIS_URI: ${REDIS_URI:-redis://:redis_secret_2024@redis:6379}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - banking-net
+
+  dict-simulator:
+    image: banking/dict-simulator:dev
+    build:
+      context: .
+      dockerfile: packages/backend/dict-simulator/Dockerfile
+    container_name: banking-dict-simulator
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./packages/backend/dict-simulator:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:mongo_secret_2024@mongodb:27017/banking_challenges?authSource=admin&replicaSet=rs0}
+      REDIS_URI: ${REDIS_URI:-redis://:redis_secret_2024@redis:6379}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - banking-net
+
+  iso8583:
+    image: banking/iso8583:dev
+    build:
+      context: .
+      dockerfile: packages/backend/iso8583/Dockerfile
+    container_name: banking-iso8583
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./packages/backend/iso8583:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3003
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:mongo_secret_2024@mongodb:27017/banking_challenges?authSource=admin&replicaSet=rs0}
+      REDIS_URI: ${REDIS_URI:-redis://:redis_secret_2024@redis:6379}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - banking-net
+
+  workflow-engine:
+    image: banking/workflow-engine:dev
+    build:
+      context: .
+      dockerfile: packages/backend/workflow-engine/Dockerfile
+    container_name: banking-workflow-engine
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    volumes:
+      - ./packages/backend/workflow-engine:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3004
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:mongo_secret_2024@mongodb:27017/banking_challenges?authSource=admin&replicaSet=rs0}
+      REDIS_URI: ${REDIS_URI:-redis://:redis_secret_2024@redis:6379}
+      POSTGRES_URI: ${POSTGRES_URI:-postgresql://banking:postgres_secret_2024@postgres:5432/banking_challenges}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - banking-net
+
+  open-finance:
+    image: banking/open-finance:dev
+    build:
+      context: .
+      dockerfile: packages/backend/open-finance/Dockerfile
+    container_name: banking-open-finance
+    restart: unless-stopped
+    ports:
+      - "3005:3005"
+    volumes:
+      - ./packages/backend/open-finance:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3005
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:mongo_secret_2024@mongodb:27017/banking_challenges?authSource=admin&replicaSet=rs0}
+      REDIS_URI: ${REDIS_URI:-redis://:redis_secret_2024@redis:6379}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - banking-net
+
+  nfse:
+    image: banking/nfse:dev
+    build:
+      context: .
+      dockerfile: packages/backend/nfse/Dockerfile
+    container_name: banking-nfse
+    restart: unless-stopped
+    ports:
+      - "3006:3006"
+    volumes:
+      - ./packages/backend/nfse:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3006
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:mongo_secret_2024@mongodb:27017/banking_challenges?authSource=admin&replicaSet=rs0}
+      POSTGRES_URI: ${POSTGRES_URI:-postgresql://banking:postgres_secret_2024@postgres:5432/banking_challenges}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - banking-net
+
+  report-system:
+    image: banking/report-system:dev
+    build:
+      context: .
+      dockerfile: packages/backend/report-system/Dockerfile
+    container_name: banking-report-system
+    restart: unless-stopped
+    ports:
+      - "3007:3007"
+    volumes:
+      - ./packages/backend/report-system:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3007
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:mongo_secret_2024@mongodb:27017/banking_challenges?authSource=admin&replicaSet=rs0}
+      REDIS_URI: ${REDIS_URI:-redis://:redis_secret_2024@redis:6379}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio:9000}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minio_secret_2024}
+      MINIO_BUCKET: ${MINIO_REPORT_BUCKET:-banking-reports}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - banking-net
+
+  leaky-bucket:
+    image: banking/leaky-bucket:dev
+    build:
+      context: .
+      dockerfile: packages/backend/leaky-bucket/Dockerfile
+    container_name: banking-leaky-bucket
+    restart: unless-stopped
+    ports:
+      - "3008:3008"
+    volumes:
+      - ./packages/backend/leaky-bucket:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3008
+      REDIS_URI: ${REDIS_URI:-redis://:redis_secret_2024@redis:6379}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - banking-net
+
+  # ── Frontend Services ───────────────────────────────────────────────
+
+  landing-page:
+    image: banking/landing-page:dev
+    build:
+      context: .
+      dockerfile: packages/frontend/landing-page/Dockerfile
+    container_name: banking-landing-page
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./packages/frontend/landing-page:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+    depends_on:
+      - ledger
+    networks:
+      - banking-net
+
+  kyc-system:
+    image: banking/kyc-system:dev
+    build:
+      context: .
+      dockerfile: packages/frontend/kyc-system/Dockerfile
+    container_name: banking-kyc-system
+    restart: unless-stopped
+    ports:
+      - "5174:5174"
+    volumes:
+      - ./packages/frontend/kyc-system:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+    depends_on:
+      - ledger
+    networks:
+      - banking-net
