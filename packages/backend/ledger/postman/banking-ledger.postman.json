@@ -1,0 +1,217 @@
+{
+  "info": {
+    "name": "Banking Ledger - GraphQL Relay",
+    "description": "Complete GraphQL Relay collection for Banking Ledger Bank challenge",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Accounts",
+      "item": [
+        {
+          "name": "Create Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Creates account successfully', () => {",
+                  "  pm.expect(jsonData.data.createAccount).to.not.be.null;",
+                  "  pm.expect(jsonData.data.createAccount.account.name).to.eql(pm.variables.get('accountName'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CreateAccount($input: CreateAccountInput!) {\n  createAccount(input: $input) {\n    account {\n      id\n      _id\n      name\n      document\n      balance\n      createdAt\n    }\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"name\": \"John Doe\",\n    \"document\": \"12345678901\",\n    \"balance\": 1000\n  }\n}"
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3001/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["graphql"]
+            }
+          }
+        },
+        {
+          "name": "Get Account by ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query GetAccount($id: ID!) {\n  account(id: $id) {\n    id\n    _id\n    name\n    document\n    balance\n    createdAt\n  }\n}",
+                "variables": "{\n  \"id\": \"<ACCOUNT_ID>\"\n}"
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3001/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["graphql"]
+            }
+          }
+        },
+        {
+          "name": "List Accounts (paginated)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query ListAccounts($first: Int, $after: String) {\n  accounts(first: $first, after: $after) {\n    totalCount\n    edges {\n      cursor\n      node {\n        id\n        _id\n        name\n        document\n        balance\n        createdAt\n      }\n    }\n    pageInfo {\n      startCursor\n      endCursor\n      hasNextPage\n      hasPreviousPage\n    }\n  }\n}",
+                "variables": "{\n  \"first\": 10\n}"
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3001/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["graphql"]
+            }
+          }
+        },
+        {
+          "name": "Relay Node Query (Account)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query NodeQuery($id: ID!) {\n  node(id: $id) {\n    ... on Account {\n      id\n      name\n      document\n      balance\n    }\n    ... on Transaction {\n      id\n      amount\n      type\n      status\n    }\n  }\n}",
+                "variables": "{\n  \"id\": \"<GLOBAL_ID>\"\n}"
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3001/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["graphql"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "Create Transaction (PIX)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CreateTransaction($input: CreateTransactionInput!) {\n  createTransaction(input: $input) {\n    transaction {\n      id\n      _id\n      sender {\n        id\n        name\n        balance\n      }\n      receiver {\n        id\n        name\n        balance\n      }\n      amount\n      description\n      type\n      status\n      createdAt\n    }\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"senderAccount\": \"<SENDER_GLOBAL_ID>\",\n    \"receiverAccount\": \"<RECEIVER_GLOBAL_ID>\",\n    \"amount\": 200,\n    \"description\": \"Payment for services\",\n    \"type\": \"PIX\"\n  }\n}"
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3001/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["graphql"]
+            }
+          }
+        },
+        {
+          "name": "List Transactions",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query ListTransactions($first: Int, $after: String) {\n  transactions(first: $first, after: $after) {\n    totalCount\n    edges {\n      cursor\n      node {\n        id\n        sender { id name }\n        receiver { id name }\n        amount\n        type\n        status\n        createdAt\n      }\n    }\n    pageInfo {\n      startCursor\n      endCursor\n      hasNextPage\n      hasPreviousPage\n    }\n  }\n}",
+                "variables": "{\n  \"first\": 10\n}"
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3001/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["graphql"]
+            }
+          }
+        },
+        {
+          "name": "List Transactions by Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query ListTransactionsByAccount($accountId: ID!) {\n  transactions(accountId: $accountId) {\n    totalCount\n    edges {\n      node {\n        id\n        sender { id name }\n        receiver { id name }\n        amount\n        type\n        status\n      }\n    }\n  }\n}",
+                "variables": "{\n  \"accountId\": \"<ACCOUNT_GLOBAL_ID>\"\n}"
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3001/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["graphql"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction by ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query GetTransaction($id: ID!) {\n  transaction(id: $id) {\n    id\n    _id\n    sender { id name document }\n    receiver { id name document }\n    amount\n    description\n    type\n    status\n    createdAt\n  }\n}",
+                "variables": "{\n  \"id\": \"<TRANSACTION_GLOBAL_ID>\"\n}"
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3001/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["graphql"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
