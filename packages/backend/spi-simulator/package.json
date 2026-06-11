@@ -1,0 +1,30 @@
+{
+  "name": "@banking/spi-simulator",
+  "version": "1.0.0",
+  "description": "SPI/ICOM Simulator (ISO 20022) - Brazilian Pix instant payments simulation",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "build": "tsc",
+    "test": "jest --runInBand --forceExit",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "fast-xml-parser": "^4.4.0",
+    "fastify": "^4.28.0",
+    "fastify-xml-body-parser": "^3.0.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.4",
+    "ts-jest": "^29.2.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.0"
+  }
+}

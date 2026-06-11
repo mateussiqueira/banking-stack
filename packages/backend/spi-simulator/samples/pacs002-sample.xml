@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.10">
+  <FIToFIPmtStsRpt>
+    <GrpHdr>
+      <MsgId>PACS00220240315ABC123DEF456</MsgId>
+      <CreDtTm>2024-03-15T10:30:02.000Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <TtlIntrBkSttlmAmt>150.50</TtlIntrBkSttlmAmt>
+      <IntrBkSttlmDt>2024-03-15</IntrBkSttlmDt>
+      <SttlmInf>
+        <SttlmMtd>CLRG</SttlmMtd>
+      </SttlmInf>
+    </GrpHdr>
+    <TxInfAndSts>
+      <OrgnlEndToEndId>E2E20240315ABC123DEF</OrgnlEndToEndId>
+      <OrgnlTxId>TXN20240315001</OrgnlTxId>
+      <TxSts>ACCEPTED</TxSts>
+      <OrgnlGrpInf>
+        <OrgnlMsgId>PACS00820240315ABC123DEF456</OrgnlMsgId>
+        <OrgnlMsgNmId>pacs.008.001.08</OrgnlMsgNmId>
+        <OrgnlCreDtTm>2024-03-15T10:30:00.000Z</OrgnlCreDtTm>
+      </OrgnlGrpInf>
+      <OrgnlTxRef>
+        <IntrBkSttlmAmt>150.50</IntrBkSttlmAmt>
+        <SttlmInf>
+          <SttlmMtd>CLRG</SttlmMtd>
+        </SttlmInf>
+        <CdtrAgt>
+          <FinInstnId>
+            <ClrSysMmbId>
+              <MmbId>18236120</MmbId>
+            </ClrSysMmbId>
+          </FinInstnId>
+        </CdtrAgt>
+        <DbtrAgt>
+          <FinInstnId>
+            <ClrSysMmbId>
+              <MmbId>16501555</MmbId>
+            </ClrSysMmbId>
+          </FinInstnId>
+        </DbtrAgt>
+        <Cdtr>
+          <Nm>Maria Souza</Nm>
+        </Cdtr>
+        <Dbtr>
+          <Nm>João Silva</Nm>
+        </Dbtr>
+      </OrgnlTxRef>
+    </TxInfAndSts>
+  </FIToFIPmtStsRpt>
+</Document>

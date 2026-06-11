@@ -1,0 +1,32 @@
+{
+  "name": "@banking/dict-simulator",
+  "version": "1.0.0",
+  "description": "DICT (Transactional Account Identifiers Directory) Simulator - Brazilian Pix key registry",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "build": "tsc",
+    "test": "jest --runInBand --forceExit",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.28.0",
+    "mongoose": "^8.4.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.0",
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^10.0.0",
+    "nodemon": "^3.1.4",
+    "ts-jest": "^29.2.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.0"
+  }
+}
