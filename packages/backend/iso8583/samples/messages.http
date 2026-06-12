@@ -1,0 +1,209 @@
+### Health Check
+GET http://localhost:3004/health
+
+### List Mock Cards
+GET http://localhost:3004/admin/cards
+
+### Reset All Cards
+POST http://localhost:3004/admin/reset
+
+### Reset Single Card
+POST http://localhost:3004/admin/cards/4000000000000001/reset
+
+### Create a Custom Card
+POST http://localhost:3004/admin/cards
+Content-Type: application/json
+
+{
+  "pan": "6000000000000001",
+  "expiry": "2906",
+  "cvv": "999",
+  "balance": 5000000,
+  "currency": "BRL",
+  "status": "active",
+  "holderName": "CUSTOM/CLIENT",
+  "brand": "elo"
+}
+
+### ---------- ACQUIRER ENDPOINTS ----------
+
+### Acquirer: Authorize (JSON mode) — Approved
+POST http://localhost:3004/iso8583/acquirer/authorize
+Content-Type: application/json
+
+{
+  "mti": "0100",
+  "fields": {
+    "2": "4000000000000001",
+    "3": "000000",
+    "4": "000000001000",
+    "7": "0623123000",
+    "11": "123456",
+    "22": "022",
+    "41": "TERM0001",
+    "49": "986"
+  }
+}
+
+### Acquirer: Authorize (JSON mode) — Insufficient Funds
+POST http://localhost:3004/iso8583/acquirer/authorize
+Content-Type: application/json
+
+{
+  "mti": "0100",
+  "fields": {
+    "2": "4000000000000002",
+    "3": "000000",
+    "4": "000000100000",
+    "7": "0623123000",
+    "11": "123457",
+    "22": "022",
+    "41": "TERM0001",
+    "49": "986"
+  }
+}
+
+### Acquirer: Authorize (JSON mode) — Blocked Card
+POST http://localhost:3004/iso8583/acquirer/authorize
+Content-Type: application/json
+
+{
+  "mti": "0100",
+  "fields": {
+    "2": "4000000000000003",
+    "3": "000000",
+    "4": "000000001000",
+    "7": "0623123000",
+    "11": "123458",
+    "22": "022",
+    "41": "TERM0001",
+    "49": "986"
+  }
+}
+
+### Acquirer: Financial Presentment (JSON mode) — Approved
+POST http://localhost:3004/iso8583/acquirer/financial
+Content-Type: application/json
+
+{
+  "mti": "0200",
+  "fields": {
+    "2": "4000000000000001",
+    "3": "000000",
+    "4": "000000005000",
+    "7": "0623123100",
+    "11": "554433",
+    "22": "022",
+    "41": "TERM0001",
+    "49": "986"
+  }
+}
+
+### Acquirer: Financial Presentment (JSON mode) — Insufficient Funds
+POST http://localhost:3004/iso8583/acquirer/financial
+Content-Type: application/json
+
+{
+  "mti": "0200",
+  "fields": {
+    "2": "4000000000000002",
+    "3": "000000",
+    "4": "000000010000",
+    "7": "0623123100",
+    "11": "554434",
+    "22": "022",
+    "41": "TERM0001",
+    "49": "986"
+  }
+}
+
+### Acquirer: Reversal (JSON mode)
+POST http://localhost:3004/iso8583/acquirer/reversal
+Content-Type: application/json
+
+{
+  "mti": "0400",
+  "fields": {
+    "2": "4000000000000001",
+    "3": "000000",
+    "4": "000000005000",
+    "7": "0623123200",
+    "11": "998877",
+    "22": "022",
+    "41": "TERM0001",
+    "49": "986"
+  }
+}
+
+### Acquirer: Logs
+GET http://localhost:3004/iso8583/acquirer/logs
+
+### ---------- RAW ISO 8583 MODE ----------
+
+### Acquirer: Authorize (Raw mode)
+POST http://localhost:3004/iso8583/acquirer/authorize?format=raw
+Content-Type: text/plain
+
+010072100400004040400016400000000000001000000000000010000623132000123456022TERM0001986
+
+### Acquirer: Financial (Raw mode)
+POST http://localhost:3004/iso8583/acquirer/financial
+Content-Type: text/plain
+
+010072100400004040400016400000000000001000000000000010000623132000123456022TERM0001986
+
+### ---------- ISSUER ENDPOINTS ----------
+
+### Issuer: Authorize
+POST http://localhost:3004/iso8583/issuer/authorize
+Content-Type: application/json
+
+{
+  "mti": "0100",
+  "fields": {
+    "2": "4000000000000001",
+    "3": "000000",
+    "4": "000000001000",
+    "11": "111111",
+    "41": "TERM0001",
+    "49": "986"
+  }
+}
+
+### Issuer: Financial
+POST http://localhost:3004/iso8583/issuer/financial
+Content-Type: application/json
+
+{
+  "mti": "0200",
+  "fields": {
+    "2": "4000000000000001",
+    "3": "000000",
+    "4": "000000003000",
+    "11": "222222",
+    "41": "TERM0001",
+    "49": "986"
+  }
+}
+
+### Issuer: Reversal
+POST http://localhost:3004/iso8583/issuer/reversal
+Content-Type: application/json
+
+{
+  "mti": "0400",
+  "fields": {
+    "2": "4000000000000001",
+    "3": "000000",
+    "4": "000000003000",
+    "11": "333333",
+    "41": "TERM0001",
+    "49": "986"
+  }
+}
+
+### Issuer: Authorize (Raw mode)
+POST http://localhost:3004/iso8583/issuer/authorize?format=raw
+Content-Type: text/plain
+
+010072100400004040400016400000000000001000000000000010000623132000123456022TERM0001986
