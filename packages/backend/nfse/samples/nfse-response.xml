@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <GerarNfseResposta xmlns="http://www.abrasf.org.br/nfse.xsd">
+      <CompNfse>
+        <Nfse>
+          <InfNfse>
+            <Numero>2026000000001</Numero>
+            <CodigoVerificacao>ABC12345</CodigoVerificacao>
+            <DataEmissao>2026-06-23T10:00:00</DataEmissao>
+            <ValorServicos>5000.00</ValorServicos>
+            <ValorIss>250.00</ValorIss>
+            <Prestador>
+              <CpfCnpj>
+                <Cnpj>12345678000190</Cnpj>
+              </CpfCnpj>
+              <InscricaoMunicipal>123456</InscricaoMunicipal>
+            </Prestador>
+            <Tomador>
+              <IdentificacaoTomador>
+                <CpfCnpj>
+                  <Cnpj>98765432000110</Cnpj>
+                </CpfCnpj>
+              </IdentificacaoTomador>
+              <RazaoSocial>Cliente XYZ SA</RazaoSocial>
+            </Tomador>
+            <Servico>
+              <ItemListaServico>01.05</ItemListaServico>
+              <Discriminacao>Desenvolvimento de sistema web sob encomenda conforme contrato 2026/001</Discriminacao>
+            </Servico>
+          </InfNfse>
+        </Nfse>
+      </CompNfse>
+    </GerarNfseResposta>
+  </soap:Body>
+</soap:Envelope>

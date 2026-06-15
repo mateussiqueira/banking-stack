@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <GerarNfseEnvio xmlns="http://www.abrasf.org.br/nfse.xsd">
+      <Requerimento>
+        <Prestador>
+          <CpfCnpj>
+            <Cnpj>12345678000190</Cnpj>
+          </CpfCnpj>
+          <InscricaoMunicipal>123456</InscricaoMunicipal>
+          <CodigoMunicipio>3550308</CodigoMunicipio>
+        </Prestador>
+        <Rps>
+          <IdentificacaoRps>
+            <Numero>1</Numero>
+            <Serie>UNICA</Serie>
+            <Tipo>RPS</Tipo>
+          </IdentificacaoRps>
+          <DataEmissao>2026-06-23T10:00:00</DataEmissao>
+          <NaturezaOperacao>1</NaturezaOperacao>
+          <OptanteSimplesNacional>1</OptanteSimplesNacional>
+          <IncentivoFiscal>2</IncentivoFiscal>
+          <Servico>
+            <ItemListaServico>01.05</ItemListaServico>
+            <CodigoTributacaoMunicipio>6202300</CodigoTributacaoMunicipio>
+            <Discriminacao>Desenvolvimento de sistema web sob encomenda conforme contrato 2026/001</Discriminacao>
+            <CodigoServico>6202300</CodigoServico>
+            <Valores>
+              <ValorServicos>5000.00</ValorServicos>
+              <ValorDeducoes>0.00</ValorDeducoes>
+              <Aliquota>5.00</Aliquota>
+              <IssRetido>2</IssRetido>
+              <ValorIss>250.00</ValorIss>
+              <BaseCalculo>5000.00</BaseCalculo>
+              <ValorLiquido>4750.00</ValorLiquido>
+            </Valores>
+          </Servico>
+          <Prestador>
+            <CpfCnpj>
+              <Cnpj>12345678000190</Cnpj>
+            </CpfCnpj>
+            <InscricaoMunicipal>123456</InscricaoMunicipal>
+          </Prestador>
+          <Tomador>
+            <IdentificacaoTomador>
+              <CpfCnpj>
+                <Cnpj>98765432000110</Cnpj>
+              </CpfCnpj>
+            </IdentificacaoTomador>
+            <RazaoSocial>Cliente XYZ SA</RazaoSocial>
+            <Endereco>
+              <Endereco>Rua Augusta</Endereco>
+              <Numero>500</Numero>
+              <Complemento></Complemento>
+              <Bairro>Consolação</Bairro>
+              <CodigoMunicipio>3550308</CodigoMunicipio>
+              <Uf>SP</Uf>
+              <Cep>01304000</Cep>
+            </Endereco>
+          </Tomador>
+        </Rps>
+      </Requerimento>
+    </GerarNfseEnvio>
+  </soap:Body>
+</soap:Envelope>
