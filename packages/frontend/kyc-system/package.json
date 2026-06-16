@@ -1,0 +1,46 @@
+{
+  "name": "@banking/kyc-system",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
+    "react-hook-form": "^7.48.0",
+    "@hookform/resolvers": "^3.3.2",
+    "zod": "^3.22.4",
+    "@radix-ui/react-progress": "^1.0.3",
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-label": "^2.0.2",
+    "lucide-react": "^0.294.0",
+    "react-dropzone": "^14.2.3",
+    "react-webcam": "^7.2.0",
+    "framer-motion": "^10.16.5",
+    "zustand": "^4.4.7",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.1.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "typescript": "^5.3.2",
+    "tailwindcss": "^3.3.6",
+    "postcss": "^8.4.32",
+    "autoprefixer": "^10.4.16",
+    "@types/react": "^18.2.42",
+    "@types/react-dom": "^18.2.17",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/jest-dom": "^6.1.5",
+    "vitest": "^1.0.4",
+    "jsdom": "^23.0.1"
+  }
+}
