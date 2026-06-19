@@ -1,0 +1,144 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: deploy
+  namespace: cicd
+  labels:
+    app.kubernetes.io/part-of: banking
+spec:
+  description: Deploy application to Kubernetes
+  workspaces:
+    - name: source
+      description: The workspace containing the k8s manifests
+    - name: kubeconfig
+      description: The Kubernetes kubeconfig secret
+      optional: true
+  params:
+    - name: environment
+      type: string
+      description: Target environment (staging | production)
+      default: staging
+    - name: manifest-dir
+      type: string
+      description: Directory containing Kubernetes manifests
+      default: ./k8s/overlays
+    - name: image-name
+      type: string
+      description: The full image URL to deploy
+    - name: rollout-timeout
+      type: string
+      description: Rollout timeout duration
+      default: 5m
+    - name: namespace
+      type: string
+      description: Target namespace
+      default: banking
+  steps:
+    - name: update-manifests
+      image: mikefarah/yq:4.44
+      workingDir: "$(workspaces.source.path)"
+      script: |
+        #!/bin/sh
+        set -euo pipefail
+
+        MANIFEST_DIR="$(params.manifest-dir)/$(params.environment)"
+
+        if [ ! -d "$MANIFEST_DIR" ]; then
+          echo "Manifest directory $MANIFEST_DIR not found"
+          exit 1
+        fi
+
+        IMAGE="$(params.image-name)"
+        SERVICE=$(echo "$IMAGE" | awk -F'/' '{print $NF}' | awk -F':' '{print $1}')
+
+        find "$MANIFEST_DIR" -name '*.yaml' -o -name '*.yml' | while read -r file; do
+          yq eval -i "
+            select(.kind == \"Deployment\" or .kind == \"StatefulSet\")
+            | .spec.template.spec.containers[] |= (
+              if .image != null then
+                .image = \"$IMAGE\"
+              else . end
+            )
+          " "$file" 2>/dev/null || true
+        done
+
+        echo "Updated image to $IMAGE in $MANIFEST_DIR"
+    - name: kustomize-build
+      image: alpine/kustomize:1.0.0
+      workingDir: "$(workspaces.source.path)"
+      script: |
+        #!/bin/sh
+        set -euo pipefail
+
+        kustomize build "$(params.manifest-dir)/$(params.environment)" \
+          > /tmp/deploy-manifest.yaml
+
+        echo "Kustomize build complete"
+    - name: deploy
+      image: bitnami/kubectl:1.28
+      script: |
+        #!/bin/sh
+        set -euo pipefail
+
+        if [ -f "$(workspaces.kubeconfig.path)/kubeconfig" ]; then
+          export KUBECONFIG="$(workspaces.kubeconfig.path)/kubeconfig"
+        fi
+
+        kubectl apply \
+          -f /tmp/deploy-manifest.yaml \
+          --namespace="$(params.namespace)" \
+          --server-side \
+          --field-manager=tekton
+
+        echo "Waiting for rollout to complete..."
+        kubectl rollout status \
+          -f /tmp/deploy-manifest.yaml \
+          --namespace="$(params.namespace)" \
+          --timeout="$(params.rollout-timeout)"
+
+        echo "Deployment to $(params.environment) completed successfully"
+    - name: verify
+      image: bitnami/kubectl:1.28
+      script: |
+        #!/bin/sh
+        set -euo pipefail
+
+        if [ -f "$(workspaces.kubeconfig.path)/kubeconfig" ]; then
+          export KUBECONFIG="$(workspaces.kubeconfig.path)/kubeconfig"
+        fi
+
+        echo "=== Deployment Status ==="
+        kubectl get pods \
+          --namespace="$(params.namespace)" \
+          --selector=app.kubernetes.io/instance="$(params.image-name | awk -F'/' '{print $NF}' | awk -F':' '{print $1}')"
+
+        echo "=== Services ==="
+        kubectl get svc \
+          --namespace="$(params.namespace)"
+    - name: health-check
+      image: curlimages/curl:8.8
+      script: |
+        #!/bin/sh
+        set -euo pipefail
+
+        if [ "$(params.environment)" = "staging" ]; then
+          URL="https://staging.banking.com/health"
+        elif [ "$(params.environment)" = "production" ]; then
+          URL="https://app.banking.com/health"
+        else
+          echo "Unknown environment: $(params.environment)"
+          exit 0
+        fi
+
+        for i in $(seq 1 12); do
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || echo "000")
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "204" ]; then
+            echo "Health check passed ($HTTP_CODE)"
+            exit 0
+          fi
+          echo "Attempt $i: $HTTP_CODE, retrying in 10s..."
+          sleep 10
+        done
+
+        echo "Health check failed after 12 attempts"
+        exit 1

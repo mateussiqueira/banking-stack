@@ -1,0 +1,84 @@
+---
+- name: Install and configure Proxmox VE cluster
+  hosts: proxmox
+  gather_facts: yes
+  vars_files:
+    - ../vars/default.yml
+
+  tasks:
+    - name: Add Proxmox VE repository
+      apt_repository:
+        repo: "deb http://download.proxmox.com/debian/pve {{ ansible_distribution_release }} pve-no-subscription"
+        state: present
+        update_cache: yes
+
+    - name: Install Proxmox VE packages
+      apt:
+        name:
+          - proxmox-ve
+          - postfix
+          - open-iscsi
+          - watchdog
+        state: present
+        update_cache: yes
+
+    - name: Configure bridge networking (vmbr0)
+      template:
+        src: templates/interfaces.j2
+        dest: /etc/network/interfaces
+      notify: restart networking
+
+    - name: Configure VLAN interfaces
+      template:
+        src: templates/vlan.j2
+        dest: /etc/network/interfaces.d/vlan
+      when: proxmox_vlan_id is defined
+
+    - name: Initialize Proxmox cluster on master
+      command: >
+        pvecm create {{ proxmox_cluster_name }}
+        --link0 {{ proxmox_cluster_network }}
+      when: proxmox_role == "master"
+      args:
+        creates: /etc/pve/corosync.conf
+
+    - name: Join nodes to cluster
+      command: >
+        pvecm add {{ hostvars['proxmox-master']['ansible_host'] }}
+        --link0 {{ proxmox_cluster_network }}
+      when: proxmox_role == "node"
+      args:
+        creates: /etc/pve/corosync.conf
+
+    - name: Download Ubuntu 24.04 cloud image
+      get_url:
+        url: "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
+        dest: "/var/lib/vz/template/cache/ubuntu-24.04-server-cloudimg-amd64.img"
+        checksum: sha256: "{{ ubuntu_2404_checksum }}"
+
+    - name: Create VM template from cloud image
+      command: |
+        qm create {{ ubuntu_template_id }}
+          --name ubuntu-2404-template
+          --memory 2048
+          --net0 virtio,bridge=vmbr0
+          --scsihw virtio-scsi-pci
+          --scsi0 local-lvm:0,format=qcow2,import-from=/var/lib/vz/template/cache/ubuntu-24.04-server-cloudimg-amd64.img
+          --ide2 local-lvm:cloudinit
+          --boot order=scsi0
+          --serial0 socket
+          --vga serial0
+          --agent enabled=1
+      args:
+        creates: "/etc/pve/qemu-server/{{ ubuntu_template_id }}.conf"
+
+    - name: Convert VM to template
+      command: "qm template {{ ubuntu_template_id }}"
+      args:
+        creates: "/etc/pve/qemu-server/{{ ubuntu_template_id }}.conf"
+
+  handlers:
+    - name: restart networking
+      systemd:
+        name: networking
+        state: restarted

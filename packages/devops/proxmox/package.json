@@ -1,0 +1,18 @@
+{
+  "name": "@banking/devops-proxmox",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Proxmox + HA Kubernetes cluster automation with MicroK8s, databases, and monitoring",
+  "scripts": {
+    "setup": "ansible-playbook -i ansible/inventory.yml ansible/playbooks/proxmox-setup.yml",
+    "k8s": "ansible-playbook -i ansible/inventory.yml ansible/playbooks/k8s-cluster.yml",
+    "databases": "ansible-playbook -i ansible/inventory.yml ansible/playbooks/databases.yml",
+    "deploy": "kubectl apply -f k8s/monitoring/",
+    "all": "npm run setup && npm run k8s && npm run databases && npm run deploy"
+  },
+  "dependencies": {
+    "ansible": ">=2.14",
+    "kubernetes": ">=1.28",
+    "microk8s": ">=1.28"
+  }
+}

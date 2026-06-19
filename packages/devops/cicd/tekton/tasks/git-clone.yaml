@@ -1,0 +1,80 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: git-clone
+  namespace: cicd
+  labels:
+    app.kubernetes.io/part-of: banking
+spec:
+  description: Clone a GitHub repository at a specific revision
+  workspaces:
+    - name: output
+      description: The workspace where the repository will be cloned
+  params:
+    - name: repo-url
+      type: string
+      description: The git repository URL
+    - name: revision
+      type: string
+      description: The git revision (branch, tag, or commit SHA)
+      default: main
+    - name: subdirectory
+      type: string
+      description: Subdirectory inside the workspace to clone into
+      default: ""
+    - name: depth
+      type: string
+      description: Git clone depth
+      default: "0"
+    - name: ssl-verify
+      type: string
+      description: Whether to verify SSL
+      default: "true"
+  results:
+    - name: commit
+      description: The full commit SHA
+    - name: commit-message
+      description: The commit message
+    - name: committer-date
+      description: The commit date
+  steps:
+    - name: clone
+      image: alpine/git:2.45.2
+      env:
+        - name: GIT_SSL_NO_VERIFY
+          value: "$(params.ssl-verify)"
+      script: |
+        #!/bin/sh
+        set -euo pipefail
+
+        WORKSPACE_DIR="$(workspaces.output.path)/$(params.subdirectory)"
+        mkdir -p "$WORKSPACE_DIR"
+
+        if [ -d "$WORKSPACE_DIR/.git" ]; then
+          cd "$WORKSPACE_DIR"
+          git fetch --depth="$(params.depth)" origin
+          git checkout "$(params.revision)"
+        else
+          git clone \
+            --depth="$(params.depth)" \
+            --single-branch \
+            --branch "$(params.revision)" \
+            "$(params.repo-url)" \
+            "$WORKSPACE_DIR"
+          cd "$WORKSPACE_DIR"
+        fi
+
+        git rev-parse HEAD | tr -d '\n' > "$(results.commit.path)"
+        git log --format=%s -1 | tr -d '\n' > "$(results.commit-message.path)"
+        git log --format=%cI -1 | tr -d '\n' > "$(results.committer-date.path)"
+    - name: check-repo
+      image: alpine/git:2.45.2
+      script: |
+        #!/bin/sh
+        cd "$(workspaces.output.path)/$(params.subdirectory)"
+        echo "Repository: $(params.repo-url)"
+        echo "Revision: $(params.revision)"
+        echo "Commit: $(cat $(results.commit.path))"
+        echo "Message: $(cat $(results.commit-message.path))"
+  #
+  # Workspace mount for Tekton-in-Tekton scenarios

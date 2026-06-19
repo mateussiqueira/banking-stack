@@ -1,0 +1,134 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: staging-pipeline
+  namespace: cicd
+  labels:
+    app.kubernetes.io/part-of: banking
+    pipeline.environment: staging
+spec:
+  description: CI/CD pipeline for staging deployments
+  params:
+    - name: repo-url
+      type: string
+      description: The git repository URL
+    - name: revision
+      type: string
+      description: The git revision to build
+      default: develop
+    - name: image-name
+      type: string
+      description: Docker image name (without registry)
+    - name: image-tag
+      type: string
+      description: Docker image tag
+      default: staging-latest
+    - name: registry
+      type: string
+      description: Container registry
+      default: ghcr.io
+  workspaces:
+    - name: shared-workspace
+      description: Shared workspace across all tasks
+    - name: kubeconfig
+      description: Kubeconfig for deployment target
+      optional: true
+  results:
+    - name: commit
+      description: The deployed commit SHA
+    - name: image-url
+      description: The deployed image URL
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+      params:
+        - name: repo-url
+          value: "$(params.repo-url)"
+        - name: revision
+          value: "$(params.revision)"
+
+    - name: lint
+      taskRef:
+        name: lint
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      runAfter:
+        - git-clone
+
+    - name: test
+      taskRef:
+        name: test
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      runAfter:
+        - lint
+
+    - name: build
+      taskRef:
+        name: build
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: image-name
+          value: "$(params.image-name)"
+        - name: image-tag
+          value: "$(params.image-tag)"
+        - name: registry
+          value: "$(params.registry)"
+      runAfter:
+        - test
+
+    - name: deploy-staging
+      taskRef:
+        name: deploy
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: kubeconfig
+          workspace: kubeconfig
+      params:
+        - name: environment
+          value: staging
+        - name: image-name
+          value: "$(params.registry)/$(params.image-name):$(params.image-tag)"
+        - name: namespace
+          value: banking-staging
+      runAfter:
+        - build
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: staging-pipeline-run
+  namespace: cicd
+  labels:
+    app.kubernetes.io/part-of: banking
+    tekton.dev/pipeline: staging-pipeline
+spec:
+  pipelineRef:
+    name: staging-pipeline
+  params:
+    - name: repo-url
+      value: https://github.com/banking/banking-app
+    - name: revision
+      value: develop
+    - name: image-name
+      value: banking/banking-app
+  workspaces:
+    - name: shared-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+    - name: kubeconfig
+      secret:
+        secretName: kubeconfig-staging

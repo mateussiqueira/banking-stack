@@ -1,0 +1,71 @@
+---
+all:
+  children:
+    proxmox:
+      hosts:
+        proxmox-master:
+          ansible_host: 10.0.10.10
+          ansible_user: root
+          proxmox_role: master
+        proxmox-node-1:
+          ansible_host: 10.0.10.11
+          ansible_user: root
+          proxmox_role: node
+        proxmox-node-2:
+          ansible_host: 10.0.10.12
+          ansible_user: root
+          proxmox_role: node
+    k8s:
+      hosts:
+        k8s-master:
+          ansible_host: 10.0.20.10
+          ansible_user: ubuntu
+          k8s_role: control-plane
+        k8s-node-1:
+          ansible_host: 10.0.20.11
+          ansible_user: ubuntu
+          k8s_role: worker
+        k8s-node-2:
+          ansible_host: 10.0.20.12
+          ansible_user: ubuntu
+          k8s_role: worker
+    databases:
+      hosts:
+        db-es-1:
+          ansible_host: 10.0.30.10
+          ansible_user: ubuntu
+          db_role: elasticsearch
+        db-es-2:
+          ansible_host: 10.0.30.11
+          ansible_user: ubuntu
+          db_role: elasticsearch
+        db-es-3:
+          ansible_host: 10.0.30.12
+          ansible_user: ubuntu
+          db_role: elasticsearch
+        db-redis-1:
+          ansible_host: 10.0.30.20
+          ansible_user: ubuntu
+          db_role: redis
+        db-redis-2:
+          ansible_host: 10.0.30.21
+          ansible_user: ubuntu
+          db_role: redis
+        db-redis-3:
+          ansible_host: 10.0.30.22
+          ansible_user: ubuntu
+          db_role: redis
+        db-mongo-1:
+          ansible_host: 10.0.30.30
+          ansible_user: ubuntu
+          db_role: mongodb
+        db-mongo-2:
+          ansible_host: 10.0.30.31
+          ansible_user: ubuntu
+          db_role: mongodb
+        db-mongo-3:
+          ansible_host: 10.0.30.32
+          ansible_user: ubuntu
+          db_role: mongodb
+  vars:
+    ansible_ssh_private_key_file: ~/.ssh/banking-prod

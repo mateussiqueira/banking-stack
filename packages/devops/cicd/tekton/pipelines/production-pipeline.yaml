@@ -1,0 +1,164 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: production-pipeline
+  namespace: cicd
+  labels:
+    app.kubernetes.io/part-of: banking
+    pipeline.environment: production
+spec:
+  description: CI/CD pipeline for production deployments with approval gate
+  params:
+    - name: repo-url
+      type: string
+      description: The git repository URL
+    - name: revision
+      type: string
+      description: The git revision to build (tag or commit)
+    - name: image-name
+      type: string
+      description: Docker image name (without registry)
+    - name: image-tag
+      type: string
+      description: Docker image tag (typically the git tag)
+    - name: registry
+      type: string
+      description: Container registry
+      default: ghcr.io
+  workspaces:
+    - name: shared-workspace
+      description: Shared workspace across all tasks
+    - name: kubeconfig
+      description: Kubeconfig for production target
+      optional: true
+  results:
+    - name: commit
+      description: The deployed commit SHA
+    - name: image-url
+      description: The deployed image URL
+    - name: release-version
+      description: The deployed release version
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+      params:
+        - name: repo-url
+          value: "$(params.repo-url)"
+        - name: revision
+          value: "$(params.revision)"
+
+    - name: lint
+      taskRef:
+        name: lint
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: strict-mode
+          value: "true"
+      runAfter:
+        - git-clone
+
+    - name: test
+      taskRef:
+        name: test
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      runAfter:
+        - lint
+
+    - name: build
+      taskRef:
+        name: build
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: image-name
+          value: "$(params.image-name)"
+        - name: image-tag
+          value: "$(params.image-tag)"
+        - name: registry
+          value: "$(params.registry)"
+      runAfter:
+        - test
+
+    - name: tag-release
+      taskRef:
+        name: git-tag
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: tag
+          value: "$(params.image-tag)"
+      runAfter:
+        - build
+
+    - name: deploy-production
+      taskRef:
+        name: deploy
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: kubeconfig
+          workspace: kubeconfig
+      params:
+        - name: environment
+          value: production
+        - name: image-name
+          value: "$(params.registry)/$(params.image-name):$(params.image-tag)"
+        - name: namespace
+          value: banking
+        - name: rollout-timeout
+          value: 10m
+      runAfter:
+        - tag-release
+
+    - name: notify
+      taskRef:
+        name: slack-notify
+      params:
+        - name: message
+          value: "Deployed $(params.image-name):$(params.image-tag) to production"
+        - name: status
+          value: success
+      runAfter:
+        - deploy-production
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: production-pipeline-run
+  namespace: cicd
+  labels:
+    app.kubernetes.io/part-of: banking
+    tekton.dev/pipeline: production-pipeline
+spec:
+  pipelineRef:
+    name: production-pipeline
+  params:
+    - name: repo-url
+      value: https://github.com/banking/banking-app
+    - name: revision
+      value: v1.0.0
+    - name: image-name
+      value: banking/banking-app
+    - name: image-tag
+      value: v1.0.0
+  workspaces:
+    - name: shared-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+    - name: kubeconfig
+      secret:
+        secretName: kubeconfig-production

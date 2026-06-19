@@ -1,0 +1,168 @@
+---
+# Helm values for prometheus-community/kube-prometheus-stack
+# https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+
+global:
+  rbac:
+    create: true
+    pspEnabled: false
+
+alertmanager:
+  enabled: true
+  config:
+    global:
+      resolve_timeout: 5m
+      slack_api_url: ""
+    route:
+      group_by: ["namespace", "alertname", "severity"]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: default
+      routes:
+        - receiver: critical
+          match:
+            severity: critical
+          repeat_interval: 4h
+        - receiver: warning
+          match:
+            severity: warning
+          repeat_interval: 12h
+    receivers:
+      - name: default
+        slack_configs:
+          - channel: "#alerts"
+            send_resolved: true
+            title: "[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}"
+            text: "{{ .CommonAnnotations.description }}"
+      - name: critical
+        slack_configs:
+          - channel: "#alerts-critical"
+            send_resolved: true
+            title: "[CRITICAL] {{ .CommonLabels.alertname }}"
+            text: "{{ .CommonAnnotations.description }}"
+      - name: warning
+        slack_configs:
+          - channel: "#alerts"
+            send_resolved: true
+            title: "[WARNING] {{ .CommonLabels.alertname }}"
+            text: "{{ .CommonAnnotations.description }}"
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts: ["alertmanager.banking.internal"]
+    paths: ["/"]
+    tls:
+      - hosts: ["alertmanager.banking.internal"]
+        secretName: alertmanager-tls
+
+grafana:
+  enabled: false
+
+prometheus:
+  prometheusSpec:
+    retention: 30d
+    retentionSize: 45GB
+    scrapeInterval: 15s
+    evaluationInterval: 15s
+    replicas: 2
+    podAntiAffinity: soft
+    resources:
+      requests:
+        memory: 4Gi
+        cpu: 1000m
+      limits:
+        memory: 8Gi
+        cpu: 2000m
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          storageClassName: microk8s-hostpath
+          resources:
+            requests:
+              storage: 100Gi
+    ruleSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    additionalScrapeConfigs:
+      - job_name: microk8s-containerd
+        static_configs:
+          - targets: ["localhost:1338"]
+      - job_name: elasticsearch
+        static_configs:
+          - targets: ["elasticsearch-master:9200"]
+        metrics_path: /_prometheus/metrics
+      - job_name: mongodb
+        static_configs:
+          - targets: ["mongodb-exporter:9216"]
+    additionalAlertRuleConfigs:
+      - groups:
+          - name: banking-additional
+            rules:
+              - alert: HighNodeCPU
+                expr: (100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+                for: 10m
+                labels:
+                  severity: warning
+                annotations:
+                  summary: "Node {{ $labels.instance }} CPU > 80%"
+
+kubeStateMetrics:
+  enabled: true
+
+nodeExporter:
+  enabled: true
+
+kubeApiServer:
+  enabled: true
+
+kubelet:
+  enabled: true
+
+kubeControllerManager:
+  enabled: true
+
+kubeScheduler:
+  enabled: true
+
+kubeProxy:
+  enabled: true
+
+kubeEtcd:
+  enabled: true
+
+coreDns:
+  enabled: true
+
+prometheusOperator:
+  enabled: true
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    etcd: true
+    configReloaders: true
+    general: true
+    k8s: true
+    kubeApiserver: true
+    kubePrometheusNodeAlerting: true
+    kubePrometheusNodeRecording: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: true
+    kubernetesSystem: true
+    network: true
+    node: true
+    prometheus: true
+    prometheusOperator: true
+    time: true

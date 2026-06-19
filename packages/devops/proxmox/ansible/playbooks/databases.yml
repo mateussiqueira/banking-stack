@@ -1,0 +1,161 @@
+---
+- name: Deploy database clusters
+  hosts: databases
+  gather_facts: yes
+  vars_files:
+    - ../vars/default.yml
+
+  tasks:
+    - name: Install common dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+        update_cache: yes
+
+- name: Configure ElasticSearch cluster
+  hosts: db-es-1,db-es-2,db-es-3
+  vars:
+    es_cluster_name: banking-logs
+    es_node_role: "{% if 'db-es-1' in inventory_hostname %}master,data{% else %}data{% endif %}"
+  tasks:
+    - name: Add ElasticSearch GPG key
+      apt_key:
+        url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+        state: present
+
+    - name: Add ElasticSearch repository
+      apt_repository:
+        repo: "deb https://artifacts.elastic.co/packages/8.x/apt stable main"
+        state: present
+        update_cache: yes
+
+    - name: Install ElasticSearch
+      apt:
+        name: elasticsearch
+        state: present
+
+    - name: Configure cluster discovery
+      template:
+        src: templates/elasticsearch.yml.j2
+        dest: /etc/elasticsearch/elasticsearch.yml
+      notify: restart elasticsearch
+
+    - name: Configure JVM heap
+      lineinfile:
+        path: /etc/elasticsearch/jvm.options.d/heap.options
+        create: yes
+        line: "{{ item }}"
+      loop:
+        - "-Xms{{ es_heap_size }}"
+        - "-Xmx{{ es_heap_size }}"
+      notify: restart elasticsearch
+
+- name: Configure Redis sentinel + cluster
+  hosts: db-redis-1,db-redis-2,db-redis-3
+  tasks:
+    - name: Install Redis
+      apt:
+        name: redis-server
+        state: present
+        update_cache: yes
+
+    - name: Configure Redis for clustering
+      lineinfile:
+        path: /etc/redis/redis.conf
+        regexp: "^{{ item.param }}"
+        line: "{{ item.param }} {{ item.value }}"
+      loop:
+        - { param: "bind", value: "0.0.0.0 ::" }
+        - { param: "cluster-enabled", value: "yes" }
+        - { param: "cluster-config-file", value: "nodes.conf" }
+        - { param: "cluster-node-timeout", value: "5000" }
+        - { param: "appendonly", value: "yes" }
+        - { param: "protected-mode", value: "no" }
+      notify: restart redis
+
+    - name: Configure Redis sentinel
+      template:
+        src: templates/sentinel.conf.j2
+        dest: /etc/redis/sentinel.conf
+      notify: restart redis-sentinel
+
+    - name: Create Redis cluster
+      command: >
+        redis-cli --cluster create
+        {{ hostvars['db-redis-1']['ansible_host'] }}:6379
+        {{ hostvars['db-redis-2']['ansible_host'] }}:6379
+        {{ hostvars['db-redis-3']['ansible_host'] }}:6379
+        --cluster-replicas 0
+      run_once: yes
+      when: inventory_hostname == 'db-redis-1'
+      changed_when: false
+
+- name: Configure MongoDB replica set
+  hosts: db-mongo-1,db-mongo-2,db-mongo-3
+  tasks:
+    - name: Add MongoDB GPG key
+      apt_key:
+        url: https://www.mongodb.org/static/pgp/server-7.0.asc
+        state: present
+
+    - name: Add MongoDB repository
+      apt_repository:
+        repo: "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/7.0 multiverse"
+        state: present
+        update_cache: yes
+
+    - name: Install MongoDB
+      apt:
+        name: mongodb-org
+        state: present
+
+    - name: Configure MongoDB replica set
+      template:
+        src: templates/mongod.conf.j2
+        dest: /etc/mongod.conf
+      notify: restart mongod
+
+    - name: Initialize replica set
+      command: >
+        mongosh --eval '
+          rs.initiate({
+            _id: "{{ mongo_replica_set }}",
+            members: [
+              { _id: 0, host: "{{ hostvars[\"db-mongo-1\"][\"ansible_host\"] }}:27017" },
+              { _id: 1, host: "{{ hostvars[\"db-mongo-2\"][\"ansible_host\"] }}:27017" },
+              { _id: 2, host: "{{ hostvars[\"db-mongo-3\"][\"ansible_host\"] }}:27017" }
+            ]
+          })
+        '
+      run_once: yes
+      when: inventory_hostname == 'db-mongo-1'
+      changed_when: false
+
+  handlers:
+    - name: restart elasticsearch
+      systemd:
+        name: elasticsearch
+        state: restarted
+        daemon_reload: yes
+
+    - name: restart redis
+      systemd:
+        name: redis-server
+        state: restarted
+
+    - name: restart redis-sentinel
+      systemd:
+        name: redis-sentinel
+        state: restarted
+        daemon_reload: yes
+
+    - name: restart mongod
+      systemd:
+        name: mongod
+        state: restarted
+        daemon_reload: yes

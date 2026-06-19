@@ -1,0 +1,192 @@
+apiVersion: tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: github-trigger-template
+  namespace: cicd
+  labels:
+    app.kubernetes.io/part-of: banking
+spec:
+  params:
+    - name: git-revision
+      description: The git revision (branch, tag, SHA)
+    - name: git-repo-url
+      description: The GitHub repository URL
+    - name: git-ref
+      description: Full git ref (refs/heads/main, refs/tags/v1.0.0)
+    - name: image-name
+      description: Image name derived from repo
+      default: banking/banking-app
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: ci-pipeline-run-
+        namespace: cicd
+        labels:
+          app.kubernetes.io/part-of: banking
+          triggertemplate: github
+      spec:
+        pipelineRef:
+          name: "$(tt:params.pipeline-name)"
+        params:
+          - name: repo-url
+            value: "$(tt:params.git-repo-url)"
+          - name: revision
+            value: "$(tt:params.git-revision)"
+          - name: image-name
+            value: "$(tt:params.image-name)"
+          - name: image-tag
+            value: "$(tt:params.git-revision)"
+        workspaces:
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes: ["ReadWriteOnce"]
+                resources:
+                  requests:
+                    storage: 5Gi
+---
+apiVersion: tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-push-binding
+  namespace: cicd
+  labels:
+    app.kubernetes.io/part-of: banking
+spec:
+  params:
+    - name: git-revision
+      value: "$(body.head_commit.id)"
+    - name: git-repo-url
+      value: "$(body.repository.clone_url)"
+    - name: git-ref
+      value: "$(body.ref)"
+    - name: pipeline-name
+      value: "$(body.ref | startsWith('refs/tags/') ? 'production-pipeline' : 'staging-pipeline')"
+---
+apiVersion: tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-pr-binding
+  namespace: cicd
+  labels:
+    app.kubernetes.io/part-of: banking
+spec:
+  params:
+    - name: git-revision
+      value: "$(body.pull_request.head.sha)"
+    - name: git-repo-url
+      value: "$(body.repository.clone_url)"
+    - name: git-ref
+      value: "refs/heads/$(body.pull_request.head.ref)"
+    - name: pipeline-name
+      value: "staging-pipeline"
+---
+apiVersion: tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-tag-binding
+  namespace: cicd
+  labels:
+    app.kubernetes.io/part-of: banking
+spec:
+  params:
+    - name: git-revision
+      value: "$(body.ref | split('/') | last)"
+    - name: git-repo-url
+      value: "$(body.repository.clone_url)"
+    - name: git-ref
+      value: "$(body.ref)"
+    - name: pipeline-name
+      value: "production-pipeline"
+---
+apiVersion: tekton.dev/v1beta1
+kind: Interceptor
+metadata:
+  name: github-interceptor
+  namespace: cicd
+  labels:
+    app.kubernetes.io/part-of: banking
+spec:
+  clientConfig:
+    url: http://el-github-event-listener.cicd.svc.cluster.local:8080
+---
+apiVersion: tekton.dev/v1beta1
+kind: ClusterInterceptor
+metadata:
+  name: github-validators
+  labels:
+    app.kubernetes.io/part-of: banking
+    server/type: github
+spec:
+  clientConfig:
+    service:
+      name: tekton-triggers-core-interceptors
+      namespace: tekton-pipelines
+      path: /github
+---
+apiVersion: tekton.dev/v1beta1
+kind: Trigger
+metadata:
+  name: github-push-trigger
+  namespace: cicd
+  labels:
+    app.kubernetes.io/part-of: banking
+spec:
+  interceptors:
+    - ref:
+        name: github-validators
+        kind: ClusterInterceptor
+      params:
+        - name: secretRef
+          value:
+            secretName: github-webhook-secret
+            secretKey: secretToken
+        - name: eventTypes
+          value: ["push", "pull_request"]
+    - ref:
+        name: "cel"
+      params:
+        - name: filter
+          value: >
+            body.ref.startsWith('refs/heads/') ||
+            body.ref.startsWith('refs/tags/')
+        - name: overlays
+          - key: pipeline-name
+            expression: >
+              body.ref.startsWith('refs/tags/')
+              ? 'production-pipeline'
+              : 'staging-pipeline'
+  bindings:
+    - ref: github-push-binding
+  template:
+    ref: github-trigger-template
+---
+apiVersion: tekton.dev/v1beta1
+kind: Trigger
+metadata:
+  name: github-tag-trigger
+  namespace: cicd
+  labels:
+    app.kubernetes.io/part-of: banking
+spec:
+  interceptors:
+    - ref:
+        name: github-validators
+        kind: ClusterInterceptor
+      params:
+        - name: secretRef
+          value:
+            secretName: github-webhook-secret
+            secretKey: secretToken
+        - name: eventTypes
+          value: ["push", "create"]
+    - ref:
+        name: "cel"
+      params:
+        - name: filter
+          value: body.ref.startsWith('refs/tags/')
+  bindings:
+    - ref: github-tag-binding
+  template:
+    ref: github-trigger-template

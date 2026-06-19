@@ -1,0 +1,101 @@
+---
+- name: Deploy HA Kubernetes cluster with MicroK8s
+  hosts: k8s
+  gather_facts: yes
+  vars_files:
+    - ../vars/default.yml
+
+  tasks:
+    - name: Install MicroK8s via snap
+      snap:
+        name: microk8s
+        channel: "{{ microk8s_channel }}"
+        classic: yes
+        state: present
+
+    - name: Add current user to microk8s group
+      user:
+        name: "{{ ansible_user }}"
+        groups: microk8s
+        append: yes
+
+    - name: Create MicroK8s configuration directory
+      file:
+        path: /var/snap/microk8s/current/args
+        state: directory
+
+    - name: Configure containerd for private registry
+      copy:
+        dest: /var/snap/microk8s/current/args/containerd-template.toml
+        content: |
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ registry_host }}:{{ registry_port }}"]
+            endpoint = ["http://{{ registry_host }}:{{ registry_port }}"]
+      notify: restart microk8s
+
+    - name: Wait for MicroK8s to be ready
+      command: microk8s status --wait-ready
+      changed_when: false
+
+    - name: Enable core addons on control-plane
+      command: "microk8s enable {{ item }}"
+      loop:
+        - dns
+        - dashboard
+        - ingress
+        - hostpath-storage
+        - registry
+        - metallb:{{ metallb_ip_range }}
+      when: k8s_role == "control-plane"
+      register: addon_result
+      changed_when: "'already enabled' not in addon_result.stdout"
+
+    - name: Check if cluster is already joined
+      stat:
+        path: /var/snap/microk8s/current/var/lock/no-cert-reissue
+      register: join_lock
+      when: k8s_role == "worker"
+
+    - name: Generate join token on control-plane
+      command: microk8s add-node --token-ttl 3600 --format short
+      register: join_token
+      when: k8s_role == "control-plane"
+      run_once: yes
+      changed_when: false
+
+    - name: Join worker nodes to cluster
+      command: "{{ hostvars['k8s-master']['join_token']['stdout'] }}"
+      when:
+        - k8s_role == "worker"
+        - not join_lock.stat.exists
+
+    - name: Configure high-availability (3+ control planes)
+      command: microk8s enable ha-cluster --enable-replication
+      when: k8s_role == "control-plane"
+      run_once: yes
+
+    - name: Copy kubeconfig to local machine
+      fetch:
+        src: /var/snap/microk8s/current/credentials/client.config
+        dest: "{{ local_kubeconfig_path }}"
+        flat: yes
+      when: k8s_role == "control-plane"
+      run_once: yes
+
+    - name: Label worker nodes
+      command: >
+        microk8s kubectl label node {{ ansible_hostname }}
+        node-role.kubernetes.io/worker=worker
+        --overwrite
+      when: k8s_role == "worker"
+
+    - name: Taint control-plane for workload isolation
+      command: >
+        microk8s kubectl taint nodes
+        {{ ansible_hostname }}
+        node-role.kubernetes.io/control-plane=:NoSchedule
+      when: k8s_role == "control-plane"
+      ignore_errors: yes
+
+  handlers:
+    - name: restart microk8s
+      command: snap restart microk8s

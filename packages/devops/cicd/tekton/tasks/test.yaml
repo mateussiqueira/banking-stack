@@ -1,0 +1,97 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: test
+  namespace: cicd
+  labels:
+    app.kubernetes.io/part-of: banking
+spec:
+  description: Run tests across multiple frameworks
+  workspaces:
+    - name: source
+      description: The workspace containing the source code
+  params:
+    - name: test-command
+      type: string
+      description: The test command to run
+      default: npx vitest run --reporter=junit --outputFile=test-results.xml
+    - name: coverage-threshold
+      type: string
+      description: Minimum coverage percentage
+      default: "80"
+  results:
+    - name: tests-passed
+      description: Number of passed tests
+    - name: tests-failed
+      description: Number of failed tests
+    - name: coverage
+      description: Code coverage percentage
+  steps:
+    - name: install-deps
+      image: node:20-slim
+      workingDir: "$(workspaces.source.path)"
+      script: |
+        #!/bin/sh
+        set -euo pipefail
+
+        if [ -f pnpm-lock.yaml ]; then
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          pnpm install --frozen-lockfile
+        elif [ -f package-lock.json ]; then
+          npm ci
+        elif [ -f yarn.lock ]; then
+          yarn install --frozen-lockfile
+        else
+          npm install
+        fi
+    - name: run-tests
+      image: node:20-slim
+      workingDir: "$(workspaces.source.path)"
+      script: |
+        #!/bin/sh
+        set -euo pipefail
+
+        $(params.test-command)
+    - name: check-coverage
+      image: node:20-slim
+      workingDir: "$(workspaces.source.path)"
+      script: |
+        #!/bin/sh
+        set -euo pipefail
+
+        if [ -f coverage/coverage-summary.json ]; then
+          COVERAGE=$(node -e "
+            const c = require('./coverage/coverage-summary.json');
+            const pct = c.total.lines.pct;
+            console.log(pct.toFixed(2));
+          ")
+          echo -n "$COVERAGE" > "$(results.coverage.path)"
+
+          if [ "$(echo "$COVERAGE < $(params.coverage-threshold)" | bc)" -eq 1 ]; then
+            echo "Coverage $COVERAGE% is below threshold $(params.coverage-threshold)%"
+            exit 1
+          fi
+          echo "Coverage: $COVERAGE% (threshold: $(params.coverage-threshold)%)"
+        else
+          echo "No coverage report found"
+          echo -n "0" > "$(results.coverage.path)"
+        fi
+    - name: parse-results
+      image: node:20-slim
+      workingDir: "$(workspaces.source.path)"
+      script: |
+        #!/bin/sh
+        set -euo pipefail
+
+        if [ -f test-results.xml ]; then
+          PASSED=$(grep -c 'pass="true"' test-results.xml 2>/dev/null || echo 0)
+          FAILED=$(grep -c 'fail="true"' test-results.xml 2>/dev/null || echo 0)
+          echo -n "$PASSED" > "$(results.tests-passed.path)"
+          echo -n "$FAILED" > "$(results.tests-failed.path)"
+          echo "Tests: $PASSED passed, $FAILED failed"
+        else
+          echo "No test results file found"
+          echo -n "0" > "$(results.tests-passed.path)"
+          echo -n "0" > "$(results.tests-failed.path)"
+        fi

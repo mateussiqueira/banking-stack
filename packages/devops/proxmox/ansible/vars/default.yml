@@ -1,0 +1,25 @@
+---
+# Proxmox
+proxmox_cluster_name: banking-prod
+proxmox_cluster_network: 10.0.10.0/24
+proxmox_vlan_id: 100
+ubuntu_2404_checksum: sha256:8b8c9b0d2f3e4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9
+ubuntu_template_id: 9000
+
+# MicroK8s
+microk8s_channel: 1.28/stable
+metallb_ip_range: 10.0.20.100-10.0.20.200
+registry_host: 10.0.20.100
+registry_port: 32000
+local_kubeconfig_path: ~/.kube/banking-prod-config
+
+# ElasticSearch
+es_cluster_name: banking-logs
+es_heap_size: 2g
+
+# Redis
+redis_sentinel_quorum: 2
+
+# MongoDB
+mongo_replica_set: rs-banking
+mongo_version: 7.0
