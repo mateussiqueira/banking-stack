@@ -71,3 +71,5 @@ export function registerClaimsRoutes(app: FastifyInstance): void {
     }
   })
 }
+
+// TODO: implement claim resolution timeout (DICT requires 7-day auto-resolution)

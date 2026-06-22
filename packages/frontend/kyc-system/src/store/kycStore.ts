@@ -146,3 +146,5 @@ export const useKYCStore = create<KYCState & KYCActions>((set, get) => ({
     set(initialState);
   },
 }));
+
+// TODO: add session expiry to localStorage persistence

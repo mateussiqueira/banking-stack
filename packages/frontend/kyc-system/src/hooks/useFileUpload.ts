@@ -50,3 +50,5 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
 
   return { ...state, setFile, clear };
 }
+
+// TODO: add file dimension validation for images (min 300dpi)

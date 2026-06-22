@@ -80,3 +80,5 @@ export const accountService = {
     return account.balance;
   },
 };
+
+// TODO: handle concurrent balance updates with optimistic locking

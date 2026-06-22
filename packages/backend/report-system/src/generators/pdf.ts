@@ -135,3 +135,5 @@ export function generatePdfStream(
     dataStream.on('error', reject);
   });
 }
+
+// TODO: support custom header/footer templates with logo

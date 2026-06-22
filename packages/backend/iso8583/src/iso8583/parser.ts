@@ -193,3 +193,5 @@ export function parseProcessingCode(pc: string): { transactionType: string; from
     toAccount: pc.substring(4, 6),
   };
 }
+
+// TODO: handle secondary bitmap for fields 65-128

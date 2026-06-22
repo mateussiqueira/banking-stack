@@ -137,3 +137,5 @@ export const transactionService = {
     };
   },
 };
+
+// TODO: add idempotency key to prevent duplicate transactions on retry

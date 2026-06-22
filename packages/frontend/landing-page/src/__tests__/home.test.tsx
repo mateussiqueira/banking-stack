@@ -3,14 +3,12 @@ import { render, screen } from "@testing-library/react";
 import HomePage from "@/app/page";
 import { describe, it, expect } from "@jest/globals";
 
-// Mock next/font
 jest.mock("next/font/google", () => ({
   Inter: () => ({
     variable: "--font-inter",
   }),
 }));
 
-// Mock lucide-react icons
 jest.mock("lucide-react", () => {
   const MockIcon = (props: Record<string, unknown>) => (
     <span data-testid="mock-icon" {...props} />

@@ -464,3 +464,5 @@ export default function HomePage() {
     </>
   );
 }
+
+// TODO: extract strings to i18n for multi-language support

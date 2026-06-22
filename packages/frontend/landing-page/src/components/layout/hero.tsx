@@ -72,3 +72,5 @@ export function Hero() {
     </section>
   );
 }
+
+// TODO: add aria-labels and keyboard navigation

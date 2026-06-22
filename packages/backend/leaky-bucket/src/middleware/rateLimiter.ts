@@ -60,3 +60,5 @@ export function createRateLimiter(
     }
   };
 }
+
+// TODO: add configurable rate limit per route, not just per user

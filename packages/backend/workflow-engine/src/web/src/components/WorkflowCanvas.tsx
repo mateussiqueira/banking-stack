@@ -193,3 +193,5 @@ export default function WorkflowCanvas(props: Props & { ref?: React.Ref<CanvasHa
     </ReactFlowProvider>
   );
 }
+
+// TODO: add undo/redo support for canvas operations

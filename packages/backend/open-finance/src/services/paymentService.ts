@@ -68,3 +68,5 @@ export function listPaymentsByUser(userId: string): PaymentConsent[] {
 export function getPayments(): Map<string, PaymentConsent> {
   return payments;
 }
+
+// TODO: add payment confirmation webhook callback

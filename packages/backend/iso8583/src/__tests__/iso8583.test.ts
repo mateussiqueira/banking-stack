@@ -116,14 +116,14 @@ describe('ISO 8583 Parser / Builder', () => {
     const hex = buildBitmapHex(bitmap);
     const parsed = parseBitmap(hex);
 
-    expect(parsed[1]).toBe(1); // field 2
-    expect(parsed[2]).toBe(1); // field 3
-    expect(parsed[3]).toBe(1); // field 4
-    expect(parsed[6]).toBe(1); // field 7
-    expect(parsed[10]).toBe(1); // field 11
-    expect(parsed[21]).toBe(1); // field 22
-    expect(parsed[40]).toBe(1); // field 41
-    expect(parsed[48]).toBe(1); // field 49
+    expect(parsed[1]).toBe(1);
+    expect(parsed[2]).toBe(1);
+    expect(parsed[3]).toBe(1);
+    expect(parsed[6]).toBe(1);
+    expect(parsed[10]).toBe(1);
+    expect(parsed[21]).toBe(1);
+    expect(parsed[40]).toBe(1);
+    expect(parsed[48]).toBe(1);
   });
 
   it('should handle LLVAR fields correctly', () => {

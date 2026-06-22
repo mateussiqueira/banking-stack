@@ -109,3 +109,5 @@ export function calcularTributos(
     valorLiquido: Math.round(Math.max(valorLiquido, 0) * 100) / 100,
   };
 }
+
+// TODO: add CNPJ/CPF validation for tomador and prestador
