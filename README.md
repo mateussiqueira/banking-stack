@@ -211,18 +211,18 @@ banking-stack/
 |---|---|---|---|---|---|
 | 01 | **Ledger Bancário CRUD** | **CRUD Bank GraphQL Relay** | ✅ Implemented | Koa, GraphQL, Relay, MongoDB | [docs](./packages/docs/src/challenges/01-ledger.md) |
 | 02 | **Simulador SPI/ICOM** | **SPI/ICOM Simulator** | ✅ Implemented | Fastify, ISO 20022, XML | [docs](./packages/docs/src/challenges/02-spi.md) |
-| 03 | **Simulador DICT** | **DICT Simulator** | 📋 Scaffold | Express, REST | [docs](./packages/docs/src/challenges/03-dict.md) |
-| 04 | **Simulador ISO 8583** | **ISO 8583 Simulator** | 📋 Scaffold | Binary protocol, TCP | [docs](./packages/docs/src/challenges/04-iso8583.md) |
-| 05 | **Workflow Engine** | **Mini n8n/zapier** | 📋 Scaffold | Directed graph, Redis | [docs](./packages/docs/src/challenges/05-workflow.md) |
-| 06 | **Open Finance** | **Open Finance Simulator** | 📋 Scaffold | OAuth 2.0, REST | [docs](./packages/docs/src/challenges/06-open-finance.md) |
-| 07 | **NFS-e** | **NFS-e Integration** | 📋 Scaffold | SOAP/XML, Certificates | [docs](./packages/docs/src/challenges/07-nfse.md) |
-| 08 | **Sistema de Relatórios** | **Report System** | 📋 Scaffold | PostgreSQL, MinIO, S3 | [docs](./packages/docs/src/challenges/08-report.md) |
-| 09 | **Leaky Bucket** | **Leaky Bucket** | 📋 Scaffold | Redis, Rate Limiting | [docs](./packages/docs/src/challenges/09-leaky-bucket.md) |
+| 03 | **Simulador DICT** | **DICT Simulator** | ✅ Implemented | Fastify, REST, MongoDB | [docs](./packages/docs/src/challenges/03-dict.md) |
+| 04 | **Simulador ISO 8583** | **ISO 8583 Simulator** | ✅ Implemented | Fastify, JSON/Raw, TCP | [docs](./packages/docs/src/challenges/04-iso8583.md) |
+| 05 | **Workflow Engine** | **Mini n8n/zapier** | ✅ Implemented | Fastify, WebSocket, Redis | [docs](./packages/docs/src/challenges/05-workflow.md) |
+| 06 | **Open Finance** | **Open Finance Simulator** | ✅ Implemented | Fastify, OAuth 2.0, REST | [docs](./packages/docs/src/challenges/06-open-finance.md) |
+| 07 | **NFS-e** | **NFS-e Integration** | ✅ Implemented | Fastify, SOAP/XML | [docs](./packages/docs/src/challenges/07-nfse.md) |
+| 08 | **Sistema de Relatórios** | **Report System** | ✅ Implemented | Fastify, PostgreSQL, MinIO | [docs](./packages/docs/src/challenges/08-report.md) |
+| 09 | **Leaky Bucket** | **Leaky Bucket** | ✅ Implemented | Fastify, GraphQL, Redis | [docs](./packages/docs/src/challenges/09-leaky-bucket.md) |
 | 10 | **Landing Page + DS** | **Landing Page + Design System** | ✅ Implemented | Next.js 14, Radix, Storybook | [docs](./packages/docs/src/challenges/10-landing-page.md) |
 | 11 | **Sistema KYC** | **KYC System** | ✅ Implemented | Vite, React, Zod, Zustand | [docs](./packages/docs/src/challenges/11-kyc.md) |
-| 12 | **DevOps Proxmox** | **DevOps Proxmox** | 📋 Scaffold | Proxmox VE, LXC, Docker | [docs](./packages/docs/src/challenges/12-proxmox.md) |
-| 13 | **CI/CD** | **CI/CD Challenge** | 📋 Scaffold | GH Actions, Bitbucket | [docs](./packages/docs/src/challenges/13-cicd.md) |
-| 14 | **Arquitetura RFC** | **RFC Architecture** | 📋 Docs | ADRs, Mermaid | [docs](./packages/docs/src/challenges/14-rfc.md) |
+| 12 | **DevOps Proxmox** | **DevOps Proxmox** | ✅ Implemented | Proxmox VE, LXC, Docker | [docs](./packages/docs/src/challenges/12-proxmox.md) |
+| 13 | **CI/CD** | **CI/CD Challenge** | ✅ Implemented | GitHub Actions, Turbo | [docs](./packages/docs/src/challenges/13-cicd.md) |
+| 14 | **Arquitetura RFC** | **RFC Architecture** | ✅ Implemented | ADRs, Mermaid, VitePress | [docs](./packages/docs/src/challenges/14-rfc.md) |
 
 ---
 
