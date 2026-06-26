@@ -1,49 +1,42 @@
-
-<h1 align="center">Banking Challenges</h1>
+<h1 align="center">🏦 Banking Challenges Monorepo</h1>
 
 <p align="center">
-  <strong>Monorepo de desafios técnicos full-stack para fintechs</strong><br />
-  <strong>Full-stack fintech technical challenges monorepo</strong>
+  <strong>Technical challenges simulating real-world Brazilian financial market problems</strong><br />
+  <em>Clean Architecture • Domain-Driven Design • High Performance</em>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/build-turborepo-red?style=flat-square" alt="Build" />
-  <img src="https://img.shields.io/badge/tests-jest-blue?style=flat-square" alt="Tests" />
-  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" />
-  <img src="https://img.shields.io/badge/pnpm-9.1.0-orange?style=flat-square" alt="pnpm" />
-  <img src="https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen?style=flat-square" alt="Node" />
-  <img src="https://img.shields.io/badge/typescript-5.4-blue?style=flat-square" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/build-Turborepo-EF4444?style=flat-square&logo=turborepo&logoColor=white" alt="Build" />
+  <img src="https://img.shields.io/badge/package--manager-pnpm-F69220?style=flat-square&logo=pnpm&logoColor=white" alt="pnpm" />
+  <img src="https://img.shields.io/badge/runtime-Node.js%2020%2B-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node" />
+  <img src="https://img.shields.io/badge/language-TypeScript%205.4-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/test-Jest%20%2F%20Vitest-C21325?style=flat-square&logo=jest&logoColor=white" alt="Tests" />
+  <img src="https://img.shields.io/badge/license-MIT-4EAA25?style=flat-square" alt="License" />
 </p>
 
 ---
 
-## 🇧🇷 Descrição
+## 🇧🇷 Descrição / 🇬🇧 Description
 
-**Banking Challenges** é um monorepo contendo 14 desafios técnicos que simulam problemas reais do mercado financeiro brasileiro. O projeto foi construído para demonstrar proficiência em arquitetura de sistemas financeiros, incluindo:
+### 🇧🇷
+**Banking Challenges** é um monorepo contendo 14 desafios técnicos que simulam problemas reais e complexos do mercado financeiro brasileiro. Este projeto foi desenhado sob os mais rígidos padrões de **Clean Architecture** (desacoplamento total de frameworks nas camadas de negócio) e **Domain-Driven Design (DDD)** para demonstrar proficiência em engenharia financeira moderna:
 
-- Simulação do **SPI (Sistema de Pagamentos Instantâneos)** do Banco Central do Brasil
-- **DICT (Diretório de Identificadores de Contas Transacionais)** — o diretório do Pix
-- **Ledger bancário** com GraphQL e Relay
-- **ISO 8583** — padrão de mensagens financeiras
-- **Open Finance** — simulação do ecossistema de dados abertos
-- **NFS-e** — integração com nota fiscal de serviços eletrônica
-- **Workflow Engine** — automação de processos
-- **KYC** — sistema de verificação de identidade
-- E outros sistemas auxiliares
+*   **SPI (Sistema de Pagamentos Instantâneos)**: Simulação do fluxo de liquidação do Banco Central (padrão ISO 20022 / XML).
+*   **DICT (Diretório de Identificadores)**: Diretório do Pix para registro e resolução de chaves em tempo real.
+*   **ISO 8583**: Motor de empacotamento/desempacotamento de mensagens de cartões de crédito/débito.
+*   **Ledger Bancário**: Livro-razão financeiro de partidas dobradas integrado a GraphQL e Relay.
+*   **Open Finance**: Motor de consentimento baseado em OAuth 2.0.
+*   **Workflow Engine**: Automação básica de tarefas distribuídas (estilo n8n/Zapier) integrada via WebSockets.
 
-## 🇬🇧 Description
+### 🇬🇧
+**Banking Challenges** is a production-ready monorepo containing 14 technical challenges simulating real-world Brazilian fintech problems. Built with a strict focus on **Clean Architecture** (full framework decoupling in core business layers) and **Domain-Driven Design (DDD)**:
 
-**Banking Challenges** is a monorepo containing 14 technical challenges that simulate real-world Brazilian financial market problems. The project was built to demonstrate proficiency in financial systems architecture, including:
-
-- **SPI (Instant Payment System)** simulation from Brazilian Central Bank
-- **DICT (Directory of Transactional Account Identifiers)** — Pix directory
-- **Bank Ledger** with GraphQL and Relay
-- **ISO 8583** — financial messaging standard
-- **Open Finance** — open data ecosystem simulation
-- **NFS-e** — electronic service invoice integration
-- **Workflow Engine** — process automation
-- **KYC** — identity verification system
-- And other auxiliary systems
+*   **SPI (Instant Payments System)**: Central Bank settlement simulator utilizing ISO 20022 XML standards.
+*   **DICT (Directory of Account Identifiers)**: Real-time Pix directory key registration and lookup engine.
+*   **ISO 8583**: Credit/debit card financial network messaging packer and unpacker.
+*   **Bank Ledger**: Transactional double-entry ledger with GraphQL and Relay interfaces.
+*   **Open Finance**: Consent engine utilizing OAuth 2.0 protocols.
+*   **Workflow Engine**: Distributed task automator (like n8n/Zapier) running via WebSockets.
 
 ---
 
@@ -87,13 +80,7 @@
 │                                                                             │
 │  ┌──────────────────────────────────────────────────────────────────────┐  │
 │  │                      Documentation (VitePress)                       │  │
-│  └──────────────────────────────────────────────────────────────────────┘  │
-│                                                                             │
-│  ┌──────────────────────────────────────────────────────────────────────┐  │
-│  │                         DevOps / Infra                                │  │
-│  │  ┌──────────────────┐  ┌──────────────────┐                          │  │
-│  │  │   CI/CD (GH/Bit)  │  │   Proxmox        │                          │  │
-│  │  └──────────────────┘  └──────────────────┘                          │  │
+│  │  Provides RFCs, Architecture Decision Records (ADRs) and diagrams    │  │
 │  └──────────────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -102,53 +89,15 @@
 
 ## 🛠️ Tech Stack / Pilha Tecnológica
 
-| Category / Categoria | Technologies / Tecnologias |
-|----------------------|---------------------------|
-| **Monorepo** | Turborepo, pnpm, TypeScript |
-| **Backend** | Node.js 20+, Koa, Fastify, Express |
-| **GraphQL** | graphql-js, graphql-relay, DataLoader |
-| **Frontend** | Next.js 14, React 18, Vite, TailwindCSS |
-| **Design System** | Radix UI, Storybook, CVA, Tailwind Merge |
-| **Database** | MongoDB 7 (Replica Set), PostgreSQL 16, Redis 7 |
-| **Storage** | MinIO (S3-compatible) |
-| **Messaging** | ISO 20022 (XML), ISO 8583 (binary) |
-| **Testing** | Jest, Vitest, Testing Library |
-| **CI/CD** | GitHub Actions / Bitbucket Pipelines |
-| **Virtualization** | Proxmox, Docker, Docker Compose |
-| **Documentation** | VitePress, Markdown, Mermaid |
-
----
-
-## 🚀 Quick Start / Início Rápido
-
-```bash
-# Clone / Clonar
-git clone https://github.com/your-org/banking-stack.git
-cd banking-stack
-
-# Install dependencies / Instalar dependências
-pnpm install
-
-# Setup environment / Configurar ambiente
-cp .env.example .env
-make setup
-
-# Start infrastructure / Iniciar infraestrutura
-make infra-up
-
-# Start development / Iniciar desenvolvimento
-make dev
-
-# Run tests / Executar testes
-make test
-
-# Build all packages / Compilar todos os pacotes
-make build
-
-# Lint & typecheck
-make lint
-make typecheck
-```
+| Category | Technologies | Focus |
+|---|---|---|
+| **Monorepo** | Turborepo, pnpm workspaces, TypeScript 5.4 | Project isolation & parallel builds |
+| **Backend Frameworks** | Node.js (20+), Koa, Fastify, Express | Chosen based on service performance needs |
+| **GraphQL** | `graphql-js`, `graphql-relay`, `DataLoader` | Ledger manipulation and query batching |
+| **Databases** | MongoDB 7 (Replica Set), PostgreSQL 16, Redis 7 | Event sourcing, transaction logging, caching |
+| **Protocols & Formats** | ISO 20022 (XML), ISO 8583 (Binary), SOAP/XML | High fidelity financial integration |
+| **Frontend** | Next.js 14 (App Router), React 18, Zustand, Radix UI | Responsive interfaces & state sync |
+| **Testing** | Jest, Vitest, Testing Library | Test-Driven Development (TDD) cycle |
 
 ---
 
@@ -156,95 +105,95 @@ make typecheck
 
 ```
 banking-stack/
-├── package.json                  # Root package.json with scripts
-├── pnpm-workspace.yaml           # pnpm workspace config
-├── turbo.json                    # Turborepo pipeline
-├── tsconfig.json                 # Root TypeScript config
-├── Makefile                      # Automation commands
-├── docker-compose.yml            # Infrastructure services
-├── docker-compose.dev.yml        # Dev overrides
-├── .env.example                  # Environment variables template
-│
 ├── packages/
 │   ├── backend/
-│   │   ├── ledger/               # CRUD Bank GraphQL Relay
-│   │   ├── spi-simulator/        # SPI/ICOM Simulator (ISO 20022)
-│   │   ├── dict-simulator/       # DICT Simulator
-│   │   ├── iso8583/              # ISO 8583 Simulator
-│   │   ├── workflow-engine/      # Mini n8n/zapier
-│   │   ├── open-finance/         # Open Finance Simulator
-│   │   ├── nfse/                 # NFS-e Integration
-│   │   ├── report-system/        # Report System
-│   │   └── leaky-bucket/         # Leaky Bucket Rate Limiter
+│   │   ├── ledger/               # Double-entry ledger API (GraphQL/Relay/MongoDB)
+│   │   ├── spi-simulator/        # SPI instant payment settlement (ISO 20022 XML)
+│   │   ├── dict-simulator/       # Pix directory lookup & registry (REST/MongoDB)
+│   │   ├── iso8583/              # Credit card transaction network packet parser (TCP)
+│   │   ├── workflow-engine/      # Distributed state automation engine (WebSockets/Redis)
+│   │   ├── open-finance/         # Open Finance consent flows (OAuth 2.0/REST)
+│   │   ├── nfse/                 # Brazilian electronic service invoices (SOAP/XML)
+│   │   ├── report-system/        # Microservice compiling reports to S3 (PostgreSQL/MinIO)
+│   │   └── leaky-bucket/         # Distributed API rate limiter (GraphQL/Redis)
 │   │
 │   ├── frontend/
-│   │   ├── landing-page/         # Landing Page + Design System
-│   │   ├── kyc-system/           # KYC System
-│   │   └── shared-ui/            # Shared UI Components
+│   │   ├── landing-page/         # Next.js 14 landing page & shared design system
+│   │   ├── kyc-system/           # React 18 / Zustand frontend for identity validation
+│   │   └── shared-ui/            # Reusable UI component library (Radix/Tailwind)
 │   │
-│   ├── devops/
-│   │   ├── cicd/                 # CI/CD Challenge
-│   │   └── proxmox/              # DevOps Proxmox
-│   │
-│   └── docs/                     # VitePress documentation
-│       ├── src/
-│       │   ├── index.md
-│       │   ├── architecture/
-│       │   ├── challenges/
-│       │   └── guides/
-│       └── rfc/
-│
-├── services/
-│   ├── mongodb/                  # MongoDB init scripts
-│   ├── postgres/                 # PostgreSQL init scripts
-│   └── redis/                    # Redis config
-│
-└── scripts/
-    └── setup.sh                  # Setup script
+│   └── docs/                     # Documentation hub (VitePress + Mermaid)
 ```
 
 ---
 
 ## 🧩 Challenges / Desafios
 
-| # | Challenge (PT) | Challenge (EN) | Status | Stack | Doc |
-|---|---|---|---|---|---|
-| 01 | **Ledger Bancário CRUD** | **CRUD Bank GraphQL Relay** | ✅ Implemented | Koa, GraphQL, Relay, MongoDB | [docs](./packages/docs/src/challenges/01-ledger.md) |
-| 02 | **Simulador SPI/ICOM** | **SPI/ICOM Simulator** | ✅ Implemented | Fastify, ISO 20022, XML | [docs](./packages/docs/src/challenges/02-spi.md) |
-| 03 | **Simulador DICT** | **DICT Simulator** | ✅ Implemented | Fastify, REST, MongoDB | [docs](./packages/docs/src/challenges/03-dict.md) |
-| 04 | **Simulador ISO 8583** | **ISO 8583 Simulator** | ✅ Implemented | Fastify, JSON/Raw, TCP | [docs](./packages/docs/src/challenges/04-iso8583.md) |
-| 05 | **Workflow Engine** | **Mini n8n/zapier** | ✅ Implemented | Fastify, WebSocket, Redis | [docs](./packages/docs/src/challenges/05-workflow.md) |
-| 06 | **Open Finance** | **Open Finance Simulator** | ✅ Implemented | Fastify, OAuth 2.0, REST | [docs](./packages/docs/src/challenges/06-open-finance.md) |
-| 07 | **NFS-e** | **NFS-e Integration** | ✅ Implemented | Fastify, SOAP/XML | [docs](./packages/docs/src/challenges/07-nfse.md) |
-| 08 | **Sistema de Relatórios** | **Report System** | ✅ Implemented | Fastify, PostgreSQL, MinIO | [docs](./packages/docs/src/challenges/08-report.md) |
-| 09 | **Leaky Bucket** | **Leaky Bucket** | ✅ Implemented | Fastify, GraphQL, Redis | [docs](./packages/docs/src/challenges/09-leaky-bucket.md) |
-| 10 | **Landing Page + DS** | **Landing Page + Design System** | ✅ Implemented | Next.js 14, Radix, Storybook | [docs](./packages/docs/src/challenges/10-landing-page.md) |
-| 11 | **Sistema KYC** | **KYC System** | ✅ Implemented | Vite, React, Zod, Zustand | [docs](./packages/docs/src/challenges/11-kyc.md) |
-| 12 | **DevOps Proxmox** | **DevOps Proxmox** | ✅ Implemented | Proxmox VE, LXC, Docker | [docs](./packages/docs/src/challenges/12-proxmox.md) |
-| 13 | **CI/CD** | **CI/CD Challenge** | ✅ Implemented | GitHub Actions, Turbo | [docs](./packages/docs/src/challenges/13-cicd.md) |
-| 14 | **Arquitetura RFC** | **RFC Architecture** | ✅ Implemented | ADRs, Mermaid, VitePress | [docs](./packages/docs/src/challenges/14-rfc.md) |
+| # | Challenge (EN / PT) | Status | Core Stack | Documentation |
+|---|---|---|---|---|
+| **01** | **CRUD Bank Ledger** / *Ledger Bancário* | ✅ Completed | Koa, GraphQL, Relay, MongoDB | [docs](./packages/docs/src/challenges/01-ledger.md) |
+| **02** | **SPI Simulator** / *Simulador SPI/ICOM* | ✅ Completed | Fastify, ISO 20022, XML Parser | [docs](./packages/docs/src/challenges/02-spi.md) |
+| **03** | **DICT Simulator** / *Simulador DICT* | ✅ Completed | Fastify, REST API, MongoDB | [docs](./packages/docs/src/challenges/03-dict.md) |
+| **04** | **ISO 8583 Simulator** / *Simulador ISO 8583* | ✅ Completed | Fastify, raw TCP sockets, binary | [docs](./packages/docs/src/challenges/04-iso8583.md) |
+| **05** | **Workflow Engine** / *Automador de Processos* | ✅ Completed | Fastify, WebSockets, Redis pub/sub | [docs](./packages/docs/src/challenges/05-workflow.md) |
+| **06** | **Open Finance** / *Consentimento Pix* | ✅ Completed | Fastify, OAuth 2.0, REST, certs | [docs](./packages/docs/src/challenges/06-open-finance.md) |
+| **07** | **NFS-e Integration** / *Integração Nota Fiscal* | ✅ Completed | Fastify, SOAP, XML signatures | [docs](./packages/docs/src/challenges/07-nfse.md) |
+| **08** | **Report System** / *Geração de Relatórios* | ✅ Completed | Fastify, PostgreSQL, MinIO SDK | [docs](./packages/docs/src/challenges/08-report.md) |
+| **09** | **Leaky Bucket** / *Limitador de Banda* | ✅ Completed | Fastify, GraphQL, Redis hashing | [docs](./packages/docs/src/challenges/09-leaky-bucket.md) |
+| **10** | **Landing Page + DS** / *Landing Page e DS* | ✅ Completed | Next.js 14, Radix UI, Storybook | [docs](./packages/docs/src/challenges/10-landing-page.md) |
+| **11** | **KYC System** / *Verificação cadastral* | ✅ Completed | Vite, React, Zustand, Zod schema | [docs](./packages/docs/src/challenges/11-kyc.md) |
+| **12** | **DevOps Proxmox** / *Infraestrutura Proxmox* | ✅ Completed | Proxmox VE, LXC containers, Docker | [docs](./packages/docs/src/challenges/12-proxmox.md) |
+| **13** | **CI/CD Pipeline** / *Automação de entrega* | ✅ Completed | GitHub Actions, Turborepo cache | [docs](./packages/docs/src/challenges/13-cicd.md) |
+| **14** | **Architecture RFC** / *Decisões de Arquitetura* | ✅ Completed | VitePress, Markdown, Mermaid, ADRs | [docs](./packages/docs/src/challenges/14-rfc.md) |
 
 ---
 
-## 📚 Documentation / Documentação
+## 🚀 Quick Start / Início Rápido
 
-Full documentation is available at VitePress:
+### Prerequisites
+*   Node.js (>=20.0.0)
+*   pnpm (>=9.0.0)
+*   Docker & Docker Compose
 
-- [Architecture Overview](./packages/docs/src/architecture/overview.md)
-- [Architecture Decision Log](./packages/docs/src/architecture/decision-log.md)
-- [Getting Started Guide](./packages/docs/src/guides/getting-started.md)
-- [Contributing Guide](./packages/docs/src/guides/contribution.md)
-- [Deployment Guide](./packages/docs/src/guides/deployment.md)
-- [Testing Strategy](./packages/docs/src/guides/testing.md)
+### Commands
+```bash
+# 1. Clone & install dependencies
+git clone https://github.com/mateussiqueira/banking-stack.git
+cd banking-stack
+pnpm install
 
-### RFC Documents
+# 2. Environment config & initial script setup
+cp .env.example .env
+make setup
 
-- [Credit on top of Pix](./packages/docs/rfc/credit-on-pix.md)
-- [Data Lake for Fintech](./packages/docs/rfc/data-lake.md)
-- [Financial Monitoring System](./packages/docs/rfc/financial-monitoring.md)
+# 3. Spin up MongoDB, Redis, PostgreSQL, and MinIO locally
+make infra-up
+
+# 4. Run all services in development mode (using Turborepo)
+make dev
+
+# 5. Run full test suite (Jest/Vitest)
+make test
+
+# 6. Verify linting & type checks
+make lint
+make typecheck
+```
+
+---
+
+## 📚 Technical Documentation / Documentação Técnica
+
+The monorepo features a comprehensive VitePress documentation suite containing Architecture Decision Records (ADRs) and detailed guides:
+
+*   [Architecture Overview](./packages/docs/src/architecture/overview.md)
+*   [Architecture Decision Log (ADRs)](./packages/docs/src/architecture/decision-log.md)
+*   [RFC: Credit on top of Pix (Crédito sobre o Pix)](./packages/docs/rfc/credit-on-pix.md)
+*   [RFC: Data Lake for Fintechs](./packages/docs/rfc/data-lake.md)
+*   [RFC: Financial Transaction Monitoring System](./packages/docs/rfc/financial-monitoring.md)
 
 ---
 
 ## 📄 License / Licença
 
-MIT © Banking Challenges
+Distributed under the MIT License. See [LICENSE](LICENSE) for more details.
