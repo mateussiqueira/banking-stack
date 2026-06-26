@@ -1,15 +1,13 @@
 {
-  "name": "@banking/docs",
+  "name": "docs",
   "version": "1.0.0",
-  "private": true,
-  "description": "Banking Challenges documentation site built with VitePress",
   "type": "module",
   "scripts": {
     "dev": "vitepress dev .",
-    "build": "vitepress build .",
+    "build": "vitepress build . && node scripts/create-indexes.mjs",
     "preview": "vitepress preview ."
   },
-  "devDependencies": {
-    "vitepress": "^1.2.0"
+  "dependencies": {
+    "vitepress": "^1.6.4"
   }
 }
