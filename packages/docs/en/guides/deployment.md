@@ -1,34 +1,34 @@
-# Guia de Deploy
+# Deployment Guide
 
-Como colocar o banking-stack em produção.
+How to deploy banking-stack to production.
 
-## Opção 1: VPS com Docker
+## Option 1: VPS with Docker
 
-### Requisitos
+### Requirements
 
 - Ubuntu 22.04+
 - Docker 24+
 - Docker Compose v2
-- 4GB RAM mínimo
+- 4GB RAM minimum
 
 ### Setup
 
 ```bash
-# No servidor
+# On server
 git clone https://github.com/mateussiqueira/banking-stack.git
 cd banking-stack
 
-# Configurar variáveis
+# Configure environment
 cp .env.example .env
-nano .env  # ajustar senhas e configs
+nano .env  # adjust passwords and config
 
-# Subir infraestrutura
+# Start infrastructure
 docker compose -f docker-compose.yml up -d
 
-# Build dos serviços
+# Build services
 docker compose -f docker-compose.production.yml build
 
-# Rodar
+# Run
 docker compose -f docker-compose.production.yml up -d
 ```
 
@@ -37,7 +37,7 @@ docker compose -f docker-compose.production.yml up -d
 ```nginx
 server {
     listen 80;
-    server_name api.seudominio.com;
+    server_name api.yourdomain.com;
 
     location / {
         proxy_pass http://localhost:3001;
@@ -47,16 +47,16 @@ server {
 }
 ```
 
-### SSL com Let's Encrypt
+### SSL with Let's Encrypt
 
 ```bash
 sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d api.seudominio.com
+sudo certbot --nginx -d api.yourdomain.com
 ```
 
 ---
 
-## Opção 2: Kubernetes
+## Option 2: Kubernetes
 
 ### Manifests
 
@@ -89,7 +89,7 @@ spec:
             cpu: "500m"
 ```
 
-### Exposição
+### Exposure
 
 ```yaml
 apiVersion: v1
@@ -107,7 +107,7 @@ spec:
 
 ---
 
-## Opção 3: Vercel (Frontend)
+## Option 3: Vercel (Frontend)
 
 ```bash
 # Landing Page
@@ -121,12 +121,12 @@ vercel --prod
 
 ---
 
-## Monitoramento
+## Monitoring
 
 ### Health Checks
 
 ```bash
-# Todos os serviços
+# All services
 for port in 3002 3003 3004 3005 3006 3007 3008 3009; do
   curl -s http://localhost:$port/health | jq .status
 done
@@ -142,7 +142,7 @@ docker compose logs -f spi-simulator
 kubectl logs -f deployment/spi-simulator
 ```
 
-### Métricas
+### Metrics
 
 - CPU usage
 - Memory usage

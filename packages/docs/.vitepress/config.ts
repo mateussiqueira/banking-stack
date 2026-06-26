@@ -44,8 +44,15 @@ export default defineConfig({
               text: 'Decisões',
               items: [
                 { text: 'Por que Go?', link: '/decisions/why-go' },
-                { text: 'Por que não Node?', link: '/decisions/why-not-node' },
-                { text: 'ISO 20022 vs 8583', link: '/decisions/iso-standards' },
+                { text: 'Comparação de Stacks', link: '/stack-comparison' },
+              ]
+            },
+            {
+              text: 'Referência',
+              items: [
+                { text: 'API Reference', link: '/api-reference' },
+                { text: 'Deploy', link: '/guides/deployment' },
+                { text: 'Changelog', link: '/changelog' },
               ]
             }
           ]
@@ -91,8 +98,15 @@ export default defineConfig({
               text: 'Decisions',
               items: [
                 { text: 'Why Go?', link: '/en/decisions/why-go' },
-                { text: 'Why not Node?', link: '/en/decisions/why-not-node' },
-                { text: 'ISO 20022 vs 8583', link: '/en/decisions/iso-standards' },
+                { text: 'Stack Comparison', link: '/en/stack-comparison' },
+              ]
+            },
+            {
+              text: 'Reference',
+              items: [
+                { text: 'API Reference', link: '/en/api-reference' },
+                { text: 'Deployment', link: '/en/guides/deployment' },
+                { text: 'Changelog', link: '/en/changelog' },
               ]
             }
           ]
