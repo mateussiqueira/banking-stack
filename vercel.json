@@ -1,5 +1,5 @@
 {
-  "installCommand": "pnpm install",
+  "installCommand": "npm install",
   "buildCommand": "cd packages/docs && npx vitepress build .",
   "outputDirectory": "packages/docs/.vitepress/dist",
   "framework": null
