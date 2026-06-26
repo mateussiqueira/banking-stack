@@ -1,61 +1,66 @@
 ---
 layout: home
-
 hero:
-  name: "Banking Stack"
-  text: "Full-stack Fintech Technical Challenges"
-  tagline: |
-    SPI · DICT · Ledger · ISO 8583 · Open Finance
-    NFS-e · KYC · Workflow Engine · DevOps
-  image:
-    src: /logo.svg
-    alt: Banking Stack
+  name: Banking Challenges
+  text: Desafios técnicos para fintechs
+  tagline: 14 projetos que simulam problemas reais do mercado financeiro brasileiro
   actions:
     - theme: brand
-      text: Get Started
-      link: /guides/getting-started
+      text: Começar
+      link: /getting-started
     - theme: alt
-      text: View Challenges
-      link: /challenges/01-ledger
-    - theme: alt
-      text: Architecture
-      link: /architecture/overview
-
+      text: Ver no GitHub
+      link: https://github.com/mateussiqueira/banking-stack
 features:
-  - icon: 🏦
-    title: Ledger GraphQL Relay
-    details: "Banking CRUD with paginated connections, DataLoader, and Relay mutations. MongoDB with replica sets and transactions."
-  - icon: ⚡
-    title: SPI / ISO 20022
-    details: "Brazilian Instant Payment System simulation with pacs.008, pacs.002, and pacs.004 XML messages."
-  - icon: 📖
-    title: DICT Simulator
-    details: "Pix key directory with query and registration. Simulation of the Transactional Account Identifier Directory."
-  - icon: 🔢
-    title: ISO 8583
-    details: "Financial messaging standard simulator used in card networks and ATMs."
-  - icon: 🔄
-    title: Workflow Engine
-    details: "n8n/zapier-style workflow automation engine with directed graphs and Redis execution."
-  - icon: 🔓
-    title: Open Finance
-    details: "Brazilian Open Finance ecosystem simulator with OAuth 2.0 consent and shared data endpoints."
-  - icon: 📄
-    title: NFS-e
-    details: "Electronic service invoice integration with XML generation, digital certification, and submission."
-  - icon: 📊
-    title: Report System
-    details: "Financial reporting system with CSV/Excel export, MinIO storage, and scheduled generation."
-  - icon: 🪣
-    title: Leaky Bucket
-    details: "Distributed rate limiter based on the Leaky Bucket algorithm using Redis."
-  - icon: 🎨
-    title: Landing Page + DS
-    details: "Institutional landing page with component-based design system, Storybook, Radix UI, and TailwindCSS."
-  - icon: 🆔
-    title: KYC System
-    details: "Identity verification system with document upload, facial capture, and data validation."
-  - icon: 🐳
-    title: DevOps & CI/CD
-    details: "Infrastructure with Docker Compose, Proxmox VE, CI/CD pipelines, and deployment automation."
+  - title: SPI Simulator
+    details: Simulador do Sistema de Pagamentos Instantâneos do Banco Central. ISO 20022, transações em tempo real.
+  - title: DICT Simulator
+    details: Diretório de Identificadores de Contas Transacionais. O sistema por trás das chaves Pix.
+  - title: ISO 8583
+    details: Simulador de mensagens financeiras binárias. O protocolo que move o mundo dos cartões.
+  - title: Go para performance
+    details: Serviços críticos em Go. Por que? Porque quando o dinheiro está em jogo, milissegundos importam.
 ---
+
+# Banking Challenges
+
+Você já parou pra pensar como funciona uma transferência Pix por baixo dos panos?
+
+Não aquela interface bonitinha do app do banco. A parte feia. Os XMLs gigantes, os protocolos binários, os diretórios de chaves, as reconciliações noturnas.
+
+Esse projeto é um mergulho nessa parte. 14 desafios técnicos que simulam problemas reais do mercado financeiro brasileiro.
+
+## Por que existe
+
+Cada desafio é uma miniatura de um sistema real. SPI, DICT, ISO 8583, Open Finance — tudo isso existe de verdade e move bilhões por dia.
+
+A ideia é simples: se você entende como esses sistemas funcionam por dentro, você consegue construir qualquer coisa em fintech.
+
+## O que você vai encontrar
+
+- **9 backend services** — cada um resolvendo um problema específico
+- **2 frontend apps** — KYC e landing page com design system
+- **Go e TypeScript** — a mesma coisa implementada em duas linguagens pra você ver a diferença
+- **Docs vivas** — não aquela documentação morta que ninguém lê
+
+## Como usar
+
+Cada desafio é independente. Você pode rodar só o SPI Simulator ou subir tudo de uma vez.
+
+```bash
+git clone https://github.com/mateussiqueira/banking-stack.git
+cd banking-stack
+pnpm install
+docker compose up -d
+pnpm dev
+```
+
+Pronto. 13 serviços rodando. Cada um na sua porta, cada um com seu banco de dados.
+
+## A filosofia
+
+Não existe resposta certa ou errada. Existem trade-offs.
+
+Node.js é ótimo pra prototipar. Go é ótimo pra produção. GraphQL é bom pra consultas complexas. REST é bom pra simplicidade. MongoDB é bom pra dados flexíveis. PostgreSQL é bom pra dados estruturados.
+
+O objetivo não é te ensinar uma linguagem. É te ensinar a pensar.
