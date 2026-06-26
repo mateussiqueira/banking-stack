@@ -1,196 +1,196 @@
 export interface GroupHeader {
-  msgId: string
-  creDtTm: string
-  nbOfTxs: string
-  ttlIntrBkSttlmAmt: string
-  intrBkSttlmDt: string
-  sttlmInf: {
-    sttlmMtd: string
+  MsgId: string
+  CreDtTm: string
+  NbOfTxs: string
+  TtlIntrBkSttlmAmt: string
+  IntrBkSttlmDt: string
+  SttlmInf: {
+    SttlmMtd: string
   }
 }
 
 export interface CreditTransferTransaction {
-  pmtId: {
-    endToEndId: string
-    txId?: string
+  PmtId: {
+    EndToEndId: string
+    TxId?: string
   }
-  instgAgt: {
-    finInstnId: {
-      clrSysMmbId: {
-        mmbId: string
+  InstgAgt: {
+    FinInstnId: {
+      ClrSysMmbId: {
+        MmbId: string
       }
     }
   }
-  dbtr: {
-    nm?: string
+  Dbtr: {
+    Nm?: string
   }
-  dbtrAcct?: {
-    id: {
-      iban?: string
-      othr?: {
-        id: string
+  DbtrAcct?: {
+    Id: {
+      Iban?: string
+      Othr?: {
+        Id: string
       }
     }
   }
-  dbtrAgt: {
-    finInstnId: {
-      clrSysMmbId: {
-        mmbId: string
+  DbtrAgt: {
+    FinInstnId: {
+      ClrSysMmbId: {
+        MmbId: string
       }
     }
   }
-  cdtrAgt: {
-    finInstnId: {
-      clrSysMmbId: {
-        mmbId: string
+  CdtrAgt: {
+    FinInstnId: {
+      ClrSysMmbId: {
+        MmbId: string
       }
     }
   }
-  cdtr: {
-    nm?: string
+  Cdtr: {
+    Nm?: string
   }
-  cdtrAcct?: {
-    id: {
-      iban?: string
-      othr?: {
-        id: string
+  CdtrAcct?: {
+    Id: {
+      Iban?: string
+      Othr?: {
+        Id: string
       }
     }
   }
-  intrBkSttlmAmt: string
-  chrgBr: string
-  cdtTrfTxInf?: CreditTransferTransaction
+  IntrBkSttlmAmt: string
+  ChrgBr: string
+  CdtTrfTxInf?: CreditTransferTransaction
 }
 
 export interface Pacs008Document {
   FIToFICstmrCdtTrf: {
-    grpHdr: GroupHeader
-    cdtTrfTxInf: CreditTransferTransaction | CreditTransferTransaction[]
+    GrpHdr: GroupHeader
+    CdtTrfTxInf: CreditTransferTransaction | CreditTransferTransaction[]
   }
 }
 
 export interface OriginalGroupInformation {
-  orgnlMsgId: string
-  orgnlMsgNmId: string
-  orgnlCreDtTm: string
+  OrgnlMsgId: string
+  OrgnlMsgNmId: string
+  OrgnlCreDtTm: string
 }
 
 export interface OriginalTransactionReference {
-  intrBkSttlmAmt: string
-  sttlmInf: {
-    sttlmMtd: string
+  IntrBkSttlmAmt: string
+  SttlmInf: {
+    SttlmMtd: string
   }
-  cdtrAgt: {
-    finInstnId: {
-      clrSysMmbId: {
-        mmbId: string
+  CdtrAgt: {
+    FinInstnId: {
+      ClrSysMmbId: {
+        MmbId: string
       }
     }
   }
-  dbtrAgt: {
-    finInstnId: {
-      clrSysMmbId: {
-        mmbId: string
+  DbtrAgt: {
+    FinInstnId: {
+      ClrSysMmbId: {
+        MmbId: string
       }
     }
   }
-  cdtr: {
-    nm?: string
+  Cdtr: {
+    Nm?: string
   }
-  dbtr: {
-    nm?: string
+  Dbtr: {
+    Nm?: string
   }
-  cdtTrfTxInf?: CreditTransferTransaction
+  CdtTrfTxInf?: CreditTransferTransaction
 }
 
 export interface TransactionInformation {
-  orgnlInstrId?: string
-  orgnlEndToEndId: string
-  orgnlTxId?: string
-  txSts: string
-  stsRsnInf?: {
-    rsn: {
-      cd: string
+  OrgnlInstrId?: string
+  OrgnlEndToEndId: string
+  OrgnlTxId?: string
+  TxSts: string
+  StsRsnInf?: {
+    Rsn: {
+      Cd: string
     }
-    addtlInf?: string
+    AddtlInf?: string
   }
-  orgnlGrpInf?: OriginalGroupInformation
-  orgnlTxRef?: OriginalTransactionReference
+  OrgnlGrpInf?: OriginalGroupInformation
+  OrgnlTxRef?: OriginalTransactionReference
 }
 
 export interface Pacs002Document {
   FIToFIPmtStsRpt: {
-    grpHdr: GroupHeader
-    txInfAndSts: TransactionInformation | TransactionInformation[]
+    GrpHdr: GroupHeader
+    TxInfAndSts: TransactionInformation | TransactionInformation[]
   }
 }
 
 export interface ResolutionOfInvestigation {
-  orgnlGrpInf: OriginalGroupInformation
-  orgnlPmtInfAndSts: {
-    orgnlEndToEndId: string
-    orgnlTxId?: string
-    txSts: string
-    stsRsnInf?: {
-      rsn: {
-        cd: string
+  OrgnlGrpInf: OriginalGroupInformation
+  OrgnlPmtInfAndSts: {
+    OrgnlEndToEndId: string
+    OrgnlTxId?: string
+    TxSts: string
+    StsRsnInf?: {
+      Rsn: {
+        Cd: string
       }
-      addtlInf?: string
+      AddtlInf?: string
     }
   }
 }
 
 export interface PaymentReturn {
-  pmtId: {
-    endToEndId: string
-    txId?: string
+  PmtId: {
+    EndToEndId: string
+    TxId?: string
   }
-  intrBkSttlmAmt: string
-  chrgBr: string
-  instgAgt: {
-    finInstnId: {
-      clrSysMmbId: {
-        mmbId: string
+  IntrBkSttlmAmt: string
+  ChrgBr: string
+  InstgAgt: {
+    FinInstnId: {
+      ClrSysMmbId: {
+        MmbId: string
       }
     }
   }
-  dbtrAgt: {
-    finInstnId: {
-      clrSysMmbId: {
-        mmbId: string
+  DbtrAgt: {
+    FinInstnId: {
+      ClrSysMmbId: {
+        MmbId: string
       }
     }
   }
-  cdtrAgt: {
-    finInstnId: {
-      clrSysMmbId: {
-        mmbId: string
+  CdtrAgt: {
+    FinInstnId: {
+      ClrSysMmbId: {
+        MmbId: string
       }
     }
   }
-  dbtr: {
-    nm?: string
+  Dbtr: {
+    Nm?: string
   }
-  cdtr: {
-    nm?: string
+  Cdtr: {
+    Nm?: string
   }
-  rtrInf: {
-    rsn: {
-      cd: string
+  RtrInf: {
+    Rsn: {
+      Cd: string
     }
-    addtlInf?: string
+    AddtlInf?: string
   }
-  orgnlGrpInf: OriginalGroupInformation
-  orgnlPmtInfAndSts: {
-    orgnlEndToEndId: string
-    orgnlTxId?: string
-    txSts: string
+  OrgnlGrpInf: OriginalGroupInformation
+  OrgnlPmtInfAndSts: {
+    OrgnlEndToEndId: string
+    OrgnlTxId?: string
+    TxSts: string
   }
 }
 
 export interface Pacs004Document {
   FIToFIPmtRtr: {
-    grpHdr: GroupHeader
-    txInf: PaymentReturn | PaymentReturn[]
+    GrpHdr: GroupHeader
+    TxInf: PaymentReturn | PaymentReturn[]
   }
 }
