@@ -19,33 +19,15 @@ services:
       - "27017:27017"
     volumes:
       - mongodb-data:/data/db
-      - ./services/mongodb/init-replica.js:/docker-entrypoint-initdb.d/init-replica.js:ro
     environment:
       MONGO_INITDB_DATABASE: banking_challenges
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-mongo_secret_2024}
-    command:
-      - --replSet
-      - rs0
-      - --keyFile
-      - /data/keyfile
-      - --bind_ip_all
     healthcheck:
-      test: |
-        mongosh --quiet --eval "
-          try {
-            rs.status().ok;
-          } catch(e) {
-            rs.initiate({
-              _id: 'rs0',
-              members: [{ _id: 0, host: 'localhost:27017' }]
-            }).ok;
-          }
-        " | grep -q 1
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
       interval: 10s
-      timeout: 10s
-      retries: 10
-      start_period: 30s
+      timeout: 5s
+      retries: 5
     networks:
       - banking-net
 
@@ -54,7 +36,7 @@ services:
     container_name: banking-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis-data:/data
     command:

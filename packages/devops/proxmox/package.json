@@ -9,10 +9,5 @@
     "databases": "ansible-playbook -i ansible/inventory.yml ansible/playbooks/databases.yml",
     "deploy": "kubectl apply -f k8s/monitoring/",
     "all": "npm run setup && npm run k8s && npm run databases && npm run deploy"
-  },
-  "dependencies": {
-    "ansible": ">=2.14",
-    "kubernetes": ">=1.28",
-    "microk8s": ">=1.28"
   }
 }

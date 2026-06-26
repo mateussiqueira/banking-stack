@@ -10,10 +10,5 @@
     "apply-pipelines": "kubectl apply -f tekton/pipelines/",
     "apply-triggers": "kubectl apply -f tekton/triggers/",
     "apply-all": "npm run apply-tasks && npm run apply-pipelines && npm run apply-triggers"
-  },
-  "dependencies": {
-    "tektoncd/pipeline": ">=0.58",
-    "tektoncd/triggers": ">=0.27",
-    "kubernetes": ">=1.28"
   }
 }
