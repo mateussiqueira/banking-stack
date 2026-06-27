@@ -4,6 +4,7 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 export default withMermaid(defineConfig({
   title: 'Banking Challenges',
   description: 'Desafios técnicos full-stack para fintechs',
+  cleanUrls: true,
   
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],

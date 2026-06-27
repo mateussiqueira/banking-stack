@@ -2,6 +2,27 @@
   "buildCommand": "cd packages/docs && npm run build",
   "outputDirectory": "packages/docs/.vitepress/dist",
   "framework": null,
-  "cleanUrls": true,
-  "trailingSlash": false
+  "rewrites": [
+    { "source": "/challenges/:slug", "destination": "/challenges/:slug.html" },
+    { "source": "/challenges/", "destination": "/challenges/index.html" },
+    { "source": "/guides/:slug", "destination": "/guides/:slug.html" },
+    { "source": "/guides/", "destination": "/guides/index.html" },
+    { "source": "/architecture/:slug", "destination": "/architecture/:slug.html" },
+    { "source": "/architecture/", "destination": "/architecture/index.html" },
+    { "source": "/decisions/:slug", "destination": "/decisions/:slug.html" },
+    { "source": "/decisions/", "destination": "/decisions/index.html" },
+    { "source": "/rfc/:slug", "destination": "/rfc/:slug.html" },
+    { "source": "/rfc/", "destination": "/rfc/index.html" },
+    { "source": "/en/challenges/:slug", "destination": "/en/challenges/:slug.html" },
+    { "source": "/en/challenges/", "destination": "/en/challenges/index.html" },
+    { "source": "/en/guides/:slug", "destination": "/en/guides/:slug.html" },
+    { "source": "/en/guides/", "destination": "/en/guides/index.html" },
+    { "source": "/en/architecture/:slug", "destination": "/en/architecture/:slug.html" },
+    { "source": "/en/architecture/", "destination": "/en/architecture/index.html" },
+    { "source": "/en/decisions/:slug", "destination": "/en/decisions/:slug.html" },
+    { "source": "/en/decisions/", "destination": "/en/decisions/index.html" },
+    { "source": "/en/rfc/:slug", "destination": "/en/rfc/:slug.html" },
+    { "source": "/en/rfc/", "destination": "/en/rfc/index.html" },
+    { "source": "/en/:slug", "destination": "/en/:slug.html" }
+  ]
 }
