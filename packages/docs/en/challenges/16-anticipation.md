@@ -1,11 +1,11 @@
-# Desafio 16: Antecipação de Recebíveis — O Mercado de R$ 500 Bi que Move o Brasil
+# Challenge 16: Receivables Financing — The R$ 500B Market That Moves Brazil
 
 **🇧🇷** Crédito sobre Vendas Futuras  
 **🇬🇧** Receivables Financing
 
 ---
 
-A **Antecipação de Recebíveis** permite merchants receberem **hoje** vendas no cartão que só seriam pagas em 30, 60 ou 90 dias. Movimenta mais de **R$ 500 bilhões por ano** e é a principal receita de Stone, PagSeguro e Mercado Pago.
+**Receivables Financing** allows merchants to receive **today** the value of credit card sales that would only be paid in **30, 60 or 90 days**. It moves over **R$ 500 billion per year** and is the main revenue source for Stone, PagSeguro and Mercado Pago.
 
 ## Switch: TypeScript vs Go
 
@@ -13,37 +13,37 @@ A **Antecipação de Recebíveis** permite merchants receberem **hoje** vendas n
 
 <div class="lang-content ts" style="display:block;">
 
-### O que é Antecipação?
+### What is Receivables Financing?
 
-| Conceito | Descrição |
-|----------|-----------|
-| **D+30** | Prazo padrão de recebimento (30 dias) |
-| **MDR** | Taxa do adquirente (1,5-3% por transação) |
-| **Spread** | Margem do banco na antecipação (2-8% a.a.) |
-| **IOF** | Imposto: 0,38% + 0,0041% ao dia |
-| **CET** | Custo Efetivo Total anualizado |
-| **FIDC** | Fundo de Investimento em Direitos Creditórios |
+| Concept | Description |
+|---------|-------------|
+| **D+30** | Standard payment receipt period (30 days) |
+| **MDR** | Acquirer fee (1.5-3% per transaction) |
+| **Spread** | Bank margin on anticipation (2-8% p.a.) |
+| **IOF** | Tax: 0.38% + 0.0041% per day |
+| **CET** | Annualized Total Effective Cost |
+| **FIDC** | Credit Rights Investment Fund |
 
-### Matemática da Antecipação
+### The Math
 
 ```typescript
-// Cálculo de antecipação de R$ 10.000 em 30 dias
-const valorFuturo = 10000;
-const dias = 30;
-const taxaAnual = 0.18; // 18% a.a. (CDI + spread)
-const iof = 0.0038 + (0.000041 * dias);
-const taxaFixa = 10;
+// Anticipation of R$ 10,000 in 30 days
+const futureValue = 10000;
+const days = 30;
+const annualRate = 0.18; // 18% p.a. (CDI + spread)
+const iof = 0.0038 + (0.000041 * days);
+const fixedFee = 10;
 
-const taxaDiaria = Math.pow(1 + taxaAnual, 1/365) - 1;
-const desconto = valorFuturo * (Math.pow(1 + taxaDiaria, dias) - 1);
-const valorIOF = valorFuturo * iof;
-const valorLiquido = valorFuturo - desconto - valorIOF - taxaFixa;
+const dailyRate = Math.pow(1 + annualRate, 1/365) - 1;
+const discount = futureValue * (Math.pow(1 + dailyRate, days) - 1);
+const iofAmount = futureValue * iof;
+const netAmount = futureValue - discount - iofAmount - fixedFee;
 
-// Valor Líquido: R$ 9.795,33
-// CET: 18.00% a.a.
+// Net Amount: R$ 9,795.33
+// CET: 18.00% p.a.
 ```
 
-### Fluxo Completo
+### Complete Flow
 
 ```mermaid
 sequenceDiagram
@@ -55,31 +55,31 @@ sequenceDiagram
     participant L as Liquidation
     participant CIP as CIP/Bacen
 
-    M->>Q: "Quero antecipar R$ 50.000"
-    Q->>R: Avalia risco do merchant
-    R-->>Q: Score: A (baixo risco)
-    Q->>P: Calcula taxa personalizada
-    P-->>Q: Taxa: 16,5% a.a.
-    Q-->>M: Quote: R$ 48.500 hoje
+    M->>Q: "I want to anticipate R$ 50,000"
+    Q->>R: Evaluate merchant risk
+    R-->>Q: Score: A (low risk)
+    Q->>P: Calculate personalized rate
+    P-->>Q: Rate: 16.5% p.a.
+    Q-->>M: Quote: R$ 48,500 today
 
-    M->>C: Confirma antecipação
-    C->>C: Reserva recebíveis (lock)
-    C->>C: Gera contrato
-    C->>L: Liquidação
-    L->>CIP: Transfere R$ 48.500
-    L->>M: Credita conta
+    M->>C: Confirm anticipation
+    C->>C: Lock receivables
+    C->>C: Generate contract
+    C->>L: Liquidation
+    L->>CIP: Transfer R$ 48,500
+    L->>M: Credit account
 
-    Note over L,CIP: Quando cliente pagar a venda original...
-    CIP->>L: Recebe R$ 50.000 (D+30)
-    L->>L: Quita antecipação + lucro R$ 1.500
+    Note over L,CIP: When customer pays the original sale...
+    CIP->>L: Receives R$ 50,000 (D+30)
+    L->>L: Settle anticipation + profit R$ 1,500
 ```
 
-### Arquitetura
+### Architecture
 
 ```mermaid
 graph TB
     subgraph "Merchants"
-      M1[Loja Física]
+      M1[Physical Store]
       M2[E-commerce]
     end
 
@@ -96,8 +96,8 @@ graph TB
     end
 
     subgraph "External"
-      CIP[CIP - Câmara]
-      BACEN[Banco Central]
+      CIP[CIP - Chamber]
+      BACEN[Central Bank]
       FUNDING[Funding Banks]
     end
 
@@ -149,17 +149,6 @@ export class PricingEngine {
       effectiveRate: this.calculateCET(grossAmount, grossAmount - discountAmount - iofAmount, avgDays),
     };
   }
-
-  private calculateRiskPremium(merchant: Merchant): number {
-    const ratingFactors: Record<string, number> = {
-      'AAA': 0.000, 'AA': 0.005, 'A': 0.010,
-      'BBB': 0.020, 'BB': 0.035, 'B': 0.050, 'CCC': 0.080,
-    };
-    let risk = ratingFactors[merchant.creditRating] || 0.10;
-    if (merchant.chargebackRate > 0.02) risk += 0.02;
-    if (this.monthsSince(merchant.createdAt) < 6) risk += 0.015;
-    return risk;
-  }
 }
 ```
 
@@ -188,22 +177,22 @@ export class RiskEngine {
 }
 ```
 
-### Comparação: TypeScript vs Go
+### Comparison: TypeScript vs Go
 
-| Aspecto | TypeScript | Go |
-|---------|-----------|-----|
+| Aspect | TypeScript | Go |
+|--------|-----------|-----|
 | **Math** | Number (ok) | shopspring/decimal |
 | **Batch** | Worker threads | Goroutines |
-| **1M recebíveis** | ~14 minutos | ~80 segundos |
+| **1M receivables** | ~14 minutes | ~80 seconds |
 | **Quote P99** | 180-1200ms | 45-280ms |
 | **Memory** | ~2GB | ~100MB |
 
-### Casos Reais
+### Real Cases
 
-- **Stone** (Go) — Líder, R$ 100+ bi/ano, P99 < 200ms
-- **PagSeguro** (Go + Java) — 40M clientes, auto-antecipação
-- **Mercado Pago** (Go) — Maior da Latam, dynamic pricing
-- **Creditas** (Go) — Nicho PME, FIDC próprio
+- **Stone** (Go) — Leader, R$ 100B+/year, P99 < 200ms
+- **PagSeguro** (Go + Java) — 40M customers, auto-anticipation
+- **Mercado Pago** (Go) — Largest in Latam, dynamic pricing
+- **Creditas** (Go) — SME niche, own FIDC
 
 </div>
 
@@ -230,13 +219,13 @@ const (
 )
 
 type Receivable struct {
-    ID                string
-    MerchantID        string
-    CardBrand         string
-    GrossAmount       int64 // centavos
-    NetAmount         int64 // após MDR
-    PaymentDate       time.Time
-    Status            ReceivableStatus
+    ID          string
+    MerchantID  string
+    CardBrand   string
+    GrossAmount int64 // cents
+    NetAmount   int64 // after MDR
+    PaymentDate time.Time
+    Status      ReceivableStatus
 }
 
 func (r *Receivable) DaysUntilPayment(from time.Time) int {
@@ -250,7 +239,7 @@ func (r *Receivable) CanBeAnticipated() bool {
 }
 ```
 
-### Pricing Engine com decimal
+### Pricing Engine with decimal
 
 ```go
 package pricing
@@ -309,12 +298,10 @@ func (e *Engine) CalculateQuote(ctx context.Context, merchantID string, receivab
 package usecase
 
 func (uc *AnticipateUseCase) Execute(ctx context.Context, input AnticipateInput) (*AnticipateOutput, error) {
-    // 1. Idempotência
     if existing, _ := uc.idempotency.Check(ctx, input.IdempotencyKey); existing != nil {
         return existing.(*AnticipateOutput), nil
     }
 
-    // 2. Busca recebíveis
     receivables := make([]*domain.Receivable, 0, len(input.ReceivableIDs))
     for _, id := range input.ReceivableIDs {
         r, _ := uc.receivableRepo.FindByID(ctx, id)
@@ -323,20 +310,16 @@ func (uc *AnticipateUseCase) Execute(ctx context.Context, input AnticipateInput)
         receivables = append(receivables, r)
     }
 
-    // 3. Risk evaluation
     riskResult, _ := uc.riskEngine.Evaluate(ctx, risk.EvaluationInput{...})
-    if !riskResult.Approved { return nil, errors.New("rejeitado pelo risco") }
+    if !riskResult.Approved { return nil, errors.New("rejected by risk") }
 
-    // 4. Pricing
     quote, _ := uc.pricingEngine.CalculateQuote(ctx, input.MerchantID, receivables)
 
-    // 5. Cria contrato + lock recebíveis + funding + credita merchant
     contract := domain.NewAnticipationContract(...)
     uc.receivableRepo.LockForAnticipation(ctx, ids, contract.ID)
     uc.fundingService.RequestFunding(ctx, funding.Request{Amount: quote.NetAmount})
     uc.ledgerService.Credit(ctx, ledger.CreditRequest{Amount: quote.NetAmount})
 
-    // 6. Eventos
     uc.eventPub.Publish(ctx, "anticipation.completed", map[string]interface{}{...})
 
     return &AnticipateOutput{ContractID: contract.ID, NetAmount: quote.NetAmount}, nil
@@ -352,7 +335,7 @@ func (p *DailyReceivableProcessor) Execute(ctx context.Context, date time.Time) 
     files, _ := p.acquirerClient.DownloadReconciliationFiles(ctx, date)
 
     var wg sync.WaitGroup
-    sem := make(chan struct{}, 50) // 50 workers paralelos
+    sem := make(chan struct{}, 50)
 
     for _, file := range files {
         wg.Add(1)
@@ -370,25 +353,25 @@ func (p *DailyReceivableProcessor) Execute(ctx context.Context, date time.Time) 
 
 ### Benchmark
 
-| Operação | TS | Go |
-|----------|----|----|
-| Quote (10 receiváveis) | 45ms | 12ms |
-| Quote (1K receiváveis) | 850ms | 140ms |
-| Batch 1M recebíveis | ~14min | ~80s |
-| Memory por instância | ~2GB | ~100MB |
+| Operation | TS | Go |
+|-----------|----|----|
+| Quote (10 receivables) | 45ms | 12ms |
+| Quote (1K receivables) | 850ms | 140ms |
+| Batch 1M receivables | ~14min | ~80s |
+| Memory per instance | ~2GB | ~100MB |
 
-### Casos Reais
+### Real Cases
 
-- **Stone** (Go) — Líder, 30K+ TPS, batch 50M+/dia
-- **PagSeguro** (Go + Java) — 40M clientes, auto-antecipação
-- **Mercado Pago** (Go) — Maior Latam, dynamic pricing
-- **Creditas** (Go) — Nicho PME, FIDC próprio
+- **Stone** (Go) — Leader, 30K+ TPS, batch 50M+/day
+- **PagSeguro** (Go + Java) — 40M customers, auto-anticipation
+- **Mercado Pago** (Go) — Largest Latam, dynamic pricing
+- **Creditas** (Go) — SME niche, own FIDC
 
 </div>
 
 ---
 
-## Como testar
+## How to test
 
 ```bash
 # TypeScript
@@ -398,7 +381,7 @@ pnpm --filter @banking/anticipation dev
 cd packages/backend/anticipation-go
 go run .
 
-# Simular cotação
+# Simulate quote
 curl -X POST http://localhost:3010/anticipation/quote \
   -H "Content-Type: application/json" \
   -d '{"receivableIds":["uuid1","uuid2"]}'
@@ -406,15 +389,15 @@ curl -X POST http://localhost:3010/anticipation/quote \
 
 ---
 
-## Lições aprendidas
+## Lessons learned
 
-1. **R$ 500+ bi/ano** — Maior mercado de crédito do Brasil
-2. **Matemática precisa é crítica** — Centavos importam em escala
-3. **shopspring/decimal** — Nunca float nativo pra dinheiro em Go
-4. **Batch processing** — 50M+ recebíveis/dia em grandes adquirentes
-5. **Risk engine multi-camada** — Crédito + histórico + comportamento + fraude
-6. **Funding sources** — Capital próprio, FIDCs, bancos atacadistas
-7. **Chargeback é o maior risco** — Merchant pode sumir
-8. **CET precisa ser divulgado** — Exigência BACEN
-9. **Go processa 1M em 80s** — vs 14min em TypeScript
-10. **Stone, PagSeguro e Mercado Pago** — Todos usam Go no core
+1. **R$ 500B+/year** — Largest credit market in Brazil
+2. **Precise math is critical** — Cents matter at scale
+3. **shopspring/decimal** — Never native float for money in Go
+4. **Batch processing** — 50M+ receivables/day in large acquirers
+5. **Multi-layer risk engine** — Credit + history + behavior + fraud
+6. **Funding sources** — Own capital, FIDCs, wholesale banks
+7. **Chargeback is the biggest risk** — Merchant can disappear
+8. **CET must be disclosed** — BACEN requirement
+9. **Go processes 1M in 80s** — vs 14min in TypeScript
+10. **Stone, PagSeguro and Mercado Pago** — All use Go in core
