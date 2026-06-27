@@ -6,7 +6,11 @@ export default withMermaid(defineConfig({
   description: 'Desafios técnicos full-stack para fintechs',
   
   markdown: {
-    mermaid: true,
+    lineNumbers: true,
+    theme: {
+      light: 'github-light',
+      dark: 'github-dark'
+    }
   },
   
   mermaid: {
@@ -23,11 +27,13 @@ export default withMermaid(defineConfig({
           { text: 'Desafios', link: '/challenges/' },
           { text: 'Arquitetura', link: '/architecture/' },
           { text: 'Guias', link: '/guides/' },
+          { text: 'RFCs', link: '/rfc/' },
         ],
         sidebar: {
           '/': [
             {
               text: 'Introdução',
+              collapsed: false,
               items: [
                 { text: 'O que é', link: '/' },
                 { text: 'Como rodar', link: '/guides/getting-started' },
@@ -37,6 +43,7 @@ export default withMermaid(defineConfig({
             },
             {
               text: 'Desafios',
+              collapsed: false,
               items: [
                 { text: '01 — Ledger GraphQL', link: '/challenges/01-ledger' },
                 { text: '02 — SPI Simulator', link: '/challenges/02-spi' },
@@ -56,6 +63,7 @@ export default withMermaid(defineConfig({
             },
             {
               text: 'Decisões',
+              collapsed: false,
               items: [
                 { text: 'Por que Go?', link: '/decisions/why-go' },
                 { text: 'ADR (5 decisões)', link: '/architecture/decision-log' },
@@ -64,6 +72,7 @@ export default withMermaid(defineConfig({
             },
             {
               text: 'RFCs',
+              collapsed: false,
               items: [
                 { text: 'Credit on Pix', link: '/rfc/credit-on-pix' },
                 { text: 'Data Lake', link: '/rfc/data-lake' },
@@ -72,6 +81,7 @@ export default withMermaid(defineConfig({
             },
             {
               text: 'Referência',
+              collapsed: false,
               items: [
                 { text: 'API Reference', link: '/api-reference' },
                 { text: 'Deploy', link: '/guides/deployment' },
@@ -91,11 +101,13 @@ export default withMermaid(defineConfig({
           { text: 'Challenges', link: '/en/challenges/' },
           { text: 'Architecture', link: '/en/architecture/' },
           { text: 'Guides', link: '/en/guides/' },
+          { text: 'RFCs', link: '/en/rfc/' },
         ],
         sidebar: {
           '/en/': [
             {
               text: 'Introduction',
+              collapsed: false,
               items: [
                 { text: 'What is it', link: '/en/' },
                 { text: 'Getting Started', link: '/en/guides/getting-started' },
@@ -105,6 +117,7 @@ export default withMermaid(defineConfig({
             },
             {
               text: 'Challenges',
+              collapsed: false,
               items: [
                 { text: '01 — Ledger GraphQL', link: '/en/challenges/01-ledger' },
                 { text: '02 — SPI Simulator', link: '/en/challenges/02-spi' },
@@ -124,6 +137,7 @@ export default withMermaid(defineConfig({
             },
             {
               text: 'Decisions',
+              collapsed: false,
               items: [
                 { text: 'Why Go?', link: '/en/decisions/why-go' },
                 { text: 'ADR (5 decisions)', link: '/en/architecture/decision-log' },
@@ -132,6 +146,7 @@ export default withMermaid(defineConfig({
             },
             {
               text: 'RFCs',
+              collapsed: false,
               items: [
                 { text: 'Credit on Pix', link: '/en/rfc/credit-on-pix' },
                 { text: 'Data Lake', link: '/en/rfc/data-lake' },
@@ -140,6 +155,7 @@ export default withMermaid(defineConfig({
             },
             {
               text: 'Reference',
+              collapsed: false,
               items: [
                 { text: 'API Reference', link: '/en/api-reference' },
                 { text: 'Deployment', link: '/en/guides/deployment' },
