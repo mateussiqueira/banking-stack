@@ -1,300 +1,279 @@
-# 01 — CRUD Bank GraphQL Relay
+# 01 — Ledger GraphQL
 
-**🇧🇷** Ledger Bancário com GraphQL e Relay  
-**🇬🇧** Bank Ledger with GraphQL and Relay
-
----
-
-## 🇧🇷 Descrição do Desafio
-
-Implementar um sistema de ledger bancário (contas e transações) utilizando GraphQL com o padrão Relay Connection. O sistema deve permitir criar contas, realizar transferências entre contas com consistência transacional, e consultar contas e transações com paginação cursor-based.
-
-Requisitos:
-- CRUD de contas bancárias com saldo
-- Transferências entre contas com validação de saldo
-- Paginação Relay Connection (cursor-based)
-- Mutations no padrão Relay (input/payload/clientMutationId)
-- DataLoader para evitar N+1
-- Transações MongoDB para atomicidade
+**🇧🇷** Ledger Bancário com GraphQL Relay  
+**🇬🇧** Bank Ledger with GraphQL Relay
 
 ---
 
-## 🇬🇧 Challenge Description
+Sabe quando você abre o app do banco e vê seu saldo? Aquela tela parece simples, mas por trás tem um sistema que precisa ser atomicamente consistente. Seu saldo não pode sumir. Uma transferência não pode ser debitada de um lado e não creditada do outro. Isso é ledger.
 
-Implement a bank ledger system (accounts and transactions) using GraphQL with the Relay Connection pattern. The system must allow creating accounts, transferring between accounts with transactional consistency, and querying accounts and transactions with cursor-based pagination.
+O desafio tradicional é fazer isso com REST: você busca um recurso, depois outro, o N+1 problem aparece, a paginação é feita na base do `page=1&limit=10` que não funciona quando o banco insere registros no meio. Aí você descobre GraphQL e Relay Connection e percebe que dava pra fazer melhor.
 
-Requirements:
-- CRUD bank accounts with balance
-- Transfers between accounts with balance validation
-- Relay Connection pagination (cursor-based)
-- Relay-standard mutations (input/payload/clientMutationId)
-- DataLoader to avoid N+1
-- MongoDB transactions for atomicity
+Foi o que fiz aqui. Peguei o problema clássico de ledger bancário — contas, transações, saldos — e implementei com GraphQL no padrão Relay Connection. Com DataLoader pra evitar N+1, transações MongoDB pra atomicidade, e paginação cursor-based.
 
 ---
 
-## Tech Stack
+## A arquitetura
 
-| Technology | Purpose |
-|------------|---------|
-| **Koa** | HTTP framework (lightweight, modern) |
-| **graphql-js** | GraphQL engine |
-| **graphql-relay** | Relay Connection helpers |
-| **DataLoader** | Batch loading / N+1 prevention |
-| **Mongoose** | MongoDB ODM |
-| **MongoDB 7** | Database (Replica Set for transactions) |
-| **Jest** | Testing |
-
----
-
-## Architecture / Arquitetura
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                      GraphQL Schema                               │
-│                                                                   │
-│  ┌─────────────────────────────────────────────────────────┐     │
-│  │  Queries                                                │     │
-│  │  ├─ account(id: ID!): Account                           │     │
-│  │  ├─ accounts(first, after): AccountConnection           │     │
-│  │  ├─ transaction(id: ID!): Transaction                   │     │
-│  │  └─ transactions(first, after, accountId): TxConnection │     │
-│  └─────────────────────────────────────────────────────────┘     │
-│                                                                   │
-│  ┌─────────────────────────────────────────────────────────┐     │
-│  │  Mutations                                              │     │
-│  │  ├─ createAccount(input: CreateAccountInput!): ...      │     │
-│  │  └─ createTransaction(input: CreateTransactionInput!):  │     │
-│  └─────────────────────────────────────────────────────────┘     │
-└──────────────────────────────────────────────────────────────────┘
-            │                                        │
-┌───────────▼────────────────────────────────────────▼───────────┐
-│                      Resolvers                                 │
-│  ┌──────────────────────┐  ┌──────────────────────────────┐   │
-│  │   Account Resolvers  │  │   Transaction Resolvers      │   │
-│  │   DataLoader:        │  │   populate sender/receiver   │   │
-│  │   batch findById     │  │                              │   │
-│  └──────────────────────┘  └──────────────────────────────┘   │
-└───────────────────────────┬───────────────────────────────────┘
-                            │
-┌───────────────────────────▼───────────────────────────────────┐
-│                      Services                                  │
-│  ┌──────────────────────┐  ┌──────────────────────────────┐   │
-│  │   accountService     │  │   transactionService         │   │
-│  │   ├─ createAccount   │  │   ├─ createTransaction       │   │
-│  │   ├─ getAccountById  │  │   │  (MongoDB session)       │   │
-│  │   └─ getAccounts     │  │   ├─ getTransactionById      │   │
-│  │                      │  │   └─ getTransactions         │   │
-│  └──────────────────────┘  └──────────────────────────────┘   │
-└────────────────────────────────────────────────────────────────┘
-                            │
-┌───────────────────────────▼───────────────────────────────────┐
-│                      MongoDB (Replica Set)                     │
-│  ┌──────────────────────┐  ┌──────────────────────────────┐   │
-│  │   accounts           │  │   transactions                │   │
-│  │   ├─ _id             │  │   ├─ _id                     │   │
-│  │   ├─ name            │  │   ├─ senderAccount (ref)     │   │
-│  │   ├─ document (unique)│  │   ├─ receiverAccount (ref)  │   │
-│  │   └─ balance         │  │   ├─ amount                  │   │
-│  │                      │  │   ├─ type (PIX/TED/DOC/TRANS)│   │
-│  │                      │  │   └─ status (PENDING/COMPLT) │   │
-│  └──────────────────────┘  └──────────────────────────────┘   │
-└────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    A[Client] --> B[GraphQL API]
+    B --> C[Resolvers]
+    C --> D[DataLoader]
+    C --> E[Services]
+    D --> F[(MongoDB)]
+    E --> F
 ```
 
+```
+Schema:
+  Queries:    account(id), accounts(first,after), transaction(id), transactions(first,after,accountId)
+  Mutations:  createAccount, createTransaction
+```
+
+Cada query usa Relay Connection pra paginação. Cada mutation segue o padrão Relay: `Input` → `Payload` → `clientMutationId`.
+
 ---
 
-## GraphQL Schema
+## Resolução em TypeScript
 
-### Types
+### Schema GraphQL
+
+O schema segue a especificação Relay. Toda entidade implementa `Node`, toda lista retorna `Connection`:
 
 ```graphql
-interface Node {
-  id: ID!
-}
+interface Node { id: ID! }
 
 type Account implements Node {
-  id: ID!
-  _id: ID!
+  id: ID!        # Relay global ID (base64)
   name: String!
   document: String!
   balance: Float!
-  createdAt: String!
 }
 
 type Transaction implements Node {
   id: ID!
-  _id: ID!
   sender: Account!
   receiver: Account!
   amount: Float!
-  description: String
   type: TransactionType!
   status: TransactionStatus!
-  createdAt: String!
 }
-
-enum TransactionType { PIX TED DOC TRANSFER }
-enum TransactionStatus { PENDING COMPLETED FAILED REVERTED }
 ```
 
-### Connections
+A Connection segue o padrão cursor-based:
 
 ```graphql
 type AccountConnection {
   edges: [AccountEdge]
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type TransactionConnection {
-  edges: [TransactionEdge]
-  pageInfo: PageInfo!
+  pageInfo: PageInfo!     # hasNextPage, hasPreviousPage, startCursor, endCursor
   totalCount: Int!
 }
 ```
 
-### Mutations
+### DataLoader contra N+1
 
-```graphql
-input CreateAccountInput {
-  clientMutationId: String
-  name: String!
-  document: String!
-  balance: Float
-}
+Sem DataLoader, uma query de 10 transações faria 21 queries no banco (1 pras transações + 2 pra cada conta envolvida). É o N+1 clássico:
 
-type CreateAccountPayload {
-  clientMutationId: String
-  account: Account!
+```typescript
+import DataLoader from 'dataloader';
+
+// Batch loader: agrupa múltiplos findById em uma query só
+const accountLoader = new DataLoader(async (ids: string[]) => {
+  const accounts = await Account.find({ _id: { $in: ids } });
+  const map = new Map(accounts.map(a => [a._id.toString(), a]));
+  return ids.map(id => map.get(id) || null);
+});
+
+const resolvers = {
+  Transaction: {
+    sender: (tx) => accountLoader.load(tx.senderAccount.toString()),
+    receiver: (tx) => accountLoader.load(tx.receiverAccount.toString()),
+  }
+};
+```
+
+### Transação atômica (MongoDB)
+
+Transferir dinheiro entre contas é a operação mais crítica. Se o servidor cai no meio, não pode perder dinheiro:
+
+```typescript
+async function createTransaction(senderId: string, receiverId: string, amount: number) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const sender = await Account.findById(senderId).session(session);
+    const receiver = await Account.findById(receiverId).session(session);
+
+    if (!sender || sender.balance < amount) {
+      throw new Error('Saldo insuficiente');
+    }
+
+    sender.balance -= amount;
+    receiver.balance += amount;
+
+    await sender.save({ session });
+    await receiver.save({ session });
+
+    const tx = await Transaction.create([{
+      sender: senderId, receiver: receiverId,
+      amount, type: 'PIX', status: 'COMPLETED'
+    }], { session });
+
+    await session.commitTransaction();
+    return tx[0];
+  } catch (err) {
+    await session.abortTransaction();
+    throw err;
+  } finally {
+    session.endSession();
+  }
 }
 ```
+
+Sem `session`, se o servidor cai depois de debitar o sender mas antes de creditar o receiver, o dinheiro desaparece. Com `session`, ou os dois acontecem ou nenhum.
+
+### Paginação cursor-based
+
+```typescript
+async function accounts(first: number, after?: string) {
+  const query = after
+    ? { _id: { $gt: cursorFrom(after) } }
+    : {};
+
+  const items = await Account.find(query)
+    .limit(first + 1)
+    .sort({ _id: 1 });
+
+  const hasNextPage = items.length > first;
+  const nodes = hasNextPage ? items.slice(0, first) : items;
+
+  return {
+    edges: nodes.map(item => ({
+      node: item,
+      cursor: cursorTo(item._id),
+    })),
+    pageInfo: {
+      hasNextPage,
+      hasPreviousPage: !!after,
+      startCursor: cursorTo(nodes[0]?._id),
+      endCursor: cursorTo(nodes[nodes.length - 1]?._id),
+    },
+    totalCount: await Account.countDocuments(),
+  };
+}
+```
+
+A diferença pra `LIMIT/OFFSET` é que cursor não desvia quando novos registros são inseridos no banco. Se aparece uma transação nova no meio da consulta, ela não bagunça a página atual.
 
 ---
 
-## Transaction Flow / Fluxo de Transação
+## Resolução em Go
 
+Go não tem GraphQL nativo. Dá pra usar `gqlgen`, mas pra esse caso — 2 entidades, CRUD simples — eu preferi algo mais direto.
+
+Mas o ponto é: Go não é a melhor ferramenta pra GraphQL. Você perde o ecossistema de schema-first, codegen, e playground. Onde Go brilha aqui é no que fica **fora** do GraphQL — na camada de serviço e automação:
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "go.mongodb.org/mongo-driver/bson"
+    "go.mongodb.org/mongo-driver/mongo"
+    "go.mongodb.org/mongo-driver/mongo/options"
+)
+
+type Account struct {
+    ID       string  `bson:"_id,omitempty"`
+    Name     string  `bson:"name"`
+    Document string  `bson:"document"`
+    Balance  float64 `bson:"balance"`
+}
+
+type TransactionData struct {
+    SenderID   string
+    ReceiverID string
+    Amount     float64
+    Type       string
+}
+
+func Transfer(ctx context.Context, db *mongo.Database, data *TransactionData) error {
+    session, err := db.Client().StartSession()
+    if err != nil { return err }
+    defer session.EndSession(ctx)
+
+    _, err = session.WithTransaction(ctx, func(sc mongo.SessionContext) (interface{}, error) {
+        senderCol := db.Collection("accounts")
+        receiverCol := db.Collection("accounts")
+        txCol := db.Collection("transactions")
+
+        // Atomic read-modify-write
+        var sender, receiver Account
+        senderCol.FindOneAndUpdate(sc,
+            bson.M{"_id": data.SenderID, "balance": bson.M{"$gte": data.Amount}},
+            bson.M{"$inc": bson.M{"balance": -data.Amount}},
+        ).Decode(&sender)
+
+        receiverCol.FindOneAndUpdate(sc,
+            bson.M{"_id": data.ReceiverID},
+            bson.M{"$inc": bson.M{"balance": data.Amount}},
+        ).Decode(&receiver)
+
+        if sender.ID == "" {
+            return nil, fmt.Errorf("saldo insuficiente")
+        }
+
+        txCol.InsertOne(sc, bson.M{
+            "sender":   data.SenderID,
+            "receiver": data.ReceiverID,
+            "amount":   data.Amount,
+            "type":     data.Type,
+            "status":   "COMPLETED",
+        })
+
+        return nil, nil
+    })
+
+    return err
+}
 ```
-createTransaction(senderId, receiverId, amount, type)
-         │
-         ▼
-  ┌─────────────────┐
-  │ Validações       │
-  │ amount > 0       │
-  │ sender != receiver│
-  └────────┬─────────┘
-           │
-           ▼
-  ┌─────────────────┐
-  │ startSession()  │
-  │ startTransaction│
-  └────────┬─────────┘
-           │
-           ▼
-  ┌──────────────────────┐
-  │ find sender account  │
-  │ find receiver account│
-  │ check sender balance │
-  └────────┬─────────────┘
-           │
-           ▼
-  ┌──────────────────────┐
-  │ sender.balance -= amt │
-  │ receiver.balance += am│
-  │ create Transaction   │
-  │   status: COMPLETED  │
-  └────────┬─────────────┘
-           │
-           ▼
-  ┌──────────────────────┐
-  │ commitTransaction()  │
-  │        OR            │
-  │ abortTransaction()   │
-  │   (on error)         │
-  └──────────────────────┘
-```
+
+A diferença: Go com `FindOneAndUpdate` é mais seguro que Mongoose `findById.save()` porque o decremento do saldo é atômico. O banco garante que não vai ter race condition entre duas transferências concorrentes. Em TypeScript, você depende da session do MongoDB. Nos dois casos funciona, mas o Go te força a pensar em atomicidade desde o começo.
 
 ---
 
-## How to Run / Como Executar
+## Como testar
 
 ```bash
-# Start MongoDB replica set
+# TypeScript
 make infra-up
-
-# Install dependencies
-pnpm install
-
-# Run ledger service
 pnpm --filter @banking/ledger dev
-```
 
-The server starts at `http://localhost:3001`.
+# Criar conta
+curl -X POST http://localhost:3001/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query":"mutation { createAccount(input: {name: \"João\", document: \"12345678900\", balance: 1000}) { account { id name balance } } }"}'
 
-### GraphQL Playground
+# Transferir
+curl -X POST http://localhost:3001/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query":"mutation { createTransaction(input: {senderAccount: \"QWNjb3VudDox\", receiverAccount: \"QWNjb3VudDoy\", amount: 100, type: PIX}) { transaction { id amount status } } }"}'
 
-Open `http://localhost:3001/playground` in your browser.
-
-### Example Queries
-
-```graphql
-# Create account
-mutation {
-  createAccount(input: {
-    name: "John Doe"
-    document: "123.456.789-00"
-    balance: 1000
-  }) {
-    account { id name document balance }
-  }
-}
-
-# List accounts
-query {
-  accounts(first: 10) {
-    edges {
-      node { id name document balance }
-    }
-    totalCount
-  }
-}
-
-# Create transaction
-mutation {
-  createTransaction(input: {
-    senderAccount: "QWNjb3VudDox"  # base64 encoded Relay ID
-    receiverAccount: "QWNjb3VudDoy"
-    amount: 100
-    type: PIX
-  }) {
-    transaction {
-      id amount type status
-      sender { name }
-      receiver { name }
-    }
-  }
-}
+# Listar contas (cursor-based)
+curl -s http://localhost:3001/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ accounts(first: 10) { edges { node { id name balance } } pageInfo { hasNextPage endCursor } } }"}'
 ```
 
 ---
 
-## Tests / Testes
+## Lições aprendidas
 
-```bash
-pnpm --filter @banking/ledger test
-```
-
-Test structure:
-- Unit tests for services
-- Integration tests for GraphQL resolvers
-- Transaction atomicity tests
-
----
-
-## Deployment / Deploy
-
-```bash
-pnpm --filter @banking/ledger build
-docker compose build ledger
-docker compose up -d ledger
-```
+1. **GraphQL não é REST melhorado** — É uma filosofia diferente. Você paga o custo inicial de schema e resolvers em troca de flexibilidade no consumo.
+2. **DataLoader deveria vir por padrão** — Sem ele, qualquer query aninhada explode em N+1 queries. Com ele, o batch loading resolve.
+3. **Transação ACID em banco NoSQL é possível, mas exige setup** — MongoDB precisa de Replica Set pra transactions funcionarem. Não é automático.
+4. **Cursor-based pagination é superior a offset** — Quando novos registros são inseridos durante a navegação, cursor não desvia. Offset sim.
+5. **TypeScript vs Go aqui é sobre ecossistema** — GraphQL em TS é muito mais produtivo (codegen, playground, schema-first). Go é melhor na camada de dados (atomicidade, performance). Use cada um onde brilha.
