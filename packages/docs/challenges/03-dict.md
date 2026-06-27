@@ -1,865 +1,1087 @@
-# 03 — DICT Simulator
+# Desafio 03: DICT — Diretório de Identificadores de Contas Transacionais
 
-**🇧🇷** Simulador do Diretório de Identificadores de Contas Transacionais  
-**🇬🇧** DICT (Directory of Transactional Account Identifiers) Simulator
-
----
-
-Você tem um CPF. Esse CPF é uma chave Pix. Mas como o sistema sabe que aquele CPF é seu e não do vizinho?
-
-A resposta é o DICT — Diretório de Identificadores de Contas Transacionais. É o sistema que o Banco Central criou pra gerenciar chaves Pix. Ele armazena a relação entre chaves (CPF, CNPJ, email, telefone, ou chave aleatória) e as contas bancárias associadas.
-
-Sem DICT, você não teria como digitar um CPF e cair na conta certa. Seria como ter uma agenda telefônica sem nomes.
-
-Quando eu comecei a estudar o Pix, achei que o DICT era só um CRUD de chaves. "Guarda CPF aqui, devolve conta ali, pronto." Só que não. O DICT é um dos sistemas mais críticos do SPB (Sistema de Pagamentos Brasileiro). Ele precisa estar disponível 24/7, processar milhares de requisições por segundo, e garantir consistência absoluta. Uma chave duplicada significa dinheiro na conta errada. Um downtime significa o Brasil inteiro parando de fazer Pix.
-
-E tem a portabilidade. Sabe quando você troca de banco e leva suas chaves Pix? É o DICT que gerencia isso. O processo envolve: notificar o banco atual, esperar confirmação (até 7 dias), e só então transferir. Durante esse período, a chave fica num estado "reivindicada" — não pode ser usada nem pelo banco antigo nem pelo novo até a confirmação.
-
-Ou seja: o DICT é um sistema distribuído, com consistência eventual controlada, estados complexos, e validações específicas pra cada tipo de chave. Vou te mostrar como implementar um simulador.
+**🇧🇷** Diretório de Identificadores de Contas Transacionais  
+**🇬🇧** Directory of Transactional Account Identifiers
 
 ---
 
-## A arquitetura
+O **DICT** é o diretório central do Banco Central do Brasil que gerencia todas as **chaves PIX**. É a "agenda telefônica" do PIX — sem ele, ninguém saberia para qual conta enviar um PIX quando você informa apenas um CPF ou e-mail.
+
+## Switch: TypeScript vs Go
+
+<LanguageToggle />
+
+<div class="lang-content ts" style="display:block;">
+
+### O que é o DICT?
+
+| Tipo de Chave | Descrição |
+|---------------|-----------|
+| **CPF** | 11 dígitos, validação por dígito verificador |
+| **CNPJ** | 14 dígitos, validação por dígito verificador |
+| **E-mail** | Formato RFC 5322, até 77 caracteres |
+| **Telefone** | Formato +55 XX XXXXX-XXXX |
+| **Aleatória** | UUID v4, máxima privacidade |
+
+| Característica | Descrição |
+|----------------|-----------|
+| **Ownership** | Uma chave = uma conta (única) |
+| **Portabilidade** | Cliente pode mover chave entre bancos |
+| **Anti-enumeration** | Proteção contra varreduras |
+| **Rate limiting** | Limites por instituição |
+
+### Arquitetura do DICT Simulator
 
 ```mermaid
-graph TD
-    A[App do Banco] --> B[DICT API]
-    B --> C{Valida Chave}
-    C -->|Válida| D[Registra no MongoDB]
-    C -->|Inválida| E[Erro: formato inválido]
-    D --> F[Chave ativa]
-    G[Portabilidade] --> H{É o dono?}
-    H -->|Sim| I[Transfere chave]
-    H -->|Não| J[Rejeita]
-    I --> D
+graph TB
+    subgraph "Clients"
+      PSP1[PSP Origem]
+      PSP2[PSP Destino]
+      APP[App Cliente]
+    end
+
+    subgraph "API Gateway"
+      GW[Auth + Rate Limit]
+      CACHE[Response Cache]
+    end
+
+    subgraph "DICT Service"
+      API[REST API]
+      UC[Use Cases]
+      VAL[Validators]
+      REPO[Repository]
+      LOCK[Distributed Lock]
+      EVENTS[Event Publisher]
+    end
+
+    subgraph "Data Layer"
+      MONGO[(MongoDB - Keys)]
+      REDIS[(Redis - Cache + Locks)]
+      AUDIT[(PostgreSQL - Audit)]
+    end
+
+    subgraph "External"
+      BCB[BCB DICT]
+    end
+
+    PSP1 -->|HTTPS| GW
+    PSP2 -->|HTTPS| GW
+    APP -->|HTTPS| GW
+
+    GW --> CACHE
+    GW --> API
+
+    API --> UC
+    UC --> VAL
+    UC --> LOCK
+    UC --> REPO
+    UC --> EVENTS
+
+    REPO --> MONGO
+    LOCK --> REDIS
+    CACHE --> REDIS
+    EVENTS --> AUDIT
+
+    BCB -.->|Sync| API
+
+    classDef client fill:#4f46e5,stroke:#3730a3;
+    classDef api fill:#f59e0b,stroke:#d97706;
+    classDef data fill:#10b981,stroke:#059669;
+    classDef external fill:#dc2626,stroke:#b91c1c;
+
+    class PSP1,PSP2,APP client;
+    class API,UC,VAL,REPO,LOCK,EVENTS api;
+    class MONGO,REDIS,AUDIT data;
+    class BCB external;
 ```
 
+### Fluxos Principais
+
+**1. Registro de Chave**
+
+```mermaid
+sequenceDiagram
+    participant C as Cliente
+    participant PSP
+    participant DICT
+    participant Lock as Redis Lock
+    participant DB as MongoDB
+
+    C->>PSP: Solicita registro de chave
+    PSP->>DICT: POST /api/v1/dict/keys
+
+    DICT->>DICT: Valida formato da chave
+    DICT->>Lock: Tenta lock (chave)
+
+    alt Lock adquirido
+      DICT->>DB: Verifica se chave existe
+      alt Chave não existe
+        DICT->>DB: Insere nova chave
+        DICT-->>PSP: 201 Created
+      else Chave já existe
+        DICT-->>PSP: 409 Conflict
+      end
+      DICT->>Lock: Libera lock
+    else Lock não adquirido
+      DICT-->>PSP: 429 Too Many Requests
+    end
 ```
-┌─────────────┐     REST      ┌──────────────┐     ┌──────────────┐
-│   Banco A   │ ──────────── │    DICT      │ ── │   MongoDB    │
-│  (SPI)      │  JSON/HTTPS  │  Simulator   │    │  (Chaves)    │
-├─────────────┤              ├──────────────┤    ├──────────────┤
-│   Banco B   │              │  Validação   │    │  Índice único│
-│  (SPI)      │              │  + Controle  │    │  type+key    │
-└─────────────┘              │  de Estados  │    └──────────────┘
-                             └──────────────┘
+
+**2. Consulta de Chave**
+
+```mermaid
+sequenceDiagram
+    participant PSP_O as PSP Origem
+    participant DICT
+    participant Cache as Redis Cache
+    participant DB as MongoDB
+
+    PSP_O->>DICT: GET /api/v1/dict/keys/:key
+
+    DICT->>Cache: Busca no cache
+    alt Cache hit
+      Cache-->>DICT: Dados da chave
+    else Cache miss
+      DICT->>DB: Query por chave
+      DICT->>Cache: Atualiza cache (TTL 5min)
+    end
+
+    DICT-->>PSP_O: 200 OK + dados conta
 ```
 
-| Método | Rota | O que faz |
-|--------|------|-----------|
-| POST | `/keys` | Registra chave |
-| GET | `/keys/:key` | Consulta chave |
-| PATCH | `/keys/:key/claim` | Portabilidade |
-| DELETE | `/keys/:key` | Remove chave |
-| GET | `/accounts/:ispb/keys` | Chaves de uma conta |
+**3. Portabilidade (Claim)**
 
-Cada uma dessas operações tem suas pegadinhas. O registro precisa validar o formato da chave. A consulta precisa retornar os dados da conta associada. A portabilidade precisa verificar se quem está pedindo é o dono legítimo da chave. A remoção só pode ser feita pelo banco atual.
+```mermaid
+sequenceDiagram
+    participant C as Cliente
+    participant PSP_N as PSP Novo
+    participant PSP_A as PSP Antigo
+    participant DICT
+    participant DB as MongoDB
 
-E a listagem por ISPB (identificador do banco) precisa ser eficiente porque o BACEN usa isso para auditoria e conciliação.
+    C->>PSP_N: Quero portar minha chave
+    PSP_N->>DICT: PATCH /api/v1/dict/keys/:key/claim
 
----
+    DICT->>DB: Busca chave atual
+    DICT->>DB: Cria ClaimRequest (PENDING)
+    DICT-->>PSP_N: 202 Accepted (claim_id)
+    DICT->>PSP_A: Notifica sobre claim
 
-## Resolução em TypeScript
+    Note over PSP_A: Cliente confirma no PSP antigo
+    PSP_A->>DICT: PATCH /claims/:id/approve
 
-### Validação de chave Pix
+    DICT->>DB: Atualiza ownership
+    DICT->>PSP_N: Notifica sucesso
+    DICT->>PSP_A: Notifica remoção
+```
 
-O primeiro problema: como validar cada tipo de chave?
+### Domain Layer
 
 ```typescript
-type PixKeyType = 'CPF' | 'CNPJ' | 'EMAIL' | 'PHONE' | 'RANDOM';
+export enum PixKeyType {
+  CPF = 'CPF',
+  CNPJ = 'CNPJ',
+  EMAIL = 'EMAIL',
+  PHONE = 'PHONE',
+  RANDOM = 'RANDOM'
+}
 
-function normalizeKey(key: string, type: PixKeyType): string {
-  switch (type) {
-    case 'CPF':  return key.replace(/\D/g, '').padStart(11, '0');
-    case 'CNPJ': return key.replace(/\D/g, '').padStart(14, '0');
-    case 'EMAIL': return key.toLowerCase().trim();
-    case 'PHONE': return '+55' + key.replace(/\D/g, '');
-    case 'RANDOM': return key.toUpperCase().replace(/[^A-Z0-9]/g, '');
+export class PixKey extends Entity<string> {
+  public static create(props: PixKeyProps): Result<PixKey, Error> {
+    const validation = PixKey.validate(props);
+    if (validation.isErr()) return Err(validation.error);
+
+    return Ok(new PixKey({
+      ...props,
+      id: props.id || uuidv4(),
+      createdAt: props.createdAt || new Date(),
+      active: props.active ?? true,
+    }));
+  }
+
+  public static createRandom(account: AccountInfo, owner: OwnerInfo): Result<PixKey, Error> {
+    return PixKey.create({
+      type: PixKeyType.RANDOM,
+      value: uuidv4(),
+      account, owner,
+      ispb: account.ispb,
+      createdAt: new Date(),
+      active: true,
+    });
+  }
+
+  public transferTo(newAccount: AccountInfo): Result<PixKey, Error> {
+    if (!this.props.active) return Err(new Error('Chave inativa'));
+    return Ok(new PixKey({
+      ...this.props,
+      account: newAccount,
+      ispb: newAccount.ispb,
+      updatedAt: new Date(),
+    }));
+  }
+}
+```
+
+### Validators — Validação de Cada Tipo
+
+```typescript
+export class CPFValidator implements KeyValidator {
+  validate(value: string): ValidationResult {
+    const cpf = value.replace(/\D/g, '');
+    if (cpf.length !== 11) return { isValid: false, errorMessage: 'CPF deve ter 11 dígitos' };
+    if (/^(\d)\1+$/.test(cpf)) return { isValid: false, errorMessage: 'CPF inválido' };
+    if (!this.validateDigits(cpf)) return { isValid: false, errorMessage: 'CPF inválido' };
+    return { isValid: true, normalizedValue: cpf };
+  }
+
+  private validateDigits(cpf: string): boolean {
+    let sum = 0;
+    for (let i = 0; i < 9; i++) sum += parseInt(cpf[i]) * (10 - i);
+    let remainder = (sum * 10) % 11;
+    if (remainder === 10) remainder = 0;
+    if (remainder !== parseInt(cpf[9])) return false;
+
+    sum = 0;
+    for (let i = 0; i < 10; i++) sum += parseInt(cpf[i]) * (11 - i);
+    remainder = (sum * 10) % 11;
+    if (remainder === 10) remainder = 0;
+    return remainder === parseInt(cpf[10]);
   }
 }
 
-function validateKey(key: string, type: PixKeyType) {
-  const n = normalizeKey(key, type);
-  
-  switch (type) {
-    case 'CPF':
-      if (n.length !== 11) return false;
-      return isValidCPF(n);
-    case 'PHONE':
-      if (!/^\+55\d{10,11}$/.test(n)) return false;
-      break;
-    case 'EMAIL':
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(n)) return false;
-      break;
-    case 'RANDOM':
-      if (n.length !== 32 || /[^A-Z0-9]/.test(n)) return false;
-      break;
+export class CNPJValidator implements KeyValidator {
+  validate(value: string): ValidationResult {
+    const cnpj = value.replace(/\D/g, '');
+    if (cnpj.length !== 14) return { isValid: false, errorMessage: 'CNPJ deve ter 14 dígitos' };
+    if (/^(\d)\1+$/.test(cnpj)) return { isValid: false, errorMessage: 'CNPJ inválido' };
+    if (!this.validateDigits(cnpj)) return { isValid: false, errorMessage: 'CNPJ inválido' };
+    return { isValid: true, normalizedValue: cnpj };
   }
-  return true;
+
+  private validateDigits(cnpj: string): boolean {
+    const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    const weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+
+    let sum = 0;
+    for (let i = 0; i < 12; i++) sum += parseInt(cnpj[i]) * weights1[i];
+    let remainder = sum % 11;
+    let digit1 = remainder < 2 ? 0 : 11 - remainder;
+    if (digit1 !== parseInt(cnpj[12])) return false;
+
+    sum = 0;
+    for (let i = 0; i < 13; i++) sum += parseInt(cnpj[i]) * weights2[i];
+    remainder = sum % 11;
+    let digit2 = remainder < 2 ? 0 : 11 - remainder;
+    return digit2 === parseInt(cnpj[13]);
+  }
 }
-```
 
-Repare que cada tipo tem uma normalização diferente. CPF e CNPJ removem pontuação e completam com zeros à esquerda. Email vai pra minúsculo. Telefone ganha o +55. Chave aleatória é UUID com hífen removido e maiúsculo.
-
-O detalhe da chave aleatória: o BACEN define que são 32 caracteres hexadecimais (0-9, A-F). Mas na prática, a maioria dos bancos gera UUIDv4 sem hífen, que usa A-F. Se o usuário digitar com hífen, precisa remover. Se digitar minúsculo, precisa capitalizar.
-
-O algoritmo de validação de CPF parece mágica mas é matemática simples:
-
-```typescript
-function isValidCPF(cpf: string): boolean {
-  if (/^(\d)\1+$/.test(cpf)) return false; // 111.111.111-11 é inválido
-  
-  let sum = 0;
-  for (let i = 0; i < 9; i++) sum += parseInt(cpf[i]) * (10 - i);
-  let d1 = (sum * 10) % 11;
-  if (d1 === 10) d1 = 0;
-  if (d1 !== parseInt(cpf[9])) return false;
-  
-  sum = 0;
-  for (let i = 0; i < 10; i++) sum += parseInt(cpf[i]) * (11 - i);
-  let d2 = (sum * 10) % 11;
-  if (d2 === 10) d2 = 0;
-  if (d2 !== parseInt(cpf[10])) return false;
-  
-  return true;
-}
-```
-
-Esse algoritmo usa os dois dígitos verificadores. O primeiro dígito (d1) é calculado com base nos 9 primeiros números. O segundo (d2) com base nos 10 primeiros (incluindo d1). Se você passar "529.982.247-25", ele valida. Esse é o CPF mais famoso do Brasil, usado em todo tutorial, mas pouca gente sabe que é o CPF do fiscal do Rio Grande do Sul que autorizou o uso público.
-
-### Validação de CNPJ
-
-O CNPJ tem a mesma lógica do CPF, mas com 14 dígitos e dois dígitos verificadores calculados com pesos diferentes:
-
-```typescript
-function isValidCNPJ(cnpj: string): boolean {
-  if (/^(\d)\1+$/.test(cnpj)) return false;
-
-  // Primeiro dígito: pesos 5,4,3,2,9,8,7,6,5,4,3,2
-  const w1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  let sum = 0;
-  for (let i = 0; i < 12; i++) sum += parseInt(cnpj[i]) * w1[i];
-  let d1 = sum % 11;
-  d1 = d1 < 2 ? 0 : 11 - d1;
-  if (d1 !== parseInt(cnpj[12])) return false;
-
-  // Segundo dígito: pesos 6,5,4,3,2,9,8,7,6,5,4,3,2
-  const w2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  sum = 0;
-  for (let i = 0; i < 13; i++) sum += parseInt(cnpj[i]) * w2[i];
-  let d2 = sum % 11;
-  d2 = d2 < 2 ? 0 : 11 - d2;
-  if (d2 !== parseInt(cnpj[13])) return false;
-
-  return true;
-}
-```
-
-A diferença do CPF: o CNPJ usa pesos diferentes (começa em 5, depois 4, 3, 2, 9...), enquanto o CPF usa pesos decrescentes de 10 a 2. E o cálculo do dígito é diferente — no CNPJ, se o resto for menor que 2, o dígito é 0. No CPF, se o resto vezes 10 % 11 for 10, vira 0. Pequenas diferenças que podem quebrar seu sistema se você confundir.
-
-### Endpoint de registro
-
-```typescript
-import Fastify from 'fastify';
-
-const app = Fastify();
-
-app.post<{ Body: DictKeyRequest }>('/api/v1/dict/keys', async (req, reply) => {
-  const { type, value, account, owner } = req.body;
-  
-  if (!validateKey(value, type)) {
-    return reply.status(422).send({ error: 'Formato de chave inválido' });
-  }
-  
-  const normalized = normalizeKey(value, type);
-  
-  // Uma chave só pode pertencer a uma conta
-  const exists = await db.collection('keys').findOne({ 
-    type, key: normalized 
-  });
-  
-  if (exists) {
-    return reply.status(409).send({ error: 'Chave já registrada' });
-  }
-  
-  const key = {
-    _id: normalized,
-    type,
-    originalValue: value,
-    status: 'ACTIVE',
-    account,
-    owner,
-    claims: [],
-    createdAt: new Date(),
-  };
-  
-  await db.collection('keys').insertOne(key);
-  
-  return reply.status(201).send(key);
-});
-```
-
-Esse código parece simples, mas tem uma race condition clássica: se duas requisições chegarem ao mesmo tempo com a mesma chave, o `findOne` retorna null pras duas, e ambas tentam fazer `insertOne`. Uma vai falhar por índice único, mas a outra vai criar a chave. E a primeira? Erro 500.
-
-A solução no TypeScript é usar `updateOne` com upsert ou índices únicos com tratamento de erro:
-
-```typescript
-// Versão segura: upsert com índice único
-app.post<{ Body: DictKeyRequest }>('/api/v1/dict/keys', async (req, reply) => {
-  const { type, value, account, owner } = req.body;
-  
-  if (!validateKey(value, type)) {
-    return reply.status(422).send({ error: 'Formato de chave inválido' });
-  }
-  
-  const normalized = normalizeKey(value, type);
-  const now = new Date();
-  
-  try {
-    const result = await db.collection('keys').updateOne(
-      { 
-        type, 
-        key: normalized,
-        status: { $in: ['DELETED', 'CANCELLED'] } // Só insere se não existir ativa
-      },
-      {
-        $setOnInsert: {
-          type,
-          key: normalized,
-          originalValue: value,
-          status: 'ACTIVE',
-          account,
-          owner,
-          claims: [],
-          createdAt: now,
-          updatedAt: now,
-        }
-      },
-      { upsert: true }
-    );
-    
-    if (result.upsertedCount === 0) {
-      // Já existe uma chave ativa
-      return reply.status(409).send({ error: 'Chave já registrada' });
+export class KeyValidatorFactory {
+  static create(type: PixKeyType): KeyValidator {
+    switch (type) {
+      case PixKeyType.CPF: return new CPFValidator();
+      case PixKeyType.CNPJ: return new CNPJValidator();
+      case PixKeyType.EMAIL: return new EmailValidator();
+      case PixKeyType.PHONE: return new PhoneValidator();
+      case PixKeyType.RANDOM: return new RandomKeyValidator();
     }
-    
-    return reply.status(201).send({ type, key: normalized, status: 'ACTIVE' });
-  } catch (err) {
-    // Erro de índice único (corner case de concorrência)
-    if ((err as any).code === 11000) {
-      return reply.status(409).send({ error: 'Chave já registrada' });
+  }
+}
+```
+
+### Use Cases — Registro de Chave
+
+```typescript
+export class RegisterPixKeyUseCase {
+  private static readonly MAX_KEYS_PER_PERSON = 5;
+
+  constructor(
+    private readonly pixKeyRepo: PixKeyRepository,
+    private readonly lock: DistributedLock,
+    private readonly eventPublisher: EventPublisher
+  ) {}
+
+  public async execute(input: RegisterPixKeyInput): Promise<Either<Error, PixKey>> {
+    // 1. Para chave aleatória, gera o valor
+    let value = input.value;
+    if (input.type === PixKeyType.RANDOM) {
+      value = crypto.randomUUID();
+    } else if (!value) {
+      return left(new Error('Valor é obrigatório'));
     }
-    throw err;
-  }
-});
-```
 
-### Portabilidade - o estado mais complexo
+    // 2. Valida formato
+    const validator = KeyValidatorFactory.create(input.type);
+    const validation = validator.validate(value);
+    if (!validation.isValid) return left(new Error(validation.errorMessage!));
 
-A portabilidade é onde o DICT mostra sua complexidade. Não é só trocar o banco de A pra B. É um processo com estado, prazo, e notificação:
-
-```typescript
-interface PortabilityClaim {
-  id: string;
-  key: string;
-  keyType: PixKeyType;
-  fromAccount: { ispb: string; branch: string; number: string };
-  toAccount: { ispb: string; branch: string; number: string };
-  status: 'PENDING' | 'CONFIRMED' | 'EXPIRED' | 'REJECTED';
-  requestedAt: Date;
-  expiresAt: Date; // +7 dias
-  confirmedAt?: Date;
-}
-
-async function claimKey(key: string, type: PixKeyType, newAccount: Account) {
-  const current = await db.collection('keys').findOne({ key, type, status: 'ACTIVE' });
-  if (!current) {
-    throw new Error('Chave não encontrada ou inativa');
-  }
-
-  // Verifica se já existe claim pendente
-  const existing = await db.collection('claims').findOne({
-    key, status: 'PENDING'
-  });
-  if (existing) {
-    throw new Error('Já existe um pedido de portabilidade pendente');
-  }
-
-  // Cria o claim
-  const claim: PortabilityClaim = {
-    id: randomId(),
-    key,
-    keyType: type,
-    fromAccount: current.account,
-    toAccount: newAccount,
-    status: 'PENDING',
-    requestedAt: new Date(),
-    expiresAt: addDays(new Date(), 7),
-  };
-
-  await db.collection('claims').insertOne(claim);
-
-  // Atualiza status da chave para CLAIMED
-  await db.collection('keys').updateOne(
-    { key, type },
-    { $set: { status: 'CLAIMED', pendingClaim: claim.id } }
-  );
-
-  return claim;
-}
-
-async function confirmClaim(claimId: string) {
-  const claim = await db.collection('claims').findOne({ id: claimId });
-  if (!claim || claim.status !== 'PENDING') {
-    throw new Error('Claim inválido');
-  }
-
-  // Transfere a chave
-  const session = db.client.startSession();
-  try {
-    session.startTransaction();
-    
-    await db.collection('claims').updateOne(
-      { id: claimId },
-      { $set: { status: 'CONFIRMED', confirmedAt: new Date() } },
-      { session }
-    );
-
-    await db.collection('keys').updateOne(
-      { key: claim.key, type: claim.keyType },
-      { 
-        $set: { 
-          account: claim.toAccount,
-          status: 'ACTIVE',
-          updatedAt: new Date()
-        }
-      },
-      { session }
-    );
-
-    await session.commitTransaction();
-  } catch (err) {
-    await session.abortTransaction();
-    throw err;
-  } finally {
-    session.endSession();
-  }
-}
-```
-
-Repare que a portabilidade usa transação. Se o servidor cair entre a confirmação do claim e a atualização da chave, você tem inconsistência. A transação do MongoDB garante atomicidade.
-
-### Rate limiting e segurança
-
-O DICT real precisa de rate limiting agressivo. Um banco malicioso poderia tentar consultar CPFs em massa:
-
-```typescript
-import rateLimit from '@fastify/rate-limit';
-
-await app.register(rateLimit, {
-  max: 100,          // 100 requisições
-  timeWindow: '1 minute',  // por minuto
-  keyGenerator: (req) => {
-    // Rate limit por ISPB (banco)
-    return req.headers['x-ispb'] as string || req.ip;
-  },
-  errorResponseBuilder: () => ({
-    status: 429,
-    error: 'Muitas requisições. Tente novamente em 1 minuto.',
-  }),
-});
-```
-
-Cada banco tem um ISPB único (8 dígitos). O DICT do BACEN usa isso para identificar quem está fazendo a requisição. Se um banco começar a fazer consultas em massa, o rate limit protege o sistema.
-
-### Teste de carga
-
-Para testar concorrência, use este script:
-
-```typescript
-// scripts/load-test-dict.ts
-async function simulateConcurrentRegistration(count: number) {
-  const results = { success: 0, conflict: 0, error: 0 };
-  
-  const tasks = Array.from({ length: count }, async (_, i) => {
-    const cpf = generateRandomCPF();
+    // 3. Lock distribuído
+    const unlock = await this.lock.acquire(`pix_key:${value}`, { ttl: 10000 });
     try {
-      const res = await fetch('http://localhost:3003/api/v1/dict/keys', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'CPF',
-          value: cpf,
-          account: { ispb: '12345678', branch: '0001', number: `1-${i}` },
-          owner: { name: `User ${i}`, document: cpf },
-        }),
-      });
-      if (res.status === 201) results.success++;
-      else if (res.status === 409) results.conflict++;
-    } catch { results.error++; }
-  });
+      // 4. Verifica se já existe
+      const existing = await this.pixKeyRepo.findByValue(value);
+      if (existing) return left(new KeyAlreadyRegisteredError(value));
 
-  await Promise.all(tasks);
-  console.log(results);
-  // Exemplo com 100 requisições concorrentes:
-  // { success: 98, conflict: 2, error: 0 }
-  // Os 2 conflicts são do upsert pegando chaves duplicadas
-}
+      // 5. Valida limite por pessoa
+      const existingByOwner = await this.pixKeyRepo.findByOwnerDocument(owner.document);
+      if (existingByOwner.length >= RegisterPixKeyUseCase.MAX_KEYS_PER_PERSON) {
+        return left(new MaxKeysReachedError(owner.document));
+      }
 
-simulateConcurrentRegistration(100);
-```
+      // 6. Cria e persiste
+      const pixKey = PixKey.create({ type: input.type, value, account, owner, ispb: account.ispb });
+      await this.pixKeyRepo.save(pixKey);
 
----
-
-## Resolução em Go
-
-Em Go a estrutura é parecida, mas a validação de CPF é mais explícita:
-
-```go
-package main
-
-import (
-    "net/http"
-    "regexp"
-    "github.com/gin-gonic/gin"
-    "go.mongodb.org/mongo-driver/mongo"
-)
-
-type PixKey struct {
-    Type    string `json:"type" binding:"required"`
-    Value   string `json:"value" binding:"required"`
-    Account struct {
-        Ispb   string `json:"ispb"`
-        Branch string `json:"branch"`
-        Number string `json:"number"`
-    } `json:"account" binding:"required"`
-    Owner struct {
-        Name     string `json:"name"`
-        Document string `json:"document"`
-    } `json:"owner" binding:"required"`
-}
-
-func isValidCPF(cpf string) bool {
-    if len(cpf) != 11 {
-        return false
+      await this.eventPublisher.publish('pix.key.registered', { keyId: pixKey.id, type: pixKey.type });
+      return right(pixKey);
+    } finally {
+      await unlock();
     }
-    
-    // Check if all digits are the same
-    allSame := true
-    for i := 1; i < 11; i++ {
-        if cpf[i] != cpf[0] {
-            allSame = false
-            break
-        }
-    }
-    if allSame {
-        return false
-    }
-    
-    // First verification digit
-    sum := 0
-    for i := 0; i < 9; i++ {
-        sum += int(cpf[i]-'0') * (10 - i)
-    }
-    d1 := (sum * 10) % 11
-    if d1 == 10 { d1 = 0 }
-    if d1 != int(cpf[9]-'0') {
-        return false
-    }
-    
-    // Second verification digit
-    sum = 0
-    for i := 0; i < 10; i++ {
-        sum += int(cpf[i]-'0') * (11 - i)
-    }
-    d2 := (sum * 10) % 11
-    if d2 == 10 { d2 = 0 }
-    if d2 != int(cpf[10]-'0') {
-        return false
-    }
-    
-    return true
-}
-
-func normalizeCPF(value string) string {
-    re := regexp.MustCompile(`\D`)
-    cpf := re.ReplaceAllString(value, "")
-    
-    // Pad with leading zeros if needed
-    for len(cpf) < 11 {
-        cpf = "0" + cpf
-    }
-    
-    return cpf
+  }
 }
 ```
 
-Percebeu a diferença? O Go não tem `parseInt` pra cada caractere como no TS. Ele subtrai o valor ASCII de '0' (`cpf[i]-'0'`). É mais baixo nível, mais explícito, e mais rápido. Não tem boxing/unboxing de tipos. Um int é um int.
+### Use Cases — Claim (Portabilidade)
 
-A validação de CNPJ em Go segue o mesmo padrho:
+```typescript
+export class ClaimPixKeyUseCase {
+  private static readonly CLAIM_EXPIRY_HOURS = 7 * 24;
 
-```go
-func isValidCNPJ(cnpj string) bool {
-    if len(cnpj) != 14 {
-        return false
-    }
+  constructor(
+    private readonly pixKeyRepo: PixKeyRepository,
+    private readonly claimRepo: ClaimRepository,
+    private readonly lock: DistributedLock,
+    private readonly notificationService: NotificationService
+  ) {}
 
-    allSame := true
-    for i := 1; i < 14; i++ {
-        if cnpj[i] != cnpj[0] {
-            allSame = false
-            break
-        }
-    }
-    if allSame {
-        return false
-    }
+  public async execute(input: ClaimPixKeyInput): Promise<Either<Error, ClaimPixKeyOutput>> {
+    const unlock = await this.lock.acquire(`pix_key:${input.key}`, { ttl: 15000 });
+    try {
+      const currentKey = await this.pixKeyRepo.findByValue(input.key);
+      if (!currentKey) return left(new KeyNotFoundError(input.key));
 
-    // First digit: weights 5,4,3,2,9,8,7,6,5,4,3,2
-    w1 := []int{5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2}
-    sum := 0
-    for i := 0; i < 12; i++ {
-        sum += int(cnpj[i]-'0') * w1[i]
-    }
-    d1 := sum % 11
-    if d1 < 2 {
-        d1 = 0
-    } else {
-        d1 = 11 - d1
-    }
-    if d1 != int(cnpj[12]-'0') {
-        return false
-    }
+      if (currentKey.ispb === input.claimerIspb) {
+        return left(new SamePSPError('Não é possível claim no mesmo PSP'));
+      }
 
-    // Second digit: weights 6,5,4,3,2,9,8,7,6,5,4,3,2
-    w2 := []int{6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2}
-    sum = 0
-    for i := 0; i < 13; i++ {
-        sum += int(cnpj[i]-'0') * w2[i]
-    }
-    d2 := sum % 11
-    if d2 < 2 {
-        d2 = 0
-    } else {
-        d2 = 11 - d2
-    }
-    if d2 != int(cnpj[13]-'0') {
-        return false
-    }
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + ClaimPixKeyUseCase.CLAIM_EXPIRY_HOURS);
 
-    return true
+      const claim = { id: crypto.randomUUID(), key: input.key, currentIspb: currentKey.ispb, claimerIspb: input.claimerIspb, status: 'PENDING', expiresAt };
+      await this.claimRepo.save(claim);
+
+      await this.notificationService.notifyPSP(currentKey.ispb, { type: 'CLAIM_RECEIVED', claimId: claim.id });
+      return right({ claimId: claim.id, status: 'PENDING', expiresAt });
+    } finally {
+      await unlock();
+    }
+  }
 }
 ```
 
-### Endpoint com controle de concorrência
+### Anti-Enumeration — Segurança
 
-```go
-func main() {
-    r := gin.Default()
+```typescript
+export class AntiEnumerationService {
+  public async analyzeQuery(ispb: string, ip: string, key: string, result: 'found' | 'not_found'): Promise<SecurityAction> {
+    const ispbCount = await this.redis.incr(`query:${ispb}:${hourKey}`);
+    const ispbNotFound = result === 'not_found' ? await this.redis.incr(`notfound:${ispb}:${hourKey}`) : 0;
 
-    // Cache local pra evitar hits duplicados no banco
-    var registerMu sync.Mutex
+    const notFoundRate = ispbCount > 0 ? ispbNotFound / ispbCount : 0;
 
-    r.POST("/api/v1/dict/keys", func(c *gin.Context) {
-        var req PixKey
-        if err := c.ShouldBindJSON(&req); err != nil {
-            c.JSON(400, gin.H{"error": err.Error()})
-            return
-        }
+    // Alta taxa de "não encontrado" = possível enumeração
+    if (notFoundRate > 0.9 && ispbCount > 100) {
+      return SecurityAction.THROTTLE;
+    }
 
-        switch req.Type {
-        case "CPF":
-            cpf := normalizeCPF(req.Value)
-            if !isValidCPF(cpf) {
-                c.JSON(422, gin.H{"error": "CPF inválido"})
-                return
-            }
-            req.Value = cpf
-        case "CNPJ":
-            cnpj := normalizeCNPJ(req.Value)
-            if !isValidCNPJ(cnpj) {
-                c.JSON(422, gin.H{"error": "CNPJ inválido"})
-                return
-            }
-            req.Value = cnpj
-        case "EMAIL":
-            matched, _ := regexp.MatchString(`^[^\s@]+@[^\s@]+\.[^\s@]+$`, req.Value)
-            if !matched {
-                c.JSON(422, gin.H{"error": "Email inválido"})
-                return
-            }
-            req.Value = strings.ToLower(strings.TrimSpace(req.Value))
-        case "PHONE":
-            re := regexp.MustCompile(`\D`)
-            phone := re.ReplaceAllString(req.Value, "")
-            if len(phone) < 10 || len(phone) > 11 {
-                c.JSON(422, gin.H{"error": "Telefone inválido"})
-                return
-            }
-            req.Value = "+55" + phone
-        case "RANDOM":
-            re := regexp.MustCompile(`[^A-Z0-9]`)
-            key := re.ReplaceAllString(strings.ToUpper(req.Value), "")
-            if len(key) != 32 {
-                c.JSON(422, gin.H{"error": "Chave aleatória deve ter 32 caracteres hexadecimais"})
-                return
-            }
-            req.Value = key
-        }
+    // Volume muito alto
+    if (ispbCount > 5000) {
+      return SecurityAction.BLOCK;
+    }
 
-        // Lock local pra evitar race condition
-        registerMu.Lock()
-        defer registerMu.Unlock()
+    // Detecta CPFs sequenciais
+    if (this.isSequentialCPF(key)) {
+      return SecurityAction.BLOCK;
+    }
 
-        // Verifica duplicidade
-        existing, _ := getKeyByValue(req.Value, req.Type)
-        if existing != nil {
-            c.JSON(409, gin.H{"error": "Chave já registrada"})
-            return
-        }
-
-        // Insere
-        if err := insertKey(req); err != nil {
-            if mongo.IsDuplicateKeyError(err) {
-                c.JSON(409, gin.H{"error": "Chave já registrada"})
-                return
-            }
-            c.JSON(500, gin.H{"error": "Erro interno"})
-            return
-        }
-
-        c.JSON(201, gin.H{
-            "key":    req.Value,
-            "type":   req.Type,
-            "status": "ACTIVE",
-            "account": req.Account,
-            "owner":  req.Owner,
-        })
-    })
-
-    r.Run(":3003")
+    return SecurityAction.ALLOW;
+  }
 }
 ```
 
-O `sync.Mutex` local é uma solução simples pra concorrência. Mas lembra: se você tiver múltiplas réplicas do servidor (horizontal scaling), o mutex local não adianta. Você precisa de um lock distribuído (Redis Redlock, ZooKeeper, etc.) ou confiar no índice único do MongoDB.
+**Proteções obrigatórias:**
 
-### Portabilidade em Go
+- Rate limiting por ISPB e IP
+- Respostas homogêneas (404 genérico, sem detalhes)
+- Masking de dados (nunca retorna CPF completo)
+- Detecção de padrões anômalos
+- Auditoria de todas as consultas
 
-```go
-type PortabilityClaim struct {
-    ID        string    `bson:"id"`
-    Key       string    `bson:"key"`
-    KeyType   string    `bson:"keyType"`
-    From      Account   `bson:"fromAccount"`
-    To        Account   `bson:"toAccount"`
-    Status    string    `bson:"status"`
-    CreatedAt time.Time `bson:"createdAt"`
-    ExpiresAt time.Time `bson:"expiresAt"`
-}
-
-func claimKeyHandler(c *gin.Context) {
-    var req struct {
-        Key   string  `json:"key"`
-        Type  string  `json:"type"`
-        Account Account `json:"account"`
-    }
-    if err := c.ShouldBindJSON(&req); err != nil {
-        c.JSON(400, gin.H{"error": err.Error()})
-        return
-    }
-
-    // Verifica se chave existe e está ativa
-    var current PixKey
-    err := db.Collection("keys").FindOne(c, bson.M{
-        "key": req.Key, "type": req.Type, "status": "ACTIVE",
-    }).Decode(&current)
-    if err == mongo.ErrNoDocument {
-        c.JSON(404, gin.H{"error": "Chave não encontrada ou inativa"})
-        return
-    }
-
-    // Cria claim
-    claim := PortabilityClaim{
-        ID:        generateID(),
-        Key:       req.Key,
-        KeyType:   PixKeyType(req.Type),
-        From:      current.Account,
-        To:        req.Account,
-        Status:    "PENDING",
-        CreatedAt: time.Now(),
-        ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
-    }
-
-    // Usa transação para atomicidade
-    session, _ := db.Client().StartSession()
-    defer session.EndSession(c)
-
-    err = mongo.WithSession(c, session, func(sc mongo.SessionContext) error {
-        sc.StartTransaction()
-        defer sc.AbortTransaction(sc)
-
-        _, err := db.Collection("claims").InsertOne(sc, claim)
-        if err != nil {
-            return err
-        }
-
-        _, err = db.Collection("keys").UpdateOne(sc,
-            bson.M{"key": req.Key, "type": req.Type},
-            bson.M{"$set": bson.M{"status": "CLAIMED", "pendingClaim": claim.ID}},
-        )
-        if err != nil {
-            return err
-        }
-
-        return session.CommitTransaction(sc)
-    })
-
-    if err != nil {
-        c.JSON(500, gin.H{"error": "Erro ao criar portabilidade"})
-        return
-    }
-
-    c.JSON(202, claim)
-}
-```
-
-Veja como o Go faz transação: `mongo.WithSession` + `StartTransaction` + `CommitTransaction`. É mais verboso que o TypeScript, mas é explícito. Não tem "magia" de runtime. O que você lê é o que executa.
-
----
-
-## TypeScript vs Go
+### Comparação: TypeScript vs Go
 
 | Aspecto | TypeScript | Go |
 |---------|-----------|-----|
-| Validação de CPF | parseInt(cpf[i]) * (10 - i) | int(cpf[i]-'0') * (10 - i) |
-| Concorrência | Event loop + async/await | Goroutines + mutex/channels |
-| Transação MongoDB | `withTransaction` callback | `mongo.WithSession` + explícito |
-| Erro de índice único | `if (err.code === 11000)` | `mongo.IsDuplicateKeyError(err)` |
-| Compilação | Transpilação (tsc) | Binário nativo |
-| Memória (idle) | ~45MB (Node) | ~8MB (binário) |
-| Latência (p50) | ~3ms | ~800µs |
-| Throughput | ~5k req/s | ~25k req/s |
+| **Desenvolvimento** | Rápido (Zod, Express) | Mais verboso |
+| **CPU-bound** | Validações travam event loop | Não bloqueia |
+| **Memory** | Mais RAM por conexão | 2-3x menos |
+| **Throughput** | ~10K req/s | ~50K req/s |
+| **Regex** | V8 otimizado | Nativo, pré-compilado |
+| **JSON** | Nativo | Struct tags |
 
-Medi esses números em um MacBook M3 com 100 requisições concorrentes. O Go é cerca de 5x mais rápido e usa 5x menos memória. Mas o TypeScript é mais rápido de prototipar — eu escrevi o DICT simulado em TS em 2 dias. O Go levou 4 dias, mas ficou mais robusto.
+### Quando usar TypeScript?
 
-A diferença de latência vem do runtime: Node.js tem o event loop e o garbage collector. Go tem goroutines (espaço de usuário) e GC otimizado. E o binário compilado não paga o custo de JIT.
+- PSP pequeno/médio (até 1M de chaves)
+- Time-to-market rápido
+- Volume moderado (até 5K consultas/s)
+- Equipe sem experiência em Go
 
-### Debugging de concorrência
+### Caso Real: Nubank e Itaú
 
-O problema mais comum no DICT é race condition no registro de chaves. Aqui está como detectar no Go:
+- **Nubank** — Clojure (core DICT) + TypeScript (BFFs), 80M+ clientes, Redis Cluster
+- **Itaú** — Go (DICT alta performance) + Java (core banking legado), 60M+ clientes
+
+### Boas Práticas
+
+**Faça:**
+- Locks distribuídos em operações de escrita
+- Rate limiting por ISPB, IP e usuário
+- Masking de dados (nunca retorne CPF completo)
+- Auditoria de todas as operações
+- TTL em cache balanceando freshness vs performance
+
+**Evite:**
+- Respostas detalhadas em 404 (anti-enumeration)
+- Cache sem invalidação (claims mudam ownership)
+- Validação só no backend (sempre backend)
+- Logs com dados sensíveis
+- Concorrência sem locks
+
+</div>
+
+<div class="lang-content go" style="display:none;">
+
+### Arquitetura DICT em Go
+
+```mermaid
+graph TB
+    subgraph "Edge"
+      PSP1[PSP 1]
+      PSP2[PSP 2]
+      APP[App]
+    end
+
+    subgraph "Load Balancer"
+      LB[NGINX / ALB]
+      RL[Rate Limiter]
+    end
+
+    subgraph "DICT Service (Go)"
+      API[HTTP API]
+      UC[Use Cases]
+      VAL[Validators]
+      CACHE[Cache Layer]
+      LOCK[Lock Manager]
+      EVENTS[Event Publisher]
+    end
+
+    subgraph "Data Layer"
+      MONGO[(MongoDB Sharded)]
+      REDIS[(Redis Cluster)]
+      PG[(PostgreSQL Audit)]
+    end
+
+    subgraph "Background"
+      AUDIT[Audit Worker]
+      SYNC[BCB Sync]
+      CLEANER[Claim Expiry]
+    end
+
+    PSP1 --> LB
+    PSP2 --> LB
+    APP --> LB
+
+    LB --> RL
+    LB --> API
+
+    API --> UC
+    UC --> VAL
+    UC --> CACHE
+    UC --> LOCK
+    UC --> EVENTS
+
+    CACHE --> REDIS
+    LOCK --> REDIS
+    UC --> MONGO
+    EVENTS --> PG
+
+    AUDIT --> MONGO
+    SYNC --> MONGO
+    CLEANER --> REDIS
+
+    classDef edge fill:#4f46e5,stroke:#3730a3;
+    classDef api fill:#f59e0b,stroke:#d97706;
+    classDef data fill:#10b981,stroke:#059669;
+    classDef bg fill:#dc2626,stroke:#b91c1c;
+
+    class PSP1,PSP2,APP edge;
+    class API,UC,VAL,CACHE,LOCK,EVENTS api;
+    class MONGO,REDIS,PG data;
+    class AUDIT,SYNC,CLEANER bg;
+```
+
+### Domain Layer
 
 ```go
-go test -race ./packages/backend/dict-simulator-go/...
-```
+package domain
 
-O detector de data race do Go é excelente. Ele instrumenta o binário e detecta acessos concorrentes a variáveis compartilhadas. TypeScript não tem nada equivalente — você precisa de testes manuais ou ferramentas externas.
+import (
+    "errors"
+    "regexp"
+    "strings"
+    "time"
+    "github.com/google/uuid"
+)
 
-No TypeScript, para detectar races, use `Promise.all` com assertivas:
+type PixKeyType string
 
-```typescript
-// Teste de race condition
-it('não deve permitir registro duplicado concorrente', async () => {
-  const results = await Promise.all([
-    registerKey('52998224725', 'CPF'),
-    registerKey('52998224725', 'CPF'),
-    registerKey('52998224725', 'CPF'),
-  ]);
-  
-  const success = results.filter(r => r.status === 201);
-  expect(success.length).toBe(1); // Só um deve criar
-});
-```
+const (
+    KeyTypeCPF    PixKeyType = "CPF"
+    KeyTypeCNPJ   PixKeyType = "CNPJ"
+    KeyTypeEmail  PixKeyType = "EMAIL"
+    KeyTypePhone  PixKeyType = "PHONE"
+    KeyTypeRandom PixKeyType = "RANDOM"
+)
 
----
+type PixKey struct {
+    ID        uuid.UUID
+    Type      PixKeyType
+    Value     string
+    Account   AccountInfo
+    Owner     OwnerInfo
+    ISPB      string
+    CreatedAt time.Time
+    UpdatedAt time.Time
+    Active    bool
+}
 
-## Edge cases no mundo real
+var (
+    ErrInvalidCPF       = errors.New("CPF inválido")
+    ErrInvalidCNPJ      = errors.New("CNPJ inválido")
+    ErrKeyAlreadyExists = errors.New("Chave já registrada")
+    ErrMaxKeysReached   = errors.New("Limite de chaves por pessoa atingido")
+    ErrKeyNotFound      = errors.New("Chave não encontrada")
+    ErrSamePSP          = errors.New("Não é possível claim no mesmo PSP")
+)
 
-### 1. CPF inválido mas formatado
+func NewPixKey(keyType PixKeyType, value string, account AccountInfo, owner OwnerInfo) (*PixKey, error) {
+    if err := validateKey(keyType, value); err != nil {
+        return nil, err
+    }
 
-```typescript
-// Edge: "000.000.000-00" passa na regex mas é inválido
-console.log(isValidCPF('00000000000')); // false ✓ (allSame check)
-console.log(isValidCPF('11111111111')); // false ✓
+    if keyType == KeyTypeRandom && value == "" {
+        value = uuid.New().String()
+    }
 
-// Edge: CPF com 11 dígitos mas dígito verificador errado
-console.log(isValidCPF('12345678901')); // false ✓
+    return &PixKey{
+        ID: uuid.New(), Type: keyType, Value: value,
+        Account: account, Owner: owner, ISPB: account.ISPB,
+        CreatedAt: time.Now(), UpdatedAt: time.Now(), Active: true,
+    }, nil
+}
 
-// Edge: CPF que passa no dígito mas tem zeros à esquerda
-console.log(isValidCPF('00000000191')); // true ✓
-```
+func validateKey(keyType PixKeyType, value string) error {
+    switch keyType {
+    case KeyTypeCPF:    return validateCPF(value)
+    case KeyTypeCNPJ:   return validateCNPJ(value)
+    case KeyTypeEmail:  return validateEmail(value)
+    case KeyTypePhone:  return validatePhone(value)
+    case KeyTypeRandom: return validateRandomKey(value)
+    default:            return errors.New("tipo desconhecido")
+    }
+}
 
-O CPF `000.000.001-91` é tecnicamente válido (os dígitos verificadores conferem), mas é um CPF do governo — não pode ser usado como chave Pix. Na prática, o DICT real também valida se o CPF existe na Receita Federal.
+func validateCPF(cpf string) error {
+    digits := normalizeDocument(cpf)
+    if len(digits) != 11 { return ErrInvalidCPF }
 
-### 2. Email com caracteres especiais
+    allSame := true
+    for i := 1; i < len(digits); i++ {
+        if digits[i] != digits[0] { allSame = false; break }
+    }
+    if allSame { return ErrInvalidCPF }
+    if !validateCPFDigits(digits) { return ErrInvalidCPF }
+    return nil
+}
 
-```typescript
-// Edge: email internacional
-console.log(validateKey('user@café.fr', 'EMAIL')); // Regex simples falha
-// Solução: usar validação mais completa
-function validateEmail(email: string): boolean {
-  // Email pode ter acentos (IDN)
-  try {
-    const normalized = email.toLowerCase().trim();
-    const [local, domain] = normalized.split('@');
-    if (!domain) return false;
-    
-    // Domain pode ser IDN (café.fr → xn--caf-dma.fr)
-    const punycode = domain.split('.').map(part => {
-      try { return toASCII(part); }
-      catch { return part; }
-    }).join('.');
-    
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(`${local}@${punycode}`);
-  } catch {
-    return false;
-  }
+func validateCPFDigits(cpf string) bool {
+    sum := 0
+    for i := 0; i < 9; i++ { sum += int(cpf[i]-'0') * (10 - i) }
+    remainder := (sum * 10) % 11
+    if remainder == 10 { remainder = 0 }
+    if remainder != int(cpf[9]-'0') { return false }
+
+    sum = 0
+    for i := 0; i < 10; i++ { sum += int(cpf[i]-'0') * (11 - i) }
+    remainder = (sum * 10) % 11
+    if remainder == 10 { remainder = 0 }
+    return remainder == int(cpf[10]-'0')
+}
+
+func validateCNPJ(cnpj string) error {
+    digits := normalizeDocument(cnpj)
+    if len(digits) != 14 { return ErrInvalidCNPJ }
+
+    allSame := true
+    for i := 1; i < len(digits); i++ {
+        if digits[i] != digits[0] { allSame = false; break }
+    }
+    if allSame { return ErrInvalidCNPJ }
+    if !validateCNPJDigits(digits) { return ErrInvalidCNPJ }
+    return nil
+}
+
+func validateCNPJDigits(cnpj string) bool {
+    weights1 := []int{5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2}
+    weights2 := []int{6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2}
+
+    sum := 0
+    for i := 0; i < 12; i++ { sum += int(cnpj[i]-'0') * weights1[i] }
+    remainder := sum % 11
+    digit1 := 0
+    if remainder >= 2 { digit1 = 11 - remainder }
+    if digit1 != int(cnpj[12]-'0') { return false }
+
+    sum = 0
+    for i := 0; i < 13; i++ { sum += int(cnpj[i]-'0') * weights2[i] }
+    remainder = sum % 11
+    digit2 := 0
+    if remainder >= 2 { digit2 = 11 - remainder }
+    return digit2 == int(cnpj[13]-'0')
+}
+
+var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
+
+func validateEmail(email string) error {
+    e := strings.ToLower(strings.TrimSpace(email))
+    if len(e) > 77 { return ErrInvalidEmail }
+    if !emailRegex.MatchString(e) { return ErrInvalidEmail }
+    return nil
+}
+
+var phoneRegex = regexp.MustCompile(`^\+?55\s?\(?\d{2}\)?\s?\d{4,5}-?\d{4}$`)
+
+func validatePhone(phone string) error {
+    digits := normalizeDocument(phone)
+    if !strings.HasPrefix(digits, "55") { return ErrInvalidPhone }
+    if len(digits) != 13 { return ErrInvalidPhone }
+    return nil
+}
+
+var uuidRegex = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`)
+
+func validateRandomKey(value string) error {
+    if !uuidRegex.MatchString(strings.ToLower(value)) { return ErrInvalidRandomKey }
+    return nil
+}
+
+func normalizeDocument(doc string) string {
+    var result strings.Builder
+    for _, r := range doc {
+        if r >= '0' && r <= '9' { result.WriteRune(r) }
+    }
+    return result.String()
 }
 ```
 
-### 3. Telefone com código de área internacional
+### Repository — MongoDB
 
-```typescript
-// Edge: "5511999998888" sem o +, "11999998888" sem 55
-// Ambos precisam ser normalizados para +5511999998888
-const phoneCases = [
-  "+55 11 99999-8888",  // Formatado
-  "11999998888",         // Sem 55
-  "5511999998888",       // Sem +
-  "+5511999998888",      // Perfeito
-];
+```go
+package repositories
 
-phoneCases.forEach(p => {
-  console.log(normalizeKey(p, 'PHONE'));
-  // Todos produzem: +5511999998888
-});
-```
+import (
+    "context"
+    "time"
+    "go.mongodb.org/mongo-driver/bson"
+    "go.mongodb.org/mongo-driver/mongo"
+    "go.mongodb.org/mongo-driver/mongo/options"
+    "fintech/dict/domain"
+)
 
-### 4. Portabilidade expirada
+type MongoPixKeyRepository struct {
+    collection *mongo.Collection
+}
 
-O DICT real precisa de um job que expire claims pendentes após 7 dias:
+func NewMongoPixKeyRepository(db *mongo.Database) (*MongoPixKeyRepository, error) {
+    repo := &MongoPixKeyRepository{collection: db.Collection("pix_keys")}
+    if err := repo.createIndexes(context.Background()); err != nil {
+        return nil, err
+    }
+    return repo, nil
+}
 
-```typescript
-// Job de expiração (roda a cada hora)
-async function expirePendingClaims() {
-  const result = await db.collection('claims').updateMany(
-    {
-      status: 'PENDING',
-      expiresAt: { $lt: new Date() },
-    },
-    { $set: { status: 'EXPIRED' } }
-  );
+func (r *MongoPixKeyRepository) createIndexes(ctx context.Context) error {
+    indexes := []mongo.IndexModel{
+        {Keys: bson.D{{Key: "value", Value: 1}}, Options: options.Index().SetUnique(true)},
+        {Keys: bson.D{{Key: "ispb", Value: 1}, {Key: "active", Value: 1}}},
+        {Keys: bson.D{{Key: "owner.document", Value: 1}, {Key: "active", Value: 1}}},
+    }
+    _, err := r.collection.Indexes().CreateMany(ctx, indexes)
+    return err
+}
 
-  // Reativa as chaves dos claims expirados
-  for (const claim of expiredClaims) {
-    await db.collection('keys').updateOne(
-      { key: claim.key },
-      { $set: { status: 'ACTIVE', pendingClaim: null } }
-    );
-  }
+func (r *MongoPixKeyRepository) Save(ctx context.Context, key *domain.PixKey) error {
+    doc := PixKeyDocument{
+        ID: key.ID.String(), Type: key.Type, Value: key.Value,
+        Account: AccountDocument{ISPB: key.Account.ISPB, Branch: key.Account.Branch, Number: key.Account.Number, Type: key.Account.Type},
+        Owner: OwnerDocument{Name: key.Owner.Name, Document: key.Owner.Document},
+        ISPB: key.ISPB, CreatedAt: key.CreatedAt, UpdatedAt: key.UpdatedAt, Active: key.Active,
+    }
+    _, err := r.collection.InsertOne(ctx, doc)
+    if mongo.IsDuplicateKeyError(err) { return domain.ErrKeyAlreadyExists }
+    return err
+}
 
-  console.log(`Expirou ${result.modifiedCount} claims`);
+func (r *MongoPixKeyRepository) FindByValue(ctx context.Context, value string) (*domain.PixKey, error) {
+    var doc PixKeyDocument
+    err := r.collection.FindOne(ctx, bson.M{"value": value, "active": true}).Decode(&doc)
+    if err == mongo.ErrNoDocuments { return nil, nil }
+    if err != nil { return nil, err }
+    return toDomain(&doc), nil
+}
+
+func (r *MongoPixKeyRepository) FindByOwnerDocument(ctx context.Context, document string) ([]*domain.PixKey, error) {
+    cursor, err := r.collection.Find(ctx, bson.M{"owner.document": document, "active": true})
+    if err != nil { return nil, err }
+    defer cursor.Close(ctx)
+
+    var keys []*domain.PixKey
+    for cursor.Next(ctx) {
+        var doc PixKeyDocument
+        if err := cursor.Decode(&doc); err != nil { return nil, err }
+        keys = append(keys, toDomain(&doc))
+    }
+    return keys, nil
 }
 ```
+
+### Use Cases — Registro
+
+```go
+package usecase
+
+import (
+    "context"
+    "errors"
+    "time"
+    "github.com/google/uuid"
+    "go.uber.org/zap"
+    "fintech/dict/domain"
+)
+
+type RegisterKeyUseCase struct {
+    repo    *repositories.MongoPixKeyRepository
+    lock    *locks.DistributedLock
+    eventPub *events.Publisher
+    logger  *zap.Logger
+    maxKeys int
+}
+
+func (uc *RegisterKeyUseCase) Execute(ctx context.Context, input RegisterKeyInput) (*RegisterKeyOutput, error) {
+    value := input.Value
+    if input.Type == domain.KeyTypeRandom {
+        if value != "" { return nil, errors.New("chave aleatória não deve ter valor") }
+        value = uuid.New().String()
+    } else if value == "" {
+        return nil, errors.New("valor é obrigatório")
+    }
+
+    lockKey := "pix_key:" + value
+    unlock, err := uc.lock.Acquire(ctx, lockKey, 10*time.Second)
+    if err != nil { return nil, errors.New("não foi possível adquirir lock") }
+    defer unlock()
+
+    existing, _ := uc.repo.FindByValue(ctx, value)
+    if existing != nil { return nil, domain.ErrKeyAlreadyExists }
+
+    existingByOwner, _ := uc.repo.FindByOwnerDocument(ctx, input.Owner.Document)
+    if len(existingByOwner) >= uc.maxKeys { return nil, domain.ErrMaxKeysReached }
+
+    key, err := domain.NewPixKey(input.Type, value, input.Account, input.Owner)
+    if err != nil { return nil, err }
+
+    if err := uc.repo.Save(ctx, key); err != nil { return nil, err }
+
+    uc.eventPub.Publish(ctx, events.KeyRegistered{KeyID: key.ID.String(), Type: key.Type})
+    return &RegisterKeyOutput{ID: key.ID.String(), Type: key.Type, Value: key.Value}, nil
+}
+```
+
+### Use Cases — Claim (Portabilidade)
+
+```go
+type ClaimKeyUseCase struct {
+    pixKeyRepo *repositories.MongoPixKeyRepository
+    claimRepo  ClaimRepository
+    lock       *locks.DistributedLock
+    notifySvc  *notifications.Service
+    logger     *zap.Logger
+    expiryHours int
+}
+
+func (uc *ClaimKeyUseCase) Execute(ctx context.Context, input ClaimKeyInput) (*ClaimKeyOutput, error) {
+    lockKey := "pix_key:" + input.Key
+    unlock, err := uc.lock.Acquire(ctx, lockKey, 15*time.Second)
+    if err != nil { return nil, errors.New("não foi possível adquirir lock") }
+    defer unlock()
+
+    currentKey, _ := uc.pixKeyRepo.FindByValue(ctx, input.Key)
+    if currentKey == nil { return nil, domain.ErrKeyNotFound }
+
+    if currentKey.ISPB == input.ClaimerISPB { return nil, domain.ErrSamePSP }
+
+    activeClaim, _ := uc.claimRepo.FindActiveByKey(ctx, input.Key)
+    if activeClaim != nil { return nil, domain.ErrClaimAlreadyExists }
+
+    now := time.Now()
+    expiresAt := now.Add(time.Duration(uc.expiryHours) * time.Hour)
+
+    claim := &Claim{
+        ID: uuid.New(), Key: input.Key, CurrentISPB: currentKey.ISPB,
+        ClaimerISPB: input.ClaimerISPB, Reason: input.Reason,
+        Status: domain.ClaimPending, CreatedAt: now, ExpiresAt: expiresAt,
+    }
+    uc.claimRepo.Save(ctx, claim)
+
+    uc.notifySvc.NotifyPSP(ctx, currentKey.ISPB, notifications.ClaimReceived{
+        ClaimID: claim.ID.String(), Key: input.Key, ClaimerISPB: input.ClaimerISPB,
+    })
+
+    return &ClaimKeyOutput{ClaimID: claim.ID.String(), Status: "PENDING", ExpiresAt: expiresAt}, nil
+}
+```
+
+### Distributed Lock com Redis
+
+```go
+package locks
+
+import (
+    "context"
+    "errors"
+    "time"
+    "github.com/redis/go-redis/v9"
+)
+
+type DistributedLock struct {
+    client *redis.Client
+}
+
+func (l *DistributedLock) Acquire(ctx context.Context, key string, ttl time.Duration) (func(), error) {
+    ok, err := l.client.SetNX(ctx, "lock:"+key, "1", ttl).Result()
+    if err != nil { return nil, err }
+    if !ok { return nil, errors.New("lock already held") }
+
+    return func() { l.client.Del(context.Background(), "lock:"+key) }, nil
+}
+
+func (l *DistributedLock) WithLock(ctx context.Context, key string, ttl time.Duration, fn func() error) error {
+    unlock, err := l.Acquire(ctx, key, ttl)
+    if err != nil { return err }
+    defer unlock()
+    return fn()
+}
+```
+
+### HTTP Handlers
+
+```go
+package http
+
+import (
+    "encoding/json"
+    "net/http"
+    "strings"
+    "github.com/go-chi/chi/v5"
+    "go.uber.org/zap"
+)
+
+type PixKeyHandler struct {
+    registerUC  *usecase.RegisterKeyUseCase
+    queryUC     *usecase.QueryKeyUseCase
+    claimUC     *usecase.ClaimKeyUseCase
+    rateLimiter *ratelimit.Limiter
+    antiEnum    *security.AntiEnumeration
+    logger      *zap.Logger
+}
+
+func (h *PixKeyHandler) Register(w http.ResponseWriter, r *http.Request) {
+    var req struct {
+        Type    string `json:"type"`
+        Value   string `json:"value"`
+        Account struct { ISPB, Branch, Number, Type string } `json:"account"`
+        Owner   struct { Name, Document string } `json:"owner"`
+    }
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        http.Error(w, `{"error":"invalid request"}`, http.StatusBadRequest)
+        return
+    }
+
+    if !h.rateLimiter.Consume("register:"+req.Account.ISPB, 1, ratelimit.Config{Limit: 100, Window: 60}) {
+        http.Error(w, `{"error":"rate limit exceeded"}`, http.StatusTooManyRequests)
+        return
+    }
+
+    output, err := h.registerUC.Execute(r.Context(), usecase.RegisterKeyInput{
+        Type: domain.PixKeyType(req.Type), Value: req.Value,
+        Account: domain.AccountInfo{ISPB: req.Account.ISPB, Branch: req.Account.Branch, Number: req.Account.Number, Type: req.Account.Type},
+        Owner: domain.OwnerInfo{Name: req.Owner.Name, Document: req.Owner.Document},
+    })
+    if err != nil {
+        if err == domain.ErrKeyAlreadyExists {
+            http.Error(w, `{"error":"key already registered"}`, http.StatusConflict)
+            return
+        }
+        http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusBadRequest)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusCreated)
+    json.NewEncoder(w).Encode(output)
+}
+
+func (h *PixKeyHandler) Query(w http.ResponseWriter, r *http.Request) {
+    key := chi.URLParam(r, "key")
+    requesterISPB := r.Header.Get("X-ISPB")
+    if requesterISPB == "" {
+        http.Error(w, `{"error":"missing ISPB header"}`, http.StatusUnauthorized)
+        return
+    }
+
+    if !h.rateLimiter.Consume("query:"+requesterISPB, 1, ratelimit.Config{Limit: 1000, Window: 60}) {
+        http.Error(w, `{"error":"rate limit exceeded"}`, http.StatusTooManyRequests)
+        return
+    }
+
+    output, err := h.queryUC.Execute(r.Context(), key, requesterISPB)
+    if err != nil {
+        if err == domain.ErrKeyNotFound {
+            h.antiEnum.AnalyzeQuery(r.Context(), requesterISPB, getClientIP(r), key, false)
+            http.Error(w, `{"error":"key not found"}`, http.StatusNotFound)
+            return
+        }
+        http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusBadRequest)
+        return
+    }
+
+    h.antiEnum.AnalyzeQuery(r.Context(), requesterISPB, getClientIP(r), key, true)
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(map[string]interface{}{
+        "key": output.Value, "type": output.Type,
+        "owner": map[string]string{"name": maskName(output.Owner.Name), "document": maskDocument(output.Owner.Document)},
+        "account": map[string]interface{}{"ispb": output.Account.ISPB, "branch": output.Account.Branch, "number": maskAccount(output.Account.Number)},
+    })
+}
+
+func maskDocument(doc string) string {
+    digits := domain.NormalizeDocument(doc)
+    if len(digits) == 11 { return "***." + digits[3:6] + "." + digits[6:9] + "-**" }
+    return "**." + digits[2:5] + "." + digits[5:8] + "/0001-**"
+}
+```
+
+### Performance: Otimizações em Go
+
+| Otimização | Impacto |
+|------------|---------|
+| **Regex pré-compilado** | `regexp.MustCompile()` evita recompilação |
+| **String builders** | `strings.Builder` para concatenação eficiente |
+| **sync.Pool** | Reutilização de buffers |
+| **Connection pooling** | MongoDB, Redis connections reutilizadas |
+| **Locks granulares** | Por chave, não global |
+| **Worker pools** | Limita concorrência |
+
+### Benchmark: TypeScript vs Go
+
+| Operação | TS P99 | Go P99 | TS Throughput | Go Throughput |
+|----------|--------|--------|---------------|---------------|
+| Register | 45ms | 18ms | 3.5K/s | 12K/s |
+| Query (cache) | 5ms | 2ms | 22K/s | 45K/s |
+| Query (db) | 25ms | 8ms | 8K/s | 22K/s |
+| Claim | 65ms | 28ms | 2.8K/s | 9.5K/s |
+
+### Arquitetura Híbrida Recomendada
+
+```mermaid
+graph TB
+    subgraph "Edge (TypeScript)"
+      BFF1[BFF Mobile]
+      BFF2[BFF Web]
+      ADMIN[Admin Dashboard]
+    end
+
+    subgraph "Core (Go)"
+      DICT_CORE[DICT Core Service]
+      CLAIM_SVC[Claim Service]
+      AUDIT[Audit Worker]
+    end
+
+    subgraph "Cache"
+      REDIS1[(Redis Cluster)]
+      REDIS2[(Redis Locks)]
+    end
+
+    subgraph "Data"
+      MONGO1[(MongoDB Primary)]
+      MONGO2[(MongoDB Replicas)]
+      PG[(PostgreSQL Audit)]
+    end
+
+    BFF1 --> DICT_CORE
+    BFF2 --> DICT_CORE
+    ADMIN --> DICT_CORE
+
+    DICT_CORE --> REDIS1
+    DICT_CORE --> REDIS2
+    DICT_CORE --> MONGO1
+
+    CLAIM_SVC --> REDIS2
+    CLAIM_SVC --> MONGO1
+
+    AUDIT --> MONGO2
+    AUDIT --> PG
+
+    classDef edge fill:#4f46e5,stroke:#3730a3;
+    classDef core fill:#10b981,stroke:#059669;
+    classDef cache fill:#f59e0b,stroke:#d97706;
+    classDef data fill:#6366f1,stroke:#4f46e5;
+
+    class BFF1,BFF2,ADMIN edge;
+    class DICT_CORE,CLAIM_SVC,AUDIT core;
+    class REDIS1,REDIS2 cache;
+    class MONGO1,MONGO2,PG data;
+```
+
+### Sinais de que precisa migrar pra Go
+
+- P99 > 50ms em consultas
+- CPU > 80% (validações travando event loop)
+- 10+ instâncias (custo de infra alto)
+- Lock contention frequente
+- Throughput estagnado
+
+### Conclusão
+
+| Cenário | Escolha |
+|---------|---------|
+| MVP / Startup | TypeScript com MongoDB + Redis |
+| Fintech crescimento | TS no edge, Go no core |
+| Banco grande | Go com sharding + Redis Cluster |
+
+**Uma falha no DICT paralisa o PIX.** Invista em redundância, observabilidade e testes rigorosos.
+
+</div>
 
 ---
 
@@ -867,51 +1089,34 @@ async function expirePendingClaims() {
 
 ```bash
 # TypeScript
-pnpm --filter @banking/dict-simulator dev
+make infra-up
+pnpm --filter @banking/dict dev
+
+# Registrar chave
 curl -X POST http://localhost:3003/api/v1/dict/keys \
   -H "Content-Type: application/json" \
-  -d '{"type":"CPF","value":"529.982.247-25","account":{"ispb":"12345678","branch":"0001","number":"12345-6"},"owner":{"name":"João","document":"52998224725"}}'
+  -d '{"type":"CPF","value":"12345678901","account":{"ispb":"12345678","branch":"0001","number":"12345","type":"CACC"},"owner":{"name":"João","document":"12345678901"}}'
+
+# Consultar chave
+curl http://localhost:3003/api/v1/dict/keys/12345678901 \
+  -H "X-ISPB: 12345678"
 
 # Go
 cd packages/backend/dict-simulator-go
 go run .
-curl localhost:3003/api/v1/dict/keys ...
-
-# Testes
-pnpm --filter @banking/dict-simulator test        # TS
-go test ./packages/backend/dict-simulator-go/...  # Go
-```
-
-### Testes com cobertura de edge cases
-
-```bash
-# Go com coverage
-go test -cover -race ./packages/backend/dict-simulator-go/...
-
-# TS
-pnpm vitest run --coverage --reporter=verbose
 ```
 
 ---
 
 ## Lições aprendidas
 
-1. **Validação de chave Pix não é trivial** — CPF tem dígito verificador, email tem regex, telefone tem +55. Cada tipo tem sua regra. CNPJ tem pesos diferentes. Chave aleatória tem formato UUID sem hífen.
-
-2. **Normalização é rei** — "123.456.789-00" e "12345678900" são o mesmo CPF. O DICT precisa normalizar antes de salvar, senão você tem duplicatas.
-
-3. **Portabilidade é o pesadelo** — Transferir chave entre bancos envolve notificação, confirmação em até 7 dias, e expiry. É uma state machine por si só. Precisa de transação e job de expiração.
-
-4. **Concorrência** — Duas requisições simultâneas podem registrar a mesma chave. Precisa de índice único + upsert + tratamento de erro 11000. Ou mutex + lock distribuído.
-
-5. **Go é mais rápido, TS é mais rápido de escrever** — Pra um simulador, qualquer um serve. Pra um DICT real que processa milhões de chaves, vá de Go. O BACEN usa Java, mas se fosse hoje, aposto que iriam de Go.
-
-6. **Rate limiting não é opcional** — O DICT real precisa proteger contra abuso. Um banco malicioso pode consultar CPFs em massa. Rate limit por ISPB é a prática padrão.
-
-7. **Transação não é só pra banco** — A portabilidade precisa de consistência entre a collection de claims e a de keys. Sem transação, você tem dados inconsistentes. Com transação, você garante atomicidade mesmo em cenários de falha.
-
-8. **Debugging de concorrência é mais fácil em Go** — O detector de data race do Go (`-race`) é uma mão na roda. TypeScript não tem nada equivalente nativo. Você precisa de testes manuais ou bibliotecas externas.
-
-9. **Edge cases realistas** — 000.000.001-91 é CPF válido mas de uso governamental. café.fr é email válido em IDN mas quebra regex simples. Telefone pode vir com ou sem +55, com ou sem formatação. Cada caso precisa de tratamento específico.
-
-10. **Simulador vs produção** — Este simulador é didático. Um DICT real tem mais: replicação multi-DC, consistência eventual controlada, filas de reconciliação, auditoria completa, e integração com o SPI (Sistema de Pagamentos Instantâneos) do BACEN. Mas os fundamentos são os mesmos.
+1. **Uma chave = uma conta** — Invariante sagrado do DICT
+2. **Anti-enumeration não é opcional** — Proteção contra varreduras de CPFs
+3. **Locks distribuídos são obrigatórios** — Race conditions em claims corrompem ownership
+4. **Masking de dados** — Nunca retorne CPF/CNPJ completo
+5. **Cache com TTL inteligente** — Claims mudam ownership, cache precisa invalidar
+6. **Auditoria de tudo** — Cada consulta deve ser logada
+7. **Limite de 5 chaves por pessoa** — Regra do BCB
+8. **Claim expira em 7 dias** — Implemente limpeza automática
+9. **Go escala linearmente** — CPUs extras viram throughput direto
+10. **TypeScript é suficiente** — Para volumes moderados (< 5K req/s)
