@@ -13,7 +13,7 @@ export default withMermaid(defineConfig({
     ['meta', { name: 'og:title', content: 'Banking Challenges — Desafios técnicos para fintechs' }],
     ['meta', { name: 'og:description', content: '14 projetos que simulam problemas reais do mercado financeiro brasileiro. SPI, DICT, ISO 8583, Open Finance, e mais.' }],
     ['meta', { name: 'og:image', content: '/og-image.png' }],
-    ['meta', { name: 'og:url', content: 'https://banking-docs.vercel.app' }],
+    ['meta', { name: 'og:url', content: 'https://banking-stack-docs.vercel.app' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:title', content: 'Banking Challenges' }],
     ['meta', { name: 'twitter:description', content: '14 desafios técnicos para fintechs' }],

@@ -29,7 +29,7 @@ O Banking Challenges tem uma das documentações mais completas que já fiz:
 - Status codes e error handling
 
 **Tudo deployado em:**
-- https://banking-docs.vercel.app
+- https://banking-stack-docs.vercel.app
 - VitePress + Vercel
 - Auto-deploy a cada push
 

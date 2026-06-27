@@ -39,6 +39,6 @@ O Banking Challenges é um monorepo com 14 desafios técnicos reais de fintech:
 - Guias de contribuição e testes
 - Deploy em Vercel
 
-Link: https://banking-docs.vercel.app
+Link: https://banking-stack-docs.vercel.app
 
 #buildinpublic #fintech #backend #golang #typescript #portfolio
