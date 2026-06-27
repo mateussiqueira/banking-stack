@@ -1,8 +1,17 @@
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: 'Banking Challenges',
   description: 'Desafios técnicos full-stack para fintechs',
+  
+  markdown: {
+    mermaid: true,
+  },
+  
+  mermaid: {
+    theme: 'default',
+  },
   
   locales: {
     root: {
@@ -21,7 +30,9 @@ export default defineConfig({
               text: 'Introdução',
               items: [
                 { text: 'O que é', link: '/' },
-                { text: 'Como rodar', link: '/getting-started' },
+                { text: 'Como rodar', link: '/guides/getting-started' },
+                { text: 'Contribuir', link: '/guides/contribution' },
+                { text: 'Testes', link: '/guides/testing' },
               ]
             },
             {
@@ -38,13 +49,25 @@ export default defineConfig({
                 { text: '09 — Leaky Bucket', link: '/challenges/09-leaky-bucket' },
                 { text: '10 — Landing Page', link: '/challenges/10-landing-page' },
                 { text: '11 — KYC System', link: '/challenges/11-kyc' },
+                { text: '12 — Proxmox', link: '/challenges/12-proxmox' },
+                { text: '13 — CI/CD', link: '/challenges/13-cicd' },
+                { text: '14 — RFC', link: '/challenges/14-rfc' },
               ]
             },
             {
               text: 'Decisões',
               items: [
                 { text: 'Por que Go?', link: '/decisions/why-go' },
+                { text: 'ADR (5 decisões)', link: '/architecture/decision-log' },
                 { text: 'Comparação de Stacks', link: '/stack-comparison' },
+              ]
+            },
+            {
+              text: 'RFCs',
+              items: [
+                { text: 'Credit on Pix', link: '/rfc/credit-on-pix' },
+                { text: 'Data Lake', link: '/rfc/data-lake' },
+                { text: 'Financial Monitoring', link: '/rfc/financial-monitoring' },
               ]
             },
             {
@@ -75,7 +98,9 @@ export default defineConfig({
               text: 'Introduction',
               items: [
                 { text: 'What is it', link: '/en/' },
-                { text: 'Getting Started', link: '/en/getting-started' },
+                { text: 'Getting Started', link: '/en/guides/getting-started' },
+                { text: 'Contribute', link: '/en/guides/contribution' },
+                { text: 'Testing', link: '/en/guides/testing' },
               ]
             },
             {
@@ -92,13 +117,25 @@ export default defineConfig({
                 { text: '09 — Leaky Bucket', link: '/en/challenges/09-leaky-bucket' },
                 { text: '10 — Landing Page', link: '/en/challenges/10-landing-page' },
                 { text: '11 — KYC System', link: '/en/challenges/11-kyc' },
+                { text: '12 — Proxmox', link: '/en/challenges/12-proxmox' },
+                { text: '13 — CI/CD', link: '/en/challenges/13-cicd' },
+                { text: '14 — RFC', link: '/en/challenges/14-rfc' },
               ]
             },
             {
               text: 'Decisions',
               items: [
                 { text: 'Why Go?', link: '/en/decisions/why-go' },
+                { text: 'ADR (5 decisions)', link: '/en/architecture/decision-log' },
                 { text: 'Stack Comparison', link: '/en/stack-comparison' },
+              ]
+            },
+            {
+              text: 'RFCs',
+              items: [
+                { text: 'Credit on Pix', link: '/en/rfc/credit-on-pix' },
+                { text: 'Data Lake', link: '/en/rfc/data-lake' },
+                { text: 'Financial Monitoring', link: '/en/rfc/financial-monitoring' },
               ]
             },
             {
@@ -121,7 +158,51 @@ export default defineConfig({
     ],
     
     search: {
-      provider: 'local'
-    }
+      provider: 'local',
+      options: {
+        translations: {
+          button: {
+            buttonText: 'Buscar',
+            buttonAriaLabel: 'Buscar'
+          },
+          modal: {
+            displayDetails: 'Mostrar detalhes',
+            resetButtonTitle: 'Limpar busca',
+            backButtonTitle: 'Voltar',
+            noResultsText: 'Nenhum resultado encontrado',
+            footer: {
+              selectText: 'selecionar',
+              navigateText: 'navegar',
+              closeText: 'fechar'
+            }
+          }
+        }
+      }
+    },
+    
+    editLink: {
+      pattern: 'https://github.com/mateussiqueira/banking-stack/edit/main/packages/docs/:path',
+      text: 'Editar esta página'
+    },
+    
+    lastUpdated: {
+      text: 'Última atualização'
+    },
+    
+    docFooter: {
+      prev: 'Página anterior',
+      next: 'Próxima página'
+    },
+    
+    outline: {
+      label: 'Nesta página'
+    },
+    
+    returnToTopLabel: 'Voltar ao topo',
+    sidebarMenuLabel: 'Menu',
+    darkModeSwitchLabel: 'Tema',
+    lightModeSwitchTitle: 'Modo claro',
+    darkModeSwitchTitle: 'Modo escuro',
+    systemModeSwitchTitle: 'Modo sistema'
   }
-})
+}))
