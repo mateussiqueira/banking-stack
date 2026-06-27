@@ -38,7 +38,7 @@ make dev
 | Command | Description |
 |---------|-------------|
 | `make dev` | Start all services in development mode |
-| `make infra` | Start infrastructure containers (Mongo, Redis, Postgres, MinIO) |
+| `make infra-up` | Start infrastructure containers (Mongo, Redis, Postgres, MinIO) |
 | `make test` | Run all tests |
 | `make build` | Build all packages |
 | `make docs` | Start docs dev server |

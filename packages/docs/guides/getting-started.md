@@ -21,7 +21,7 @@
 ### 1. Clone
 
 ```bash
-git clone https://github.com/your-org/banking-stack.git
+git clone https://github.com/mateussiqueira/banking-stack.git
 cd banking-stack
 ```
 

@@ -5,6 +5,23 @@ export default withMermaid(defineConfig({
   title: 'Banking Challenges',
   description: 'Desafios técnicos full-stack para fintechs',
   
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
+    ['meta', { name: 'theme-color', content: '#0077B5' }],
+    ['meta', { name: 'og:type', content: 'website' }],
+    ['meta', { name: 'og:title', content: 'Banking Challenges — Desafios técnicos para fintechs' }],
+    ['meta', { name: 'og:description', content: '14 projetos que simulam problemas reais do mercado financeiro brasileiro. SPI, DICT, ISO 8583, Open Finance, e mais.' }],
+    ['meta', { name: 'og:image', content: '/og-image.png' }],
+    ['meta', { name: 'og:url', content: 'https://banking-docs.vercel.app' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:title', content: 'Banking Challenges' }],
+    ['meta', { name: 'twitter:description', content: '14 desafios técnicos para fintechs' }],
+    ['meta', { name: 'twitter:image', content: '/og-image.png' }],
+    ['meta', { name: 'author', content: 'Mateus Siqueira' }],
+    ['meta', { name: 'robots', content: 'index, follow' }],
+    ['meta', { name: 'keywords', content: 'fintech, banking, pix, spi, dict, iso8583, open finance, typescript, go, docker, graphql' }],
+  ],
+  
   markdown: {
     lineNumbers: true,
     theme: {
@@ -15,6 +32,23 @@ export default withMermaid(defineConfig({
   
   mermaid: {
     theme: 'default',
+    themeVariables: {
+      dark: {
+        primaryColor: '#3b82f6',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#1d4ed8',
+        lineColor: '#64748b',
+        secondaryColor: '#1e293b',
+        tertiaryColor: '#0f172a',
+        background: '#0f172a',
+        mainBkg: '#1e293b',
+        nodeBorder: '#3b82f6',
+        clusterBkg: '#1e293b',
+        titleColor: '#f1f5f9',
+        edgeLabelBackground: '#1e293b',
+        textColor: '#f1f5f9'
+      }
+    }
   },
   
   locales: {

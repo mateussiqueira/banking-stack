@@ -1,5 +1,8 @@
 /* Banking Stack — Professional Documentation Theme */
 
+/* ===== Google Fonts ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 /* ===== Base Variables ===== */
 :root {
   --vp-c-brand-1: #2563eb;
@@ -183,17 +186,21 @@
 }
 
 .vp-doc .custom-block.tip {
-  border-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.06);
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
 }
 
 .vp-doc .custom-block.tip .custom-block-title {
-  color: #3b82f6;
+  color: var(--vp-c-brand-1);
 }
 
 .vp-doc .custom-block.warning {
   border-color: #f59e0b;
   background: rgba(245, 158, 11, 0.06);
+}
+
+.dark .vp-doc .custom-block.warning {
+  background: rgba(245, 158, 11, 0.1);
 }
 
 .vp-doc .custom-block.warning .custom-block-title {
@@ -203,6 +210,10 @@
 .vp-doc .custom-block.danger {
   border-color: #ef4444;
   background: rgba(239, 68, 68, 0.06);
+}
+
+.dark .vp-doc .custom-block.danger {
+  background: rgba(239, 68, 68, 0.1);
 }
 
 .vp-doc .custom-block.danger .custom-block-title {
@@ -527,4 +538,80 @@
 
 .vp-doc > * {
   animation: fadeIn 0.15s ease-out;
+}
+
+/* ===== Accessibility: Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== Selection ===== */
+::selection {
+  background: rgba(37, 99, 235, 0.2);
+  color: var(--vp-c-text-1);
+}
+
+.dark ::selection {
+  background: rgba(96, 165, 250, 0.3);
+}
+
+/* ===== Focus Visible ===== */
+:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ===== Author Section ===== */
+.author-section {
+  text-align: center;
+  padding: 2rem 0;
+  margin-top: 2rem;
+  border-top: 1px solid var(--vp-c-border);
+}
+
+.author-section h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.author-section p {
+  color: var(--vp-c-text-2);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.author-section a {
+  text-decoration: none !important;
+  margin: 0 0.25rem;
+}
+
+/* ===== Custom Block Improvements ===== */
+.vp-doc .custom-block-title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* ===== Code Line Highlight ===== */
+.vp-doc div[class*='language-'] .line-numbers {
+  border-right: 1px solid var(--vp-c-border);
+  padding-right: 1rem;
+  margin-right: 1rem;
+}
+
+/* ===== Mermaid ===== */
+.mermaid {
+  text-align: center;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--vp-c-bg-soft);
+  border-radius: 8px;
+  border: 1px solid var(--vp-c-border);
 }

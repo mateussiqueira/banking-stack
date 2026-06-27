@@ -1,47 +1,81 @@
-# Challenge 14 — RFC Architecture
+# 14 — RFC Architecture
 
-**What is it:** Architecture Decision Records (ADRs) for documenting technical decisions.
+**What is it:** RFC (Request for Comments) architecture documents for financial systems.
 
-**Why it matters:** Teams forget why they made decisions. ADRs preserve that knowledge.
+**Why it matters:** Complex systems need well-documented decisions. RFCs capture the reasoning behind architecture choices.
 
-## The problem
+## Challenge Description
 
-Six months from now, someone will ask: "why did we use Go for the SPI simulator?"
+Create RFC (Request for Comments) architecture documents for hypothetical financial systems, demonstrating ability to design complex systems with well-documented decisions.
 
-If you don't have an ADR, you'll spend hours digging through git history, Slack messages, and documentation to find the answer.
+Requirements:
+- Complete RFC structure (problem, solution, trade-offs)
+- Architecture diagrams (ASCII and Mermaid)
+- Data modeling (ERD)
+- REST/GraphQL API design
+- Security considerations
+- Alternatives analysis
 
-## The format
+---
 
-```markdown
-# ADR 001: Use Go for SPI Simulator
+## RFC Documents
 
-## Status
-Accepted
+| # | RFC | Description |
+|---|-----|-------------|
+| 1 | [Credit on top of Pix](/en/rfc/credit-on-pix) | Credit system layered on Pix instant payments |
+| 2 | [Data Lake for Fintech](/en/rfc/data-lake) | Analytical data lake for financial data |
+| 3 | [Financial Monitoring](/en/rfc/financial-monitoring) | Real-time financial transaction monitoring |
 
-## Context
-The SPI simulator needs to process 10K+ transactions per second with low latency.
+---
 
-## Decision
-Use Go instead of TypeScript for the SPI simulator.
+## RFC Structure
 
-## Consequences
-- Better performance (50K req/s vs 2K req/s)
-- Lower memory usage (10MB vs 50MB)
-- Team needs to learn Go
-- Smaller ecosystem compared to Node.js
+Each RFC follows this structure:
+
+```
+1. Title and Metadata
+   - Title, Author, Date, Status, Version
+
+2. Problem Statement
+   - Context
+   - Motivation
+   - Goals and Non-Goals
+
+3. Proposed Solution
+   - Architecture Overview
+   - Component Diagram
+   - Data Flow
+
+4. Database Schema (Mermaid ERD)
+   - Entity-Relationship Diagram
+   - Table descriptions
+
+5. API Design
+   - Endpoints
+   - Request/Response examples
+   - Authentication
+
+6. Trade-offs and Alternatives
+   - Options considered
+   - Pros and cons
+
+7. Security Considerations
+   - Threats
+   - Mitigations
+   - Compliance
+
+8. Open Questions
+   - Items needing further discussion
 ```
 
-## How to use
+## How to View
 
-1. When making a significant decision, write an ADR
-2. Get team review
-3. Accept or reject
-4. Keep all ADRs in the repo
-5. Reference ADRs in code comments when relevant
+```bash
+# Open RFCs via VitePress
+make docs
 
-## What we learned
-
-1. **Write ADRs before coding** — forces you to think
-2. **Keep them short** — one page maximum
-3. **Include context** — not just the decision, but why
-4. **Accept that decisions change** — mark ADRs as superseded when needed
+# Direct markdown
+open packages/docs/rfc/credit-on-pix.md
+open packages/docs/rfc/data-lake.md
+open packages/docs/rfc/financial-monitoring.md
+```

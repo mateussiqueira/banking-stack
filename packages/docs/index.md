@@ -3,23 +3,53 @@ layout: home
 hero:
   name: Banking Challenges
   text: Desafios técnicos para fintechs
-  tagline: 14 projetos que simulam problemas reais do mercado financeiro brasileiro
+  tagline: 14 desafios que simulam problemas reais do mercado financeiro brasileiro
+  image:
+    src: /hero.png
+    alt: Banking Challenges
   actions:
     - theme: brand
       text: Começar
-      link: /getting-started
+      link: /guides/getting-started
     - theme: alt
       text: Ver no GitHub
       link: https://github.com/mateussiqueira/banking-stack
+badges:
+  - label: TypeScript
+    type: tip
+  - label: Go
+    type: tip
+  - label: Docker
+    type: info
+  - label: GraphQL
+    type: info
+  - label: MIT License
+    type: warning
 features:
-  - title: SPI Simulator
-    details: Simulador do Sistema de Pagamentos Instantâneos do Banco Central. ISO 20022, transações em tempo real.
-  - title: DICT Simulator
+  - icon: 💰
+    title: Ledger GraphQL
+    details: Ledger bancário com GraphQL Relay, DataLoader e MongoDB. Paginação cursor-based, transações ACID.
+    link: /challenges/01-ledger
+  - icon: ⚡
+    title: SPI Simulator
+    details: Simulador do Sistema de Pagamentos Instantâneos. ISO 20022 XML, transações em tempo real.
+    link: /challenges/02-spi
+  - icon: 🔑
+    title: DICT Simulator
     details: Diretório de Identificadores de Contas Transacionais. O sistema por trás das chaves Pix.
-  - title: ISO 8583
-    details: Simulador de mensagens financeiras binárias. O protocolo que move o mundo dos cartões.
-  - title: Go para performance
-    details: Serviços críticos em Go. Por que? Porque quando o dinheiro está em jogo, milissegundos importam.
+    link: /challenges/03-dict
+  - icon: 💳
+    title: ISO 8583
+    details: Simulador de mensagens financeiras binárias TCP. O protocolo que move o mundo dos cartões.
+    link: /challenges/04-iso8583
+  - icon: 🔄
+    title: Workflow Engine
+    details: Engine de workflows DAG com WebSockets. Orquestração de processos financeiros em tempo real.
+    link: /challenges/05-workflow
+  - icon: 🏦
+    title: Go para Performance
+    details: SPI e DICT reimplementados em Go + Gin. 4x menos memória, deploy binário, concurrency nativa.
+    link: /decisions/why-go
 ---
 
 # Banking Challenges
@@ -38,10 +68,12 @@ A ideia é simples: se você entende como esses sistemas funcionam por dentro, v
 
 ## O que você vai encontrar
 
-- **9 backend services** — cada um resolvendo um problema específico
+- **11 backend services** — cada um resolvendo um problema específico
+- **2 Go services** — SPI e DICT reimplementados para performance
 - **2 frontend apps** — KYC e landing page com design system
-- **Go e TypeScript** — a mesma coisa implementada em duas linguagens pra você ver a diferença
-- **Docs vivas** — não aquela documentação morta que ninguém lê
+- **4 databases** — MongoDB, PostgreSQL, Redis, MinIO
+- **Infra completa** — Docker, Turborepo, CI/CD, Kubernetes
+- **Docs vivas** — VitePress com i18n, Mermaid, busca integrada
 
 ## Como usar
 
@@ -64,3 +96,16 @@ Não existe resposta certa ou errada. Existem trade-offs.
 Node.js é ótimo pra prototipar. Go é ótimo pra produção. GraphQL é bom pra consultas complexas. REST é bom pra simplicidade. MongoDB é bom pra dados flexíveis. PostgreSQL é bom pra dados estruturados.
 
 O objetivo não é te ensinar uma linguagem. É te ensinar a pensar.
+
+---
+
+<div class="author-section">
+
+### Mateus Siqueira
+
+Full-stack developer especializado em arquitetura de sistemas financeiros.
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/mateussiqueira)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/mateussiqueira)
+
+</div>

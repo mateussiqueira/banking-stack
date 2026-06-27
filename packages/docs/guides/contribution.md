@@ -61,7 +61,7 @@ Add to `pnpm-workspace.yaml` and `tsconfig.json` paths.
 
 - Follow existing code patterns
 - Create tests in `src/__tests__/`
-- Document in `packages/docs/src/challenges/`
+- Document in `packages/docs/challenges/`
 
 ### 4. Test
 
@@ -88,7 +88,7 @@ git commit -m "feat: add my-challenge with REST API"
 
 ## Documentation Guidelines / Diretrizes de Documentação
 
-- Every challenge needs a markdown file in `packages/docs/src/challenges/`
+- Every challenge needs a markdown file in `packages/docs/challenges/`
 - Files should be named `NN-name.md` (e.g., `01-ledger.md`)
 - Include PT and EN sections
 - Use ASCII diagrams for architecture
