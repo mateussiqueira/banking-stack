@@ -4,7 +4,7 @@
   "description": "Banking Technical Challenges - Full-stack fintech monorepo",
   "scripts": {
     "dev": "turbo dev",
-    "build": "turbo build",
+    "build": "cd packages/docs && npm run build",
     "test": "turbo test",
     "lint": "turbo lint",
     "clean": "turbo clean",
