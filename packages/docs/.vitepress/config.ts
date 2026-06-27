@@ -204,6 +204,8 @@ export default withMermaid(defineConfig({
   },
   
   themeConfig: {
+    logo: '/logo.svg',
+    siteTitle: 'Banking Challenges',
     socialLinks: [
       { icon: 'github', link: 'https://github.com/mateussiqueira/banking-stack' }
     ],

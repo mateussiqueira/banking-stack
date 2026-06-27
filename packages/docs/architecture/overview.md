@@ -67,19 +67,19 @@ Banking Challenges is a monorepo managed by **Turborepo** with **pnpm workspaces
 | Challenge | Backend | Database | Protocol | Status |
 |-----------|---------|----------|----------|--------|
 | 01 — Ledger | Koa + GraphQL | MongoDB | GraphQL (Relay) | ✅ |
-| 02 — SPI | Fastify | In-memory | ISO 20022 XML | ✅ |
-| 03 — DICT | Express | — | REST JSON | 📋 |
-| 04 — ISO 8583 | TCP Server | — | Binary | 📋 |
-| 05 — Workflow | Express | Redis | REST | 📋 |
-| 06 — Open Fin | Express | — | OAuth 2.0 | 📋 |
-| 07 — NFS-e | Express | — | SOAP/XML | 📋 |
-| 08 — Report | Express | PostgreSQL + MinIO | REST | 📋 |
-| 09 — Leaky Bucket | Express | Redis | REST | 📋 |
-| 10 — Landing Page | Next.js 14 | — | SSR | ✅ |
+| 02 — SPI | Gin (Go) | In-memory | ISO 20022 XML | ✅ |
+| 03 — DICT | Gin (Go) | In-memory | REST JSON | ✅ |
+| 04 — ISO 8583 | TCP Server | PostgreSQL | Binary | ✅ |
+| 05 — Workflow | Fastify | Redis | REST + WebSockets | ✅ |
+| 06 — Open Finance | Fastify | — | OAuth 2.0 + FAPI | ✅ |
+| 07 — NFS-e | Fastify | — | SOAP/XML | ✅ |
+| 08 — Report | Fastify | PostgreSQL + MinIO | REST | ✅ |
+| 09 — Leaky Bucket | Fastify | Redis | REST + Lua | ✅ |
+| 10 — Landing Page | Next.js 14 | — | SSR + Tailwind | ✅ |
 | 11 — KYC | Vite + React | — | REST/Fetch | ✅ |
-| 12 — Proxmox | — | — | Shell/API | 📋 |
-| 13 — CI/CD | — | — | YAML | 📋 |
-| 14 — RFC | — | — | Markdown | 📋 |
+| 12 — Proxmox | Terraform + Ansible | — | Shell/API | ✅ |
+| 13 — CI/CD | GitHub Actions | — | YAML | ✅ |
+| 14 — RFC | Markdown | — | Documentation | ✅ |
 
 ---
 

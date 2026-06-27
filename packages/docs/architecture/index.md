@@ -1,32 +1,32 @@
 ---
 layout: page
-title: Architecture
+title: Arquitetura
 ---
 
-# Architecture
+# Arquitetura / Architecture
 
-Technical architecture decisions, patterns, and system design for the Banking Challenges project.
+Decisões de arquitetura, padrões e design do sistema Banking Challenges.
 
-## Overview
+## Visão Geral
 
-- [Architecture Overview](/architecture/overview) — System design and component interaction
+- [Overview da Arquitetura](/architecture/overview) — Design do sistema e interação entre componentes
 - [Decision Log (ADR)](/architecture/decision-log) — 5 Architecture Decision Records
 
-## Key Decisions
+## Decisões Principais
 
-| ADR | Decision | Status |
-|-----|----------|--------|
-| ADR-001 | Monorepo with Turborepo | Accepted |
-| ADR-002 | GraphQL + Relay for Ledger | Accepted |
-| ADR-003 | ISO 20022 for SPI | Accepted |
-| ADR-004 | MongoDB for Financial Data | Accepted |
-| ADR-005 | Componentized Design System | Accepted |
+| ADR | Decisão | Status |
+|-----|---------|--------|
+| ADR-001 | Monorepo com Turborepo | Aceito |
+| ADR-002 | GraphQL + Relay para Ledger | Aceito |
+| ADR-003 | ISO 20022 para SPI | Aceito |
+| ADR-004 | MongoDB para Dados Financeiros | Aceito |
+| ADR-005 | Design System Componentizado | Aceito |
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Backend | TypeScript (Fastify, Koa, Express) + Go (Gin) |
+| Camada | Tecnologia |
+|--------|------------|
+| Backend | TypeScript (Fastify, Koa) + Go (Gin) |
 | Database | MongoDB 7, PostgreSQL 16, Redis 7 |
 | Frontend | Next.js 14, Vite + React |
 | Storage | MinIO (S3-compatible) |

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48" fill="none">
+  <rect width="40" height="40" x="4" y="4" rx="8" fill="#0077B5"/>
+  <text x="24" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle">BC</text>
+  <text x="52" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#0f172a">Banking Challenges</text>
+</svg>

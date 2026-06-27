@@ -26,7 +26,7 @@ Technical architecture decisions, patterns, and system design for the Banking Ch
 
 | Layer | Technology |
 |-------|------------|
-| Backend | TypeScript (Fastify, Koa, Express) + Go (Gin) |
+| Backend | TypeScript (Fastify, Koa) + Go (Gin) |
 | Database | MongoDB 7, PostgreSQL 16, Redis 7 |
 | Frontend | Next.js 14, Vite + React |
 | Storage | MinIO (S3-compatible) |
