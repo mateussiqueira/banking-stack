@@ -1,11 +1,11 @@
-# Desafio 07: Antecipação de Recebíveis — O Mercado de R$ 500 Bi que Move o Brasil
+# Desafio 07: NFS-e — Nota Fiscal de Serviços Eletrônica
 
-**🇧🇷** Crédito sobre Vendas Futuras  
-**🇬🇧** Receivables Financing
+**🇧🇷** Integração com Nota Fiscal Eletrônica  
+**🇬🇧** Electronic Invoice Integration
 
 ---
 
-A **Antecipação de Recebíveis** permite merchants receberem **hoje** vendas no cartão que só seriam pagas em 30, 60 ou 90 dias. Movimenta mais de **R$ 500 bilhões por ano** e é a principal receita de Stone, PagSeguro e Mercado Pago.
+No Brasil, toda empresa de serviço precisa emitir NFS-e. Cada prefeitura tem seu próprio sistema, XML e SOAP. São **5.570 municípios**, cada um com implementação diferente do padrão ABRASF. O desafio não é emitir uma nota — é emitir em qualquer município sem enlouquecer.
 
 ## Switch: TypeScript vs Go
 
@@ -13,177 +13,92 @@ A **Antecipação de Recebíveis** permite merchants receberem **hoje** vendas n
 
 <div class="lang-content ts" style="display:block;">
 
-### O que é Antecipação?
+### O que é NFS-e?
 
 | Conceito | Descrição |
 |----------|-----------|
-| **D+30** | Prazo padrão de recebimento (30 dias) |
-| **MDR** | Taxa do adquirente (1,5-3% por transação) |
-| **Spread** | Margem do banco na antecipação (2-8% a.a.) |
-| **IOF** | Imposto: 0,38% + 0,0041% ao dia |
-| **CET** | Custo Efetivo Total anualizado |
-| **FIDC** | Fundo de Investimento em Direitos Creditórios |
-
-### Matemática da Antecipação
-
-```typescript
-// Cálculo de antecipação de R$ 10.000 em 30 dias
-const valorFuturo = 10000;
-const dias = 30;
-const taxaAnual = 0.18; // 18% a.a. (CDI + spread)
-const iof = 0.0038 + (0.000041 * dias);
-const taxaFixa = 10;
-
-const taxaDiaria = Math.pow(1 + taxaAnual, 1/365) - 1;
-const desconto = valorFuturo * (Math.pow(1 + taxaDiaria, dias) - 1);
-const valorIOF = valorFuturo * iof;
-const valorLiquido = valorFuturo - desconto - valorIOF - taxaFixa;
-
-// Valor Líquido: R$ 9.795,33
-// CET: 18.00% a.a.
-```
+| **ABRASF** | Padrão nacional para NFS-e (XML, SOAP, WSDL) |
+| **Certificado A1/A3** | ICP-Brasil, não qualquer certificado |
+| **ISS** | Imposto Sobre Serviços (varia por município) |
+| **RPS** | Recibo Provisão de Serviço (pré-nota) |
+| **NFS-e** | Nota emitida após processamento pela prefeitura |
 
 ### Fluxo Completo
 
 ```mermaid
 sequenceDiagram
-    participant M as Merchant
-    participant Q as Quote Engine
-    participant R as Risk Engine
-    participant P as Pricing
-    participant C as Contract
-    participant L as Liquidation
-    participant CIP as CIP/Bacen
+    participant E as Empresa
+    participant NFS as NFS-e Service
+    participant CERT as Certificado ICP
+    participant PREF as Prefeitura
 
-    M->>Q: "Quero antecipar R$ 50.000"
-    Q->>R: Avalia risco do merchant
-    R-->>Q: Score: A (baixo risco)
-    Q->>P: Calcula taxa personalizada
-    P-->>Q: Taxa: 16,5% a.a.
-    Q-->>M: Quote: R$ 48.500 hoje
-
-    M->>C: Confirma antecipação
-    C->>C: Reserva recebíveis (lock)
-    C->>C: Gera contrato
-    C->>L: Liquidação
-    L->>CIP: Transfere R$ 48.500
-    L->>M: Credita conta
-
-    Note over L,CIP: Quando cliente pagar a venda original...
-    CIP->>L: Recebe R$ 50.000 (D+30)
-    L->>L: Quita antecipação + lucro R$ 1.500
+    E->>NFS: Dados da nota
+    NFS->>NFS: Gera XML ABRASF
+    NFS->>CERT: Assina XML (SHA256 + RSA)
+    CERT-->>NFS: XML assinado
+    NFS->>PREF: Envia SOAP (WS-Security)
+    PREF-->>NFS: Protocolo + número da nota
+    NFS-->>E: Nota fiscal emitida
 ```
 
-### Arquitetura
+### Desafios por Município
 
-```mermaid
-graph TB
-    subgraph "Merchants"
-      M1[Loja Física]
-      M2[E-commerce]
-    end
+| Cidade | Particularidade |
+|--------|-----------------|
+| **São Paulo** | Padrão ABRASF 2.0, SSL mutual |
+| **Rio de Janeiro** | WS-Security obrigatório |
+| **Belo Horizonte** | XML com campos extras |
+| **Curitiba** | WSDL customizado |
+| **Salvador** | Certificado A3 obrigatório |
 
-    subgraph "Core"
-      QUOTE[Quote Engine]
-      RISK[Risk Engine]
-      PRICING[Pricing Engine]
-      CONTRACT[Contract Manager]
-    end
-
-    subgraph "Data"
-      CARD_TX[Card Transactions]
-      CREDIT_BUREAU[Serasa/Boa Vista]
-    end
-
-    subgraph "External"
-      CIP[CIP - Câmara]
-      BACEN[Banco Central]
-      FUNDING[Funding Banks]
-    end
-
-    M1 --> QUOTE
-    M2 --> QUOTE
-    QUOTE --> RISK
-    QUOTE --> PRICING
-    RISK --> CREDIT_BUREAU
-    CONTRACT --> CIP
-    CONTRACT --> FUNDING
-
-    classDef merchant fill:#4f46e5,stroke:#3730a3;
-    classDef core fill:#10b981,stroke:#059669;
-    classDef data fill:#6366f1,stroke:#4f46e5;
-    classDef external fill:#dc2626,stroke:#b91c1c;
-
-    class M1,M2 merchant;
-    class QUOTE,RISK,PRICING,CONTRACT core;
-    class CARD_TX,CREDIT_BUREAU data;
-    class CIP,BACEN,FUNDING external;
-```
-
-### Pricing Engine
+### XML ABRASF
 
 ```typescript
-export class PricingEngine {
-  public async calculateQuote(merchantId: string, receivables: Receivable[]) {
-    const cdiRate = await this.marketData.getCDIRate();
-    const riskPremium = this.calculateRiskPremium(merchant);
-    const spread = this.calculateSpread(merchant);
-    const totalRate = cdiRate + spread + riskPremium;
-
-    let grossAmount = 0, discountAmount = 0, iofAmount = 0;
-
-    for (const r of receivables) {
-      const days = r.daysUntilPayment();
-      const dailyRate = Math.pow(1 + totalRate, 1/365) - 1;
-      const discount = r.netAmount * (Math.pow(1 + dailyRate, days) - 1);
-      const iof = r.netAmount * (0.0038 + 0.000041 * days);
-
-      grossAmount += r.netAmount;
-      discountAmount += discount;
-      iofAmount += iof;
-    }
-
-    return {
-      grossAmount, discountAmount, iofAmount,
-      netAmount: grossAmount - discountAmount - iofAmount - 10,
-      effectiveRate: this.calculateCET(grossAmount, grossAmount - discountAmount - iofAmount, avgDays),
-    };
-  }
-
-  private calculateRiskPremium(merchant: Merchant): number {
-    const ratingFactors: Record<string, number> = {
-      'AAA': 0.000, 'AA': 0.005, 'A': 0.010,
-      'BBB': 0.020, 'BB': 0.035, 'B': 0.050, 'CCC': 0.080,
-    };
-    let risk = ratingFactors[merchant.creditRating] || 0.10;
-    if (merchant.chargebackRate > 0.02) risk += 0.02;
-    if (this.monthsSince(merchant.createdAt) < 6) risk += 0.015;
-    return risk;
-  }
+function buildNFSexml(data: NFSData): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<GerarNfseEnvio xmlns="http://www.abrasf.org.br/nfse">
+  <Prestador>
+    <Cnpj>${data.provider.cnpj}</Cnpj>
+    <InscricaoMunicipal>${data.provider.municipalReg}</InscricaoMunicipal>
+  </Prestador>
+  <Servico>
+    <Valores>
+      <ValorServicos>${formatAmount(data.amount, data.cityCode)}</ValorServicos>
+      <ValorIss>${calculateISS(data.amount, data.cityCode)}</ValorIss>
+    </Valores>
+    <ItemListaServico>${data.serviceCode}</ItemListaServico>
+    <Discriminacao>${data.description}</Discriminacao>
+    <CodigoMunicipio>${data.cityCode}</CodigoMunicipio>
+  </Servico>
+  <Tomador>
+    <CpfCnpj>
+      <Cnpj>${data.taker.cnpj}</Cnpj>
+    </CpfCnpj>
+    <RazaoSocial>${data.taker.name}</RazaoSocial>
+  </Tomador>
+</GerarNfseEnvio>`;
 }
 ```
 
-### Risk Engine
+### Assinatura Digital com ICP-Brasil
 
 ```typescript
-export class RiskEngine {
-  public async evaluate(input: RiskEvaluationInput) {
-    const creditData = await this.creditBureau.query({ document: merchant.document });
-    const history = await this.historyRepo.findByMerchant(input.merchantId, { months: 12 });
-    const fraudCheck = await this.fraudService.evaluateAnticipation({ ... });
+import { readFileSync } from 'fs';
+import { createSign, createHash } from 'crypto';
+import { Pkcs12 } from 'node-forge';
 
-    const finalScore = Math.round(
-      creditData.score * 0.35 +
-      this.calculateHistoryScore(history) * 0.30 +
-      this.calculateBehaviorScore(merchant, input) * 0.20 +
-      fraudCheck.score * 0.15
-    );
+export class NFSeSigner {
+  public signXml(xml: string, pfxPath: string, password: string): string {
+    const pfxBuffer = readFileSync(pfxPath);
+    const p12 = new Pkcs12(pfxBuffer, password);
+    const privateKey = p12.getPrivateKey();
+    const certificate = p12.getCertificate();
 
-    return {
-      approved: finalScore >= 500 && input.totalAmount <= limits.maxAmount,
-      score: finalScore,
-      riskLevel: finalScore >= 800 ? 'LOW' : finalScore >= 650 ? 'MEDIUM' : 'HIGH',
-    };
+    const canonicalXml = this.canonicalize(xml);
+    const digest = createHash('sha256').update(canonicalXml).digest('base64');
+
+    const sign = createSign('RSA-SHA256').update(signedInfo).sign(privateKey);
+    return xml.replace('</GerarNfseEnvio>', `${signature}</GerarNfseEnvio>`);
   }
 }
 ```
@@ -192,179 +107,80 @@ export class RiskEngine {
 
 | Aspecto | TypeScript | Go |
 |---------|-----------|-----|
-| **Math** | Number (ok) | shopspring/decimal |
-| **Batch** | Worker threads | Goroutines |
-| **1M recebíveis** | ~14 minutos | ~80 segundos |
-| **Quote P99** | 180-1200ms | 45-280ms |
-| **Memory** | ~2GB | ~100MB |
-
-### Casos Reais
-
-- **Stone** (Go) — Líder, R$ 100+ bi/ano, P99 < 200ms
-- **PagSeguro** (Go + Java) — 40M clientes, auto-antecipação
-- **Mercado Pago** (Go) — Maior da Latam, dynamic pricing
-- **Creditas** (Go) — Nicho PME, FIDC próprio
+| **XML building** | Template literals | encoding/xml |
+| **SOAP client** | node-fetch | net/http nativo |
+| **Crypto ICP-Brasil** | node-forge | crypto/x509 nativo |
+| **Performance** | ~1K notas/s | ~5K notas/s |
+| **Memory** | ~100MB | ~20MB |
 
 </div>
 
 <div class="lang-content go" style="display:none;">
 
-### Domain — Receivable Entity
+### XML Builder
 
 ```go
-package domain
+package nfse
 
 import (
-    "errors"
-    "time"
-    "github.com/google/uuid"
+    "encoding/xml"
+    "fmt"
 )
 
-type ReceivableStatus string
-
-const (
-    StatusPending     ReceivableStatus = "PENDING"
-    StatusPaid        ReceivableStatus = "PAID"
-    StatusAnticipated ReceivableStatus = "ANTECIPATED"
-    StatusChargedBack ReceivableStatus = "CHARGED_BACK"
-)
-
-type Receivable struct {
-    ID                string
-    MerchantID        string
-    CardBrand         string
-    GrossAmount       int64 // centavos
-    NetAmount         int64 // após MDR
-    PaymentDate       time.Time
-    Status            ReceivableStatus
+type GerarNfseEnvio struct {
+    XMLName   xml.Name `xml:"GerarNfseEnvio"`
+    NS        string   `xml:"xmlns,attr"`
+    Prestador Prestador
+    Servico   Servico
+    Tomador   Tomador
 }
 
-func (r *Receivable) DaysUntilPayment(from time.Time) int {
-    days := int(time.Until(r.PaymentDate).Hours() / 24)
-    if days < 0 { days = 0 }
-    return days
-}
-
-func (r *Receivable) CanBeAnticipated() bool {
-    return r.Status == StatusPending && r.DaysUntilPayment(time.Now()) > 0
+func BuildXML(data *NFSData) ([]byte, error) {
+    envio := GerarNfseEnvio{
+        NS: "http://www.abrasf.org.br/nfse",
+        Prestador: Prestador{
+            Cnpj:               data.ProviderCNPJ,
+            InscricaoMunicipal: data.ProviderReg,
+        },
+        Servico: Servico{
+            Valores:          Valores{ValorServicos: data.Amount, ValorIss: data.ISS},
+            ItemListaServico: data.ServiceCode,
+            Discriminacao:    data.Description,
+            CodigoMunicipio:  data.CityCode,
+        },
+        Tomador: Tomador{
+            CpfCnpj:    CpfCnpj{Cnpj: data.TakerCNPJ},
+            RazaoSocial: data.TakerName,
+        },
+    }
+    return xml.MarshalIndent(envio, "", "  ")
 }
 ```
 
-### Pricing Engine com decimal
+### SOAP Client
 
 ```go
-package pricing
+func (c *SOAPClient) SendNFS(ctx context.Context, endpoint string, signedXML []byte) (*NFSResponse, error) {
+    envelope := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
+<soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
+  <soap12:Body>
+    <GerarNfse xmlns="http://www.abrasf.org.br/nfse">
+      %s
+    </GerarNfse>
+  </soap12:Body>
+</soap12:Envelope>`, string(signedXML))
 
-import (
-    "context"
-    "math"
-    "github.com/shopspring/decimal"
-)
+    req, _ := http.NewRequestWithContext(ctx, "POST", endpoint, bytes.NewBufferString(envelope))
+    req.Header.Set("Content-Type", "application/soap+xml; charset=utf-8")
 
-type Engine struct {
-    merchantRepo  MerchantRepository
-    marketData    MarketDataService
-}
+    resp, err := c.httpClient.Do(req)
+    if err != nil { return nil, err }
+    defer resp.Body.Close()
 
-func (e *Engine) CalculateQuote(ctx context.Context, merchantID string, receivables []*domain.Receivable) (*QuoteResult, error) {
-    cdiRate, _ := e.marketData.GetCDIRate(ctx)
-    riskPremium := e.calculateRiskPremium(merchant)
-    spread := e.calculateSpread(merchant)
-
-    totalRate := cdiRate.Add(spread).Add(riskPremium)
-    one := decimal.NewFromInt(1)
-    dailyRate := one.Add(totalRate).Pow(one.Div(decimal.NewFromInt(365))).Sub(one)
-
-    var grossAmount, discountAmount, iofAmount int64
-    var weightedDays, totalWeight int64
-
-    for _, r := range receivables {
-        days := int64(r.DaysUntilPayment(time.Now()))
-        factor := one.Add(dailyRate).Pow(decimal.NewFromInt(days))
-        discount := decimal.NewFromInt(r.NetAmount).Mul(factor.Sub(one))
-        iof := decimal.NewFromInt(r.NetAmount).Mul(decimal.NewFromFloat(0.0038 + 0.000041*float64(days)))
-
-        grossAmount += r.NetAmount
-        discountAmount += discount.IntPart()
-        iofAmount += iof.IntPart()
-        weightedDays += days * r.NetAmount
-        totalWeight += r.NetAmount
-    }
-
-    netAmount := grossAmount - discountAmount - iofAmount - 10
-    avgDays := weightedDays / totalWeight
-    effectiveRate := math.Pow(float64(grossAmount)/float64(netAmount), 365.0/float64(avgDays)) - 1.0
-
-    return &QuoteResult{
-        GrossAmount: grossAmount, NetAmount: netAmount,
-        DiscountAmount: discountAmount, IOFAmount: iofAmount,
-        EffectiveRate: effectiveRate, DaysToReceive: int(avgDays),
-    }, nil
-}
-```
-
-### Anticipation Use Case
-
-```go
-package usecase
-
-func (uc *AnticipateUseCase) Execute(ctx context.Context, input AnticipateInput) (*AnticipateOutput, error) {
-    // 1. Idempotência
-    if existing, _ := uc.idempotency.Check(ctx, input.IdempotencyKey); existing != nil {
-        return existing.(*AnticipateOutput), nil
-    }
-
-    // 2. Busca recebíveis
-    receivables := make([]*domain.Receivable, 0, len(input.ReceivableIDs))
-    for _, id := range input.ReceivableIDs {
-        r, _ := uc.receivableRepo.FindByID(ctx, id)
-        if r == nil { return nil, domain.ErrReceivableNotFound }
-        if r.MerchantID != input.MerchantID { return nil, domain.ErrInvalidOwnership }
-        receivables = append(receivables, r)
-    }
-
-    // 3. Risk evaluation
-    riskResult, _ := uc.riskEngine.Evaluate(ctx, risk.EvaluationInput{...})
-    if !riskResult.Approved { return nil, errors.New("rejeitado pelo risco") }
-
-    // 4. Pricing
-    quote, _ := uc.pricingEngine.CalculateQuote(ctx, input.MerchantID, receivables)
-
-    // 5. Cria contrato + lock recebíveis + funding + credita merchant
-    contract := domain.NewAnticipationContract(...)
-    uc.receivableRepo.LockForAnticipation(ctx, ids, contract.ID)
-    uc.fundingService.RequestFunding(ctx, funding.Request{Amount: quote.NetAmount})
-    uc.ledgerService.Credit(ctx, ledger.CreditRequest{Amount: quote.NetAmount})
-
-    // 6. Eventos
-    uc.eventPub.Publish(ctx, "anticipation.completed", map[string]interface{}{...})
-
-    return &AnticipateOutput{ContractID: contract.ID, NetAmount: quote.NetAmount}, nil
-}
-```
-
-### Batch Processor
-
-```go
-package jobs
-
-func (p *DailyReceivableProcessor) Execute(ctx context.Context, date time.Time) error {
-    files, _ := p.acquirerClient.DownloadReconciliationFiles(ctx, date)
-
-    var wg sync.WaitGroup
-    sem := make(chan struct{}, 50) // 50 workers paralelos
-
-    for _, file := range files {
-        wg.Add(1)
-        go func(f AcquirerFile) {
-            defer wg.Done()
-            sem <- struct{}{}
-            defer func() { <-sem }()
-            p.processFile(ctx, f)
-        }(file)
-    }
-    wg.Wait()
-    return nil
+    body, _ := io.ReadAll(resp.Body)
+    var response NFSResponse
+    xml.Unmarshal(body, &response)
+    return &response, nil
 }
 ```
 
@@ -372,17 +188,10 @@ func (p *DailyReceivableProcessor) Execute(ctx context.Context, date time.Time) 
 
 | Operação | TS | Go |
 |----------|----|----|
-| Quote (10 receiváveis) | 45ms | 12ms |
-| Quote (1K receiváveis) | 850ms | 140ms |
-| Batch 1M recebíveis | ~14min | ~80s |
-| Memory por instância | ~2GB | ~100MB |
-
-### Casos Reais
-
-- **Stone** (Go) — Líder, 30K+ TPS, batch 50M+/dia
-- **PagSeguro** (Go + Java) — 40M clientes, auto-antecipação
-- **Mercado Pago** (Go) — Maior Latam, dynamic pricing
-- **Creditas** (Go) — Nicho PME, FIDC próprio
+| Build XML | 0.5ms | 0.1ms |
+| Sign XML | 5ms | 1ms |
+| SOAP send | 200ms | 180ms |
+| Throughput | ~1K/s | ~5K/s |
 
 </div>
 
@@ -392,29 +201,29 @@ func (p *DailyReceivableProcessor) Execute(ctx context.Context, date time.Time) 
 
 ```bash
 # TypeScript
-pnpm --filter @banking/anticipation dev
+pnpm --filter @banking/nfse dev
 
 # Go
-cd packages/backend/anticipation-go
+cd packages/backend/nfse-go
 go run .
 
-# Simular cotação
-curl -X POST http://localhost:3010/anticipation/quote \
+# Emitir NFS-e
+curl -X POST http://localhost:3008/nfse/emitir \
   -H "Content-Type: application/json" \
-  -d '{"receivableIds":["uuid1","uuid2"]}'
+  -d '{"cnpj":"12345678000199","serviceCode":"1702","amount":1500.00,"cityCode":"3550308","taker":{"cnpj":"98765432000110","name":"Cliente LTDA"}}'
 ```
 
 ---
 
 ## Lições aprendidas
 
-1. **R$ 500+ bi/ano** — Maior mercado de crédito do Brasil
-2. **Matemática precisa é crítica** — Centavos importam em escala
-3. **shopspring/decimal** — Nunca float nativo pra dinheiro em Go
-4. **Batch processing** — 50M+ recebíveis/dia em grandes adquirentes
-5. **Risk engine multi-camada** — Crédito + histórico + comportamento + fraude
-6. **Funding sources** — Capital próprio, FIDCs, bancos atacadistas
-7. **Chargeback é o maior risco** — Merchant pode sumir
-8. **CET precisa ser divulgado** — Exigência BACEN
-9. **Go processa 1M em 80s** — vs 14min em TypeScript
-10. **Stone, PagSeguro e Mercado Pago** — Todos usam Go no core
+1. **5.570 municípios** — Cada um com implementação diferente do ABRASF
+2. **Certificado ICP-Brasil** — Não é qualquer certificado
+3. **XML é Sagrado** — Um campo a mais = rejeição
+4. **SOAP varia por cidade** — WS-Security, mTLS, HTTPS simples
+5. **ISS varia por município** — Alíquota diferente em cada lugar
+6. **Go simplifica crypto** — Certificados ICP-Brasil na stdlib
+7. **Template XML é perigoso** — Prefira encoding/xml
+8. **Teste com certificado de homologação** — Nunca use A1 de produção
+9. **Cache de WSDL** — Prefeituras mudam WSDL sem aviso
+10. **Log de todas as notas** — Auditoria é obrigatória

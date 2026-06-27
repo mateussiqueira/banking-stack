@@ -86,7 +86,7 @@ export default withMermaid(defineConfig({
                 { text: '04 — ISO 8583', link: '/challenges/04-iso8583' },
                 { text: '05 — Workflow Engine', link: '/challenges/05-workflow' },
                 { text: '06 — Open Finance', link: '/challenges/06-open-finance' },
-                { text: '07 — Antecipação', link: '/challenges/07-nfse' },
+                { text: '07 — NFS-e', link: '/challenges/07-nfse' },
                 { text: '08 — Report System', link: '/challenges/08-report' },
                 { text: '09 — Leaky Bucket', link: '/challenges/09-leaky-bucket' },
                 { text: '10 — Landing Page', link: '/challenges/10-landing-page' },
@@ -94,6 +94,8 @@ export default withMermaid(defineConfig({
                 { text: '12 — Proxmox', link: '/challenges/12-proxmox' },
                 { text: '13 — CI/CD', link: '/challenges/13-cicd' },
                 { text: '14 — RFC', link: '/challenges/14-rfc' },
+                { text: '15 — PISP', link: '/challenges/15-pisp' },
+                { text: '16 — Antecipação', link: '/challenges/16-anticipation' },
               ]
             },
             {
@@ -160,7 +162,7 @@ export default withMermaid(defineConfig({
                 { text: '04 — ISO 8583', link: '/en/challenges/04-iso8583' },
                 { text: '05 — Workflow Engine', link: '/en/challenges/05-workflow' },
                 { text: '06 — Open Finance', link: '/en/challenges/06-open-finance' },
-                { text: '07 — Antecipação', link: '/en/challenges/07-nfse' },
+                { text: '07 — NFS-e', link: '/en/challenges/07-nfse' },
                 { text: '08 — Report System', link: '/en/challenges/08-report' },
                 { text: '09 — Leaky Bucket', link: '/en/challenges/09-leaky-bucket' },
                 { text: '10 — Landing Page', link: '/en/challenges/10-landing-page' },
@@ -168,6 +170,8 @@ export default withMermaid(defineConfig({
                 { text: '12 — Proxmox', link: '/en/challenges/12-proxmox' },
                 { text: '13 — CI/CD', link: '/en/challenges/13-cicd' },
                 { text: '14 — RFC', link: '/en/challenges/14-rfc' },
+                { text: '15 — PISP', link: '/en/challenges/15-pisp' },
+                { text: '16 — Antecipação', link: '/en/challenges/16-anticipation' },
               ]
             },
             {
