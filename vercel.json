@@ -1,9 +1,0 @@
-{
-  "buildCommand": "cd packages/docs && npm run build",
-  "outputDirectory": "packages/docs/.vitepress/dist",
-  "framework": null,
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/$1.html" }
-  ]
-}
