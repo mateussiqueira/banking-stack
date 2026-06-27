@@ -1,321 +1,234 @@
 # 06 — Open Finance Simulator
 
-**🇧🇷** Simulador do Ecossistema Open Finance Brasil  
-**🇬🇧** Open Finance Ecosystem Simulator
+**🇧🇷** Simulador Open Finance Brasil  
+**🇬🇧** Open Finance Brasil Simulator
 
 ---
 
-## Descrição do Desafio
+No Open Finance, um banco pode compartilhar seus dados com outro banco — com sua autorização. Parece simples, mas por trás tem OAuth 2.0 FAPI, consentimento explícito, certificados digitais, e uma especificação de 300 páginas.
 
-Implementar um simulador do Open Finance Brasil, o ecossistema de compartilhamento de dados financeiros regulado pelo Banco Central. O simulador deve replicar os principais endpoints de compartilhamento de dados entre instituições.
-
-Requisitos:
-- Consentimento OAuth 2.0 FAPI
-- Compartilhamento de dados de contas
-- Compartilhamento de dados de cartões de crédito
-- Compartilhamento de dados de transações
-- Gerenciamento de consentimento
-- Webhooks para notificação de eventos
+O problema é que cada instituição implementa do seu jeito. Testar integração com 20 bancos diferentes é um pesadelo. Esse simulador resolve isso: você roda local, testa o fluxo completo de consentimento e dados, sem precisar de banco real.
 
 ---
 
-## Challenge Description
-
-Implement an Open Finance Brasil simulator — the financial data sharing ecosystem regulated by the Brazilian Central Bank. The simulator must replicate the main data sharing endpoints between institutions.
-
-Requirements:
-- OAuth 2.0 FAPI consent
-- Account data sharing
-- Credit card data sharing
-- Transaction data sharing
-- Consent management
-- Webhooks for event notifications
-
----
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                   Open Finance Simulator                     │
-│                                                              │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │  OAuth 2.0 / FAPI                                      │   │
-│  │  POST /auth/authorize      Authorization request       │   │
-│  │  POST /auth/token          Token exchange              │   │
-│  │  GET  /auth/consent/:id    Consent details             │   │
-│  │  DELETE /auth/consent/:id  Revoke consent              │   │
-│  └──────────────────────────────────────────────────────┘   │
-│                                                              │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │  Data Endpoints                                       │   │
-│  │  GET /accounts                    List accounts       │   │
-│  │  GET /accounts/:id                Account details     │   │
-│  │  GET /accounts/:id/balances       Balances            │   │
-│  │  GET /accounts/:id/transactions   Transactions        │   │
-│  │  GET /accounts/:id/credit-cards   Credit cards        │   │
-│  └──────────────────────────────────────────────────────┘   │
-└──────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Consent Flow
+## A arquitetura
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant Participant
+    participant Consumer
+    participant Simulator
     participant Directory
-    participant ResourceServer
 
-    User->>Participant: 1. Initiate consent
-    Participant->>Directory: 2. Discover resource server
-    Directory-->>Participant: Resource server URL
-    Participant->>User: 3. Redirect to authorization
-    User->>Participant: 4. Authorize consent
-    Participant->>ResourceServer: 5. Exchange code for token
-    ResourceServer-->>Participant: Access token
-    Participant->>ResourceServer: 6. Request data
-    ResourceServer-->>Participant: Account data
-    Participant-->>User: 7. Display data
+    User->>Consumer: Quer compartilhar dados
+    Consumer->>Directory: Descobre resource server
+    Directory-->>Consumer: URL do simulador
+    Consumer->>User: Redireciona pra autorizar
+    User->>Simulator: Autoriza consentimento
+    Simulator-->>Consumer: Código de autorização
+    Consumer->>Simulator: Troca por token
+    Simulator-->>Consumer: Access token
+    Consumer->>Simulator: Requisita dados
+    Simulator-->>Consumer: Contas, transações
 ```
 
 ---
 
-## OAuth 2.0 FAPI Flow
+## Resolução em TypeScript
 
-### 1. Authorization Request
-
-```http
-POST /auth/authorize HTTP/1.1
-Content-Type: application/json
-
-{
-  "response_type": "code",
-  "client_id": "client_abc123",
-  "redirect_uri": "https://consumer.com/callback",
-  "scope": "accounts:read transactions:read",
-  "state": "random_state_value",
-  "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
-  "code_challenge_method": "S256"
-}
-```
-
-### 2. Token Exchange
-
-```http
-POST /auth/token HTTP/1.1
-Content-Type: application/json
-
-{
-  "grant_type": "authorization_code",
-  "code": "auth_code_xyz",
-  "redirect_uri": "https://consumer.com/callback",
-  "client_id": "client_abc123",
-  "client_secret": "secret_abc123",
-  "code_verifier": "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
-}
-```
-
-### 3. Token Response
-
-```json
-{
-  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "Bearer",
-  "expires_in": 3600,
-  "scope": "accounts:read transactions:read",
-  "consent_id": "consent_abc123"
-}
-```
-
----
-
-## Data Endpoints
-
-### List Accounts
-
-```http
-GET /accounts HTTP/1.1
-Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
-```
-
-```json
-{
-  "data": [
-    {
-      "accountId": "acc_001",
-      "type": "CONTA_DEPOSITO_AVISTA",
-      "subtype": "INDIVIDUAL",
-      "description": "Conta Corrente",
-      "currency": "BRL",
-      "combos": [
-        {
-          "name": "A",
-          "complementary": {
-            "companyName": "Bank Name"
-          }
-        }
-      ]
-    }
-  ]
-}
-```
-
-### Get Account Balances
-
-```http
-GET /accounts/acc_001/balances HTTP/1.1
-Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
-```
-
-```json
-{
-  "data": [
-    {
-      "accountId": "acc_001",
-      "balances": [
-        {
-          "type": "AVAILABLE",
-          "amount": {
-            "currency": "BRL",
-            "value": "15000.00"
-          },
-          "dateTime": "2024-01-15T10:30:00Z"
-        }
-      ]
-    }
-  ]
-}
-```
-
-### Get Transactions
-
-```http
-GET /accounts/acc_001/transactions?from=2024-01-01&to=2024-01-31 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
-```
-
-```json
-{
-  "data": [
-    {
-      "transactionId": "txn_001",
-      "type": "TRANSFERENCIA",
-      "status": "SETTLED",
-      "amount": {
-        "currency": "BRL",
-        "value": "250.00"
-      },
-      "date": "2024-01-15",
-      "description": "Transfer to John",
-      "parties": [
-        {
-          "type": "DEBITED",
-          "personType": "NATURAL_PERSON",
-          "document": "12345678901",
-          "name": "Jane Doe"
-        }
-      ]
-    }
-  ]
-}
-```
-
----
-
-## Code Example: Token Validation
+### Fluxo OAuth 2.0 FAPI
 
 ```typescript
 import jwt from 'jsonwebtoken';
 
-interface FAPIToken {
-  sub: string;
-  client_id: string;
-  scope: string;
-  consent_id: string;
-  exp: number;
-  iat: number;
+// 1. Authorization request
+app.post('/auth/authorize', async (req, reply) => {
+  const { client_id, redirect_uri, scope, code_challenge } = req.body;
+  
+  const authCode = crypto.randomUUID();
+  
+  // Salva código com challenge para verificação posterior
+  await redis.set(`auth:${authCode}`, JSON.stringify({
+    client_id, redirect_uri, scope, code_challenge,
+    expiresAt: Date.now() + 300000 // 5 min
+  }), { PX: 300000 });
+  
+  return reply.send({ authorization_code: authCode });
+});
+
+// 2. Token exchange
+app.post('/auth/token', async (req, reply) => {
+  const { code, code_verifier, client_assertion } = req.body;
+  
+  const session = await redis.get(`auth:${code}`);
+  if (!session) return reply.status(401).send({ error: 'Invalid code' });
+  
+  const { code_challenge } = JSON.parse(session);
+  
+  // PKCE verification (S256)
+  const hash = crypto.createHash('sha256').update(code_verifier).digest('base64url');
+  if (hash !== code_challenge) {
+    return reply.status(401).send({ error: 'PKCE verification failed' });
+  }
+  
+  // Gera access token JWT com RS256
+  const token = jwt.sign(
+    { 
+      sub: session.client_id,
+      scope: session.scope,
+      consent_id: session.consent_id
+    },
+    privateKey,
+    { algorithm: 'RS256', expiresIn: '1h', issuer: 'https://auth.simulator.com' }
+  );
+  
+  return reply.send({ access_token: token, token_type: 'Bearer', expires_in: 3600 });
+});
+```
+
+### Endpoints de dados
+
+```typescript
+// Lista contas do usuário
+app.get('/accounts', async (req, reply) => {
+  const token = validateToken(req.headers.authorization!);
+  
+  const consent = await getConsent(token.consent_id);
+  if (!consent.scope.includes('accounts:read')) {
+    return reply.status(403).send({ error: 'Scope não autorizado' });
+  }
+  
+  return reply.send({
+    data: [{
+      accountId: 'acc_001',
+      type: 'CONTA_DEPOSITO_AVISTA',
+      currency: 'BRL',
+      balances: [{ type: 'AVAILABLE', amount: '15000.00' }]
+    }]
+  });
+});
+```
+
+---
+
+## Resolução em Go
+
+```go
+package main
+
+import (
+    "crypto/rand"
+    "crypto/sha256"
+    "encoding/base64"
+    "encoding/json"
+    "net/http"
+    "time"
+    "github.com/golang-jwt/jwt/v5"
+    "github.com/redis/go-redis/v9"
+)
+
+type AuthSession struct {
+    ClientID      string `json:"client_id"`
+    RedirectURI   string `json:"redirect_uri"`
+    Scope         string `json:"scope"`
+    CodeChallenge string `json:"code_challenge"`
+    ExpiresAt     int64  `json:"expires_at"`
 }
 
-class TokenService {
-  private publicKey: string;
+var rdb = redis.NewClient(&redis.Options{Addr: "localhost:6379"})
 
-  constructor(publicKey: string) {
-    this.publicKey = publicKey;
-  }
-
-  validateToken(token: string): FAPIToken {
-    try {
-      const decoded = jwt.verify(token, this.publicKey, {
-        algorithms: ['RS256'],
-        issuer: 'https://auth.openfinance.com.br',
-        audience: 'https://api.openfinance.com.br'
-      }) as FAPIToken;
-
-      // Check expiration
-      if (decoded.exp < Date.now() / 1000) {
-        throw new Error('Token expired');
-      }
-
-      return decoded;
-    } catch (error) {
-      throw new Error('Invalid token');
+// Authorization endpoint
+func authorizeHandler(w http.ResponseWriter, r *http.Request) {
+    clientID := r.FormValue("client_id")
+    codeChallenge := r.FormValue("code_challenge")
+    
+    // Generate authorization code
+    buf := make([]byte, 32)
+    rand.Read(buf)
+    authCode := base64.URLEncoding.EncodeToString(buf)
+    
+    session := AuthSession{
+        ClientID:      clientID,
+        Scope:         r.FormValue("scope"),
+        CodeChallenge: codeChallenge,
+        ExpiresAt:     time.Now().Add(5 * time.Minute).Unix(),
     }
-  }
+    
+    sessionJSON, _ := json.Marshal(session)
+    rdb.Set(r.Context(), "auth:"+authCode, sessionJSON, 5*time.Minute)
+    
+    json.NewEncoder(w).Encode(map[string]string{
+        "authorization_code": authCode,
+    })
+}
 
-  generateToken(consent: Consent): string {
-    return jwt.sign(
-      {
-        sub: consent.participantId,
-        client_id: consent.clientId,
-        scope: consent.scope,
-        consent_id: consent.id
-      },
-      this.privateKey,
-      {
-        algorithm: 'RS256',
-        expiresIn: '1h',
-        issuer: 'https://auth.openfinance.com.br',
-        audience: 'https://api.openfinance.com.br'
-      }
-    );
-  }
+// Token exchange
+func tokenHandler(w http.ResponseWriter, r *http.Request) {
+    code := r.FormValue("code")
+    verifier := r.FormValue("code_verifier")
+    
+    sessionJSON, err := rdb.Get(r.Context(), "auth:"+code).Bytes()
+    if err != nil {
+        http.Error(w, "Invalid code", http.StatusUnauthorized)
+        return
+    }
+    
+    var session AuthSession
+    json.Unmarshal(sessionJSON, &session)
+    
+    // PKCE verification
+    hash := sha256.Sum256([]byte(verifier))
+    challenge := base64.RawURLEncoding.EncodeToString(hash[:])
+    
+    if challenge != session.CodeChallenge {
+        http.Error(w, "PKCE failed", http.StatusUnauthorized)
+        return
+    }
+    
+    // Generate JWT
+    claims := jwt.MapClaims{
+        "sub":        session.ClientID,
+        "scope":      session.Scope,
+        "exp":        time.Now().Add(1 * time.Hour).Unix(),
+        "iss":        "https://auth.simulator.com",
+    }
+    
+    token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+    tokenString, _ := token.SignedString(privateKey)
+    
+    json.NewEncoder(w).Encode(map[string]interface{}{
+        "access_token": tokenString,
+        "token_type":   "Bearer",
+        "expires_in":   3600,
+    })
 }
 ```
 
 ---
 
-## Tech Stack
-
-| Technology | Purpose |
-|------------|---------|
-| **Fastify** | HTTP framework |
-| **OAuth 2.0 / OIDC** | FAPI authentication |
-| **JWT (RS256)** | Token signing/verification |
-| **TypeScript** | Type safety |
-| **PostgreSQL** | Consent and token storage |
-
----
-
-## How to Run
+## Como testar
 
 ```bash
+# 1. Inicia o simulador
 pnpm --filter @banking/open-finance dev
-# Starts server on port 3006
+
+# 2. Requisita autorização
+curl -X POST http://localhost:3006/auth/authorize \
+  -d "client_id=app123&scope=accounts:read&code_challenge=E9Melhoa2Owv..."
+
+# 3. Troca código por token
+curl -X POST http://localhost:3006/auth/token \
+  -d "code=authcode123&code_verifier=dBjftJeZ4CVP..."
+
+# 4. Requisita dados
+curl -H "Authorization: Bearer TOKEN" http://localhost:3006/accounts
 ```
 
-## API Endpoints
+---
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/authorize` | Authorization request |
-| POST | `/auth/token` | Token exchange |
-| GET | `/auth/consent/:id` | Get consent details |
-| DELETE | `/auth/consent/:id` | Revoke consent |
-| GET | `/accounts` | List accounts |
-| GET | `/accounts/:id` | Get account details |
-| GET | `/accounts/:id/balances` | Get account balances |
-| GET | `/accounts/:id/transactions` | Get transactions |
-| GET | `/accounts/:id/credit-cards` | Get credit cards |
+## Lições aprendidas
+
+1. **FAPI é OAuth 2.0 turbinado** — PKCE obrigatório, JWT com RS256, consentimento explícito.
+2. **Consentimento não é token** — O usuário autoriza um escopo, e o token carrega essa autorização. Um sem o outro não funciona.
+3. **Open Finance não é só API** — É um ecossistema: diretório, certificados, consentimento, webhooks. Cada peça depende da outra.
+4. **Testar integração é o verdadeiro desafio** — A parte fácil é implementar o endpoint. A parte difícil é garantir que 20 bancos diferentes consigam consumir.

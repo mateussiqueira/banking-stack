@@ -1,165 +1,56 @@
 # 05 — Workflow Engine
 
-**🇧🇷** Motor de Automação de Workflows  
-**🇬🇧** Workflow Automation Engine
+**🇧🇷** Motor de Workflows  
+**🇬🇧** Workflow Engine
 
 ---
 
-## Descrição do Desafio
+Sabe quando você precisa executar uma sequência de passos: validar dados, chamar uma API, transformar o resultado, enviar email? Se um passo falha, o que acontece? Se o servidor cai no meio do caminho?
 
-Implementar um motor de automação de workflows similar ao n8n ou Zapier, onde usuários podem definir fluxos de trabalho compostos por nós (trigger, ação, condição) que executam em sequência.
+Um workflow engine resolve isso. Você define os passos como nós de um grafo, e o motor executa na ordem certa, com retry, fila, e estado persistido.
 
-Requisitos:
-- Definir workflows como grafos direcionados (DAG)
-- Nós de trigger (webhook, schedule, event)
-- Nós de ação (HTTP request, email, transform)
-- Nós condicionais (if/else, switch)
-- Execução assíncrona com filas
-- Estado e rastreamento de execução
-- Redis para filas e cache de estado
+É assim que n8n, Zapier e Power Automate funcionam por baixo dos panos.
 
 ---
 
-## Challenge Description
+## A arquitetura
 
-Implement a workflow automation engine similar to n8n or Zapier, where users can define workflows composed of nodes (trigger, action, condition) that execute in sequence.
-
-Requirements:
-- Define workflows as directed graphs (DAG)
-- Trigger nodes (webhook, schedule, event)
-- Action nodes (HTTP request, email, transform)
-- Conditional nodes (if/else, switch)
-- Asynchronous execution with queues
-- Execution state and tracing
-- Redis for queues and state cache
-
----
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Workflow Engine                           │
-│                                                              │
-│  POST /api/v1/workflows               Create workflow       │
-│  GET  /api/v1/workflows/:id           Get workflow          │
-│  PUT  /api/v1/workflows/:id           Update workflow       │
-│  DELETE /api/v1/workflows/:id         Delete workflow       │
-│  POST /api/v1/workflows/:id/execute    Execute workflow     │
-│  GET  /api/v1/workflows/:id/runs      List executions       │
-│                                                              │
-│  Workflow Definition:                                        │
-│  { nodes: Node[], edges: Edge[] }  ← Directed Acyclic Graph │
-└──────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    A[Trigger] --> B[Validate Node]
+    B --> C{Condition}
+    C -->|Success| D[HTTP Action]
+    C -->|Error| E[Log + Webhook]
+    D --> F[Transform]
+    F --> G[Send Email]
+    G --> H[Done]
 ```
 
-### Workflow Graph Example
-
 ```
-   [Webhook Trigger]
-          │
-          ▼
-   [HTTP Request] ───► [Transform Node]
-          │
-          ├── (success) ──► [Send Email]
-          │
-          └── (error)  ──► [Log Error] ──► [Webhook Callback]
+POST /api/v1/workflows         → Criar workflow
+GET  /api/v1/workflows/:id     → Consultar
+POST /api/v1/workflows/:id/execute → Executar
+GET  /api/v1/workflows/:id/runs    → Histórico
 ```
 
 ---
 
-## Workflow Definition (JSON)
+## Resolução em TypeScript
 
-```json
-{
-  "id": "wf_abc123",
-  "name": "Process Payment",
-  "nodes": [
-    {
-      "id": "trigger_1",
-      "type": "trigger:webhook",
-      "config": {
-        "path": "/payment",
-        "method": "POST"
-      }
-    },
-    {
-      "id": "validate_1",
-      "type": "action:http",
-      "config": {
-        "url": "http://localhost:3001/validate",
-        "method": "POST",
-        "headers": {
-          "Content-Type": "application/json"
-        }
-      }
-    },
-    {
-      "id": "check_1",
-      "type": "condition:ifelse",
-      "config": {
-        "field": "body.valid",
-        "operator": "equals",
-        "value": true
-      }
-    },
-    {
-      "id": "success_1",
-      "type": "action:http",
-      "config": {
-        "url": "http://localhost:3001/success",
-        "method": "POST"
-      }
-    },
-    {
-      "id": "error_1",
-      "type": "action:email",
-      "config": {
-        "to": "admin@example.com",
-        "subject": "Payment validation failed"
-      }
-    }
-  ],
-  "edges": [
-    { "from": "trigger_1", "to": "validate_1" },
-    { "from": "validate_1", "to": "check_1" },
-    { "from": "check_1", "to": "success_1", "condition": "true" },
-    { "from": "check_1", "to": "error_1", "condition": "false" }
-  ]
-}
-```
-
----
-
-## Node Types
-
-| Type | Description | Config |
-|------|-------------|--------|
-| `trigger:webhook` | HTTP webhook trigger | `path`, `method` |
-| `trigger:schedule` | Cron-based schedule | `cron` expression |
-| `trigger:event` | Event-based trigger | `event`, `channel` |
-| `action:http` | Make HTTP request | `url`, `method`, `headers`, `body` |
-| `action:transform` | Transform data | `script` (JS function) |
-| `action:email` | Send email | `to`, `subject`, `body` |
-| `action:log` | Log execution | `level`, `message` |
-| `condition:ifelse` | Conditional branch | `field`, `operator`, `value` |
-| `condition:switch` | Multi-branch switch | `field`, `cases` |
-
----
-
-## Code Example: DAG Executor
+### Definição de workflow
 
 ```typescript
 interface Node {
   id: string;
-  type: string;
+  type: 'trigger:webhook' | 'action:http' | 'action:transform' 
+      | 'condition:ifelse' | 'action:email' | 'action:log';
   config: Record<string, any>;
 }
 
 interface Edge {
   from: string;
   to: string;
-  condition?: string;
+  condition?: string; // 'success' | 'error' | expressão
 }
 
 interface Workflow {
@@ -167,124 +58,248 @@ interface Workflow {
   nodes: Node[];
   edges: Edge[];
 }
+```
 
+### Executor DAG
+
+```typescript
 class WorkflowExecutor {
-  private workflow: Workflow;
   private state: Map<string, any> = new Map();
 
-  constructor(workflow: Workflow) {
-    this.workflow = workflow;
-  }
-
-  async execute(triggerData: any): Promise<void> {
-    // Find trigger node
-    const trigger = this.workflow.nodes.find(n => 
-      n.type.startsWith('trigger:')
-    );
+  async execute(workflow: Workflow, triggerData: any): Promise<void> {
+    const trigger = workflow.nodes.find(n => n.type.startsWith('trigger:'));
+    if (!trigger) throw new Error('Workflow sem trigger');
     
-    if (!trigger) throw new Error('No trigger node found');
-    
-    // Set initial data
     this.state.set('trigger', triggerData);
-    
-    // Execute from trigger
-    await this.executeNode(trigger.id);
+    await this.executeNode(workflow, trigger.id);
   }
 
-  private async executeNode(nodeId: string): Promise<void> {
-    const node = this.workflow.nodes.find(n => n.id === nodeId);
+  private async executeNode(workflow: Workflow, nodeId: string) {
+    const node = workflow.nodes.find(n => n.id === nodeId);
     if (!node) return;
 
-    // Execute node based on type
     const result = await this.runNode(node);
     this.state.set(nodeId, result);
 
-    // Find next nodes
-    const nextEdges = this.workflow.edges.filter(e => e.from === nodeId);
+    const nextEdges = workflow.edges.filter(e => e.from === nodeId);
     
     for (const edge of nextEdges) {
-      // Check condition if exists
-      if (edge.condition) {
-        const conditionMet = this.evaluateCondition(
-          edge.condition, 
-          result
-        );
-        if (!conditionMet) continue;
+      if (edge.condition && !this.evalCondition(edge.condition, result)) {
+        continue;
       }
-      
-      await this.executeNode(edge.to);
+      await this.executeNode(workflow, edge.to);
     }
   }
 
   private async runNode(node: Node): Promise<any> {
     switch (node.type) {
       case 'action:http':
-        return this.executeHttp(node.config);
+        return fetch(node.config.url, {
+          method: node.config.method || 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(node.config.body),
+        }).then(r => r.json());
+      
       case 'action:transform':
-        return this.executeTransform(node.config);
+        const fn = new Function('data', node.config.script);
+        return fn(this.state);
+      
       case 'condition:ifelse':
-        return this.evaluateIfElse(node.config);
+        return this.evalField(node.config);
+      
       default:
         return null;
     }
   }
+}
+```
 
-  private evaluateCondition(condition: string, data: any): boolean {
-    // Simple condition evaluation
-    if (condition === 'true') return Boolean(data);
-    if (condition === 'false') return !data;
-    return data === condition;
-  }
+### Exemplo de workflow
+
+```json
+{
+  "nodes": [
+    { "id": "trigger", "type": "trigger:webhook", "config": {} },
+    { "id": "validate", "type": "action:http", "config": {
+        "url": "http://validator/api",
+        "method": "POST"
+    }},
+    { "id": "check", "type": "condition:ifelse", "config": {
+        "field": "body.valid", "operator": "equals", "value": "true"
+    }},
+    { "id": "process", "type": "action:http", "config": {
+        "url": "http://processor/api", "method": "POST"
+    }},
+    { "id": "notify", "type": "action:email", "config": {
+        "to": "admin@bank.com", "subject": "Processado"
+    }}
+  ],
+  "edges": [
+    { "from": "trigger", "to": "validate" },
+    { "from": "validate", "to": "check" },
+    { "from": "check", "to": "process", "condition": "success" },
+    { "from": "check", "to": "notify", "condition": "error" }
+  ]
 }
 ```
 
 ---
 
-## Tech Stack
+## Resolução em Go
 
-| Technology | Purpose |
-|------------|---------|
-| **Fastify** | HTTP framework |
-| **Redis** | Queue, state, pub/sub |
-| **BullMQ** | Job queue |
-| **TypeScript** | Type safety |
-| **PostgreSQL** | Workflow persistence |
+Em Go, cada nó roda em uma goroutine. O workflow é um pipeline de canais:
 
----
+```go
+package main
 
-## Execution Flow
+import (
+    "context"
+    "encoding/json"
+    "fmt"
+    "net/http"
+)
 
-```mermaid
-graph TD
-    A[Webhook Trigger] --> B[Validate Input]
-    B --> C{Valid?}
-    C -->|Yes| D[Process Payment]
-    C -->|No| E[Send Error Email]
-    D --> F{Success?}
-    F -->|Yes| G[Send Confirmation]
-    F -->|No| H[Log Error]
-    H --> I[Webhook Callback]
-    G --> I
-    E --> I
+type Node struct {
+    ID     string                 `json:"id"`
+    Type   string                 `json:"type"`
+    Config map[string]interface{} `json:"config"`
+}
+
+type Edge struct {
+    From      string `json:"from"`
+    To        string `json:"to"`
+    Condition string `json:"condition,omitempty"`
+}
+
+type Workflow struct {
+    Nodes []Node `json:"nodes"`
+    Edges []Edge `json:"edges"`
+}
+
+type Executor struct {
+    state map[string]interface{}
+    done  chan struct{}
+}
+
+func NewExecutor() *Executor {
+    return &Executor{
+        state: make(map[string]interface{}),
+        done:  make(chan struct{}),
+    }
+}
+
+func (e *Executor) Execute(ctx context.Context, wf *Workflow, triggerData interface{}) error {
+    // Find trigger node
+    var trigger *Node
+    for _, n := range wf.Nodes {
+        if len(n.Type) > 8 && n.Type[:8] == "trigger:" {
+            trigger = &n
+            break
+        }
+    }
+    if trigger == nil {
+        return fmt.Errorf("no trigger node found")
+    }
+
+    e.state["trigger"] = triggerData
+    
+    // Build adjacency list
+    edges := make(map[string][]Edge)
+    for _, edge := range wf.Edges {
+        edges[edge.From] = append(edges[edge.From], edge)
+    }
+
+    // Execute DAG
+    return e.executeNode(ctx, wf, edges, trigger.ID)
+}
+
+func (e *Executor) executeNode(ctx context.Context, wf *Workflow, 
+    edges map[string][]Edge, nodeID string) error {
+    
+    // Find node
+    var node *Node
+    for _, n := range wf.Nodes {
+        if n.ID == nodeID {
+            node = &n
+            break
+        }
+    }
+    if node == nil {
+        return nil
+    }
+
+    // Execute node
+    result, err := e.runNode(ctx, node)
+    if err != nil {
+        return err
+    }
+    e.state[nodeID] = result
+
+    // Execute children
+    for _, edge := range edges[nodeID] {
+        if edge.Condition != "" {
+            if !e.evaluateCondition(edge.Condition, result) {
+                continue
+            }
+        }
+        if err := e.executeNode(ctx, wf, edges, edge.To); err != nil {
+            return err
+        }
+    }
+
+    return nil
+}
+
+func (e *Executor) runNode(ctx context.Context, node *Node) (interface{}, error) {
+    switch node.Type {
+    case "action:http":
+        url, _ := node.Config["url"].(string)
+        resp, err := http.Get(url)
+        if err != nil {
+            return nil, err
+        }
+        defer resp.Body.Close()
+        
+        var result interface{}
+        json.NewDecoder(resp.Body).Decode(&result)
+        return result, nil
+
+    case "condition:ifelse":
+        field, _ := node.Config["field"].(string)
+        value, _ := node.Config["value"].(string)
+        
+        if data, ok := e.state[field]; ok {
+            return fmt.Sprintf("%v", data) == value, nil
+        }
+        return false, nil
+
+    default:
+        return nil, nil
+    }
+}
 ```
 
+**Diferença chave:** Em Go, o executor é concorrente de verdade com goroutines. Cada branch do workflow pode rodar em paralelo. Em TypeScript, é sequencial com async/await — mais simples de entender, mas menos eficiente.
+
 ---
 
-## How to Run
+## Como testar
 
 ```bash
 pnpm --filter @banking/workflow-engine dev
-# Starts server on port 3005
+
+curl -X POST http://localhost:3005/api/v1/workflows \
+  -H "Content-Type: application/json" \
+  -d '{"nodes":[...],"edges":[...]}'
+
+curl -X POST http://localhost:3005/api/v1/workflows/wf_1/execute
 ```
 
-## API Endpoints
+---
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/workflows` | Create workflow |
-| GET | `/api/v1/workflows/:id` | Get workflow |
-| PUT | `/api/v1/workflows/:id` | Update workflow |
-| DELETE | `/api/v1/workflows/:id` | Delete workflow |
-| POST | `/api/v1/workflows/:id/execute` | Execute workflow |
-| GET | `/api/v1/workflows/:id/runs` | List executions |
-| GET | `/api/v1/workflows/:id/runs/:runId` | Get execution status |
+## Lições aprendidas
+
+1. **DAG é o coração** — Workflow engine sem DAG é só uma fila de tarefas.
+2. **Estado precisa ser externo** — Se o servidor reinicia, o workflow precisa continuar de onde parou. Redis ou PostgreSQL.
+3. **Retry não é opcional** — Chamadas HTTP falham. Seu workflow precisa tentar de novo, com backoff.
+4. **Observabilidade** — Cada execução precisa de log, tracing, e status visível. Sem isso, debug é impossível.

@@ -1,110 +1,254 @@
 # 11 — KYC System
 
-**🇧🇷** Sistema de Verificação de Identidade (Know Your Customer)  
-**🇬🇧** Know Your Customer Identity Verification System
+**🇧🇷** Sistema de Verificação de Identidade  
+**🇬🇧** Know Your Customer System
 
 ---
 
-## 🇧🇷 Descrição do Desafio
+KYC é aquela tela chata de "envie seu documento, tire uma selfie, preencha seus dados". Todo banco tem. Ninguém gosta de implementar. Mas se fizer errado, a receita federal multa, o compliance liga, e o usuário desiste no meio do fluxo.
 
-Implementar um sistema KYC (Know Your Customer) que permite a verificação de identidade de usuários através de upload de documentos, captura facial e validação de dados. O sistema é construído com React + Vite e utiliza um fluxo multi-etapas.
-
-Requisitos:
-- Upload de documentos (RG, CNH, selfie)
-- Captura facial via webcam
-- Formulário multi-etapas com validação (Zod)
-- Barra de progresso do fluxo KYC
-- Armazenamento de estado com Zustand
-- Preview dos documentos enviados
-- Responsivo e acessível
+Esse desafio é sobre fazer um fluxo multi-etapas que não perde o estado, não deixa o usuário perdido, e funciona offline parcialmente.
 
 ---
 
-## 🇬🇧 Challenge Description
+## O fluxo
 
-Implement a KYC (Know Your Customer) system that allows identity verification through document upload, facial capture, and data validation. The system is built with React + Vite and uses a multi-step flow.
+```
+Step 1                Step 2               Step 3
+[Personal Data] ────► [Documents] ───────► [Face Capture] ──► Review
+     │                     │                      │
+     ▼                     ▼                      ▼
+  name, CPF,            RG (frente)            selfie via
+  email, phone          CNH (verso)            webcam
 
-Requirements:
-- Document upload (ID, driver's license, selfie)
-- Facial capture via webcam
-- Multi-step form with validation (Zod)
-- KYC flow progress bar
-- State management with Zustand
-- Uploaded document preview
-- Responsive and accessible
+Progress: ●──●──●──○
+          25% 50% 75% Review
+```
 
 ---
 
-## Architecture / Arquitetura
+## O código que faz diferença
 
+### Zustand store (estado não morre no refresh)
+
+```typescript
+// store/kycStore.ts
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+type Step = 'personal' | 'documents' | 'face-capture' | 'review' | 'submitted';
+
+interface KYCState {
+  step: Step;
+  progress: number;
+  
+  personalData: {
+    name: string;
+    cpf: string;
+    email: string;
+    phone: string;
+    birthDate: string;
+  };
+  
+  documents: {
+    rgFront: File | null;
+    rgFrontPreview: string | null;
+    cnhBack: File | null;
+    cnhBackPreview: string | null;
+  };
+  
+  faceCapture: {
+    image: string | null;
+    livenessPassed: boolean;
+  };
+  
+  setStep: (step: Step) => void;
+  setPersonalData: (data: Partial<KYCState['personalData']>) => void;
+  setDocument: (type: 'rgFront' | 'cnhBack', file: File, preview: string) => void;
+  setFaceCapture: (image: string) => void;
+  submit: () => Promise<void>;
+  reset: () => void;
+}
+
+export const useKYCStore = create<KYCState>()(
+  persist(
+    (set, get) => ({
+      step: 'personal',
+      progress: 0,
+      
+      personalData: { name: '', cpf: '', email: '', phone: '', birthDate: '' },
+      documents: { rgFront: null, rgFrontPreview: null, cnhBack: null, cnhBackPreview: null },
+      faceCapture: { image: null, livenessPassed: false },
+      
+      setStep: (step) => {
+        const progressMap: Record<Step, number> = {
+          personal: 0, documents: 25, 'face-capture': 50, review: 75, submitted: 100,
+        };
+        set({ step, progress: progressMap[step] });
+      },
+      
+      setPersonalData: (data) => set((state) => ({
+        personalData: { ...state.personalData, ...data }
+      })),
+      
+      setDocument: (type, file, preview) => set((state) => ({
+        documents: { ...state.documents, [type]: file, [`${type}Preview`]: preview }
+      })),
+      
+      setFaceCapture: (image) => set((state) => ({
+        faceCapture: { image, livenessPassed: true }
+      })),
+      
+      submit: async () => {
+        const state = get();
+        const formData = new FormData();
+        formData.append('name', state.personalData.name);
+        formData.append('cpf', state.personalData.cpf);
+        if (state.documents.rgFront) formData.append('rgFront', state.documents.rgFront);
+        if (state.documents.cnhBack) formData.append('cnhBack', state.documents.cnhBack);
+        if (state.faceCapture.image) formData.append('selfie', state.faceCapture.image);
+        
+        await fetch('/api/kyc/submit', { method: 'POST', body: formData });
+        set({ step: 'submitted', progress: 100 });
+      },
+      
+      reset: () => set({
+        step: 'personal', progress: 0,
+        personalData: { name: '', cpf: '', email: '', phone: '', birthDate: '' },
+        documents: { rgFront: null, rgFrontPreview: null, cnhBack: null, cnhBackPreview: null },
+        faceCapture: { image: null, livenessPassed: false },
+      }),
+    }),
+    {
+      name: 'kyc-storage',
+      partialize: (state) => ({
+        step: state.step,
+        progress: state.progress,
+        personalData: state.personalData,
+        faceCapture: state.faceCapture,
+      }),
+    }
+  )
+);
 ```
-kyc-system/
-├── src/
-│   ├── components/
-│   │   ├── KYCStepper.tsx       # Multi-step stepper
-│   │   ├── DocumentUpload.tsx    # File upload component
-│   │   ├── FaceCapture.tsx       # Webcam capture
-│   │   ├── DataForm.tsx         # Personal data form
-│   │   └── ProgressBar.tsx      # KYC progress
-│   ├── hooks/
-│   │   ├── useKYC.ts           # KYC flow hook
-│   │   └── useWebcam.ts        # Webcam hook
-│   ├── lib/
-│   │   ├── validation.ts       # Zod schemas
-│   │   └── theme/
-│   │       ├── colors.ts
-│   │       ├── tokens.ts
-│   │       └── theme.tsx
-│   ├── store/
-│   │   └── kycStore.ts         # Zustand store
-│   └── __tests__/
-└── public/
+
+O `persist` salva no localStorage. Se o usuário fechar o navegador e voltar, continua de onde parou. Se quiser limpar, `reset()`.
+
+### Upload de documento com preview
+
+```typescript
+// components/DocumentUpload.tsx
+import { useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+
+interface Props {
+  type: 'rgFront' | 'cnhBack';
+  label: string;
+  onUpload: (type: string, file: File, preview: string) => void;
+}
+
+export function DocumentUpload({ type, label, onUpload }: Props) {
+  const onDrop = useCallback((accepted: File[]) => {
+    const file = accepted[0];
+    if (!file) return;
+    
+    // Preview pra mostrar pro usuário
+    const preview = URL.createObjectURL(file);
+    onUpload(type, file, preview);
+  }, [type, onUpload]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'image/*': ['.png', '.jpg', '.jpeg'] },
+    maxFiles: 1,
+    maxSize: 10 * 1024 * 1024, // 10MB
+  });
+
+  return (
+    <div
+      {...getRootProps()}
+      className={`rounded-xl border-2 border-dashed p-8 text-center transition-colors cursor-pointer
+        ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-zinc-300 hover:border-zinc-400'}`}
+    >
+      <input {...getInputProps()} />
+      <p className="text-sm text-zinc-600">
+        {isDragActive ? 'Solte o arquivo aqui' : `Arraste ${label} ou clique para selecionar`}
+      </p>
+      <p className="text-xs text-zinc-400 mt-1">PNG, JPG. Máx 10MB</p>
+    </div>
+  );
+}
 ```
 
-## KYC Flow / Fluxo KYC
+### Webcam com react-webcam
 
+```typescript
+// hooks/useWebcam.ts
+import { useRef, useState, useCallback } from 'react';
+
+export function useWebcam() {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const start = useCallback(async () => {
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      setStream(s);
+      if (ref.current) ref.current.srcObject = s;
+    } catch {
+      setError('Câmera não encontrada ou sem permissão');
+    }
+  }, []);
+
+  const capture = useCallback((): string | null => {
+    if (!ref.current) return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = ref.current.videoWidth;
+    canvas.height = ref.current.videoHeight;
+    canvas.getContext('2d')?.drawImage(ref.current, 0, 0);
+    return canvas.toDataURL('image/jpeg', 0.8);
+  }, []);
+
+  const stop = useCallback(() => {
+    stream?.getTracks().forEach(t => t.stop());
+    setStream(null);
+  }, [stream]);
+
+  return { ref, start, capture, stop, error, isActive: !!stream };
+}
 ```
-Step 1                    Step 2                   Step 3
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│ Personal    │───►│ Document    │───►│ Face        │───► Review → Submit
-│ Data Form   │    │ Upload      │    │ Capture     │
-│ (name, CPF, │    │ (RG, CNH)   │    │ (webcam)    │
-│  email)     │    │             │    │             │
-└─────────────┘    └─────────────┘    └─────────────┘
 
-Progress: ● ── ● ── ● ── ○ [Submit]
-          25%   50%   75%   100%
+---
+
+## Validação com Zod
+
+```typescript
+// lib/validation.ts
+import { z } from 'zod';
+
+export const personalDataSchema = z.object({
+  name: z.string().min(3, 'Nome precisa ter no mínimo 3 caracteres'),
+  cpf: z.string().transform(v => v.replace(/\D/g, '')).pipe(z.string().length(11, 'CPF inválido')),
+  email: z.string().email('Email inválido'),
+  phone: z.string().transform(v => v.replace(/\D/g, '')).pipe(z.string().min(10, 'Telefone inválido')),
+  birthDate: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, 'Use DD/MM/AAAA'),
+});
+
+export const documentSchema = z.object({
+  rgFront: z.instanceof(File, { message: 'RG é obrigatório' }),
+  cnhBack: z.instanceof(File, { message: 'CNH é obrigatória' }),
+});
 ```
 
-## Tech Stack
+---
 
-| Technology | Purpose |
-|------------|---------|
-| **Vite** | Build tool |
-| **React 18** | UI library |
-| **TypeScript** | Type safety |
-| **React Router DOM** | Navigation |
-| **React Hook Form** | Form management |
-| **Zod** | Schema validation |
-| **Zustand** | State management |
-| **Radix UI** | Accessible components |
-| **react-dropzone** | File upload |
-| **react-webcam** | Camera capture |
-| **Framer Motion** | Animations |
-| **TailwindCSS** | Styling |
-| **Vitest** | Testing |
-
-## How to Run / Como Executar
+## Como rodar
 
 ```bash
-# Development
 pnpm --filter @banking/kyc-system dev
+# http://localhost:5174
 
-# Build
-pnpm --filter @banking/kyc-system build
-
-# Tests
 pnpm --filter @banking/kyc-system test
+# Vitest
 ```
-
-The dev server starts at `http://localhost:5174`.

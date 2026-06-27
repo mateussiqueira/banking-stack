@@ -1,129 +1,211 @@
 # 10 — Landing Page + Design System
 
-**🇧🇷** Landing Page Institucional com Design System Componentizado  
-**🇬🇧** Institutional Landing Page with Component-Based Design System
+**🇧🇷** Landing Page com Design System  
+**🇬🇧** Landing Page with Design System
 
 ---
 
-## 🇧🇷 Descrição do Desafio
+Fazer uma landing page é fácil. Fazer uma landing page com um design system que não quebra quando alguém muda a cor primária — isso é mais difícil.
 
-Criar uma landing page institucional para o Banking Challenges com um design system componentizado, documentado no Storybook. O design system inclui componentes reutilizáveis construídos com Radix UI e estilizados com TailwindCSS.
-
-Requisitos:
-- Landing page responsiva com Next.js 14
-- Design system com componentes atômicos
-- Documentação no Storybook
-- Componentes acessíveis (Radix UI)
-- Variantes de componentes (CVA)
-- Animações e transições
-- SEO otimizado
+Esse desafio é sobre isso: componentes que se vestem sozinhos, documentados no Storybook, com acessibilidade de verdade.
 
 ---
 
-## 🇬🇧 Challenge Description
-
-Create an institutional landing page for Banking Challenges with a component-based design system documented in Storybook. The design system includes reusable components built with Radix UI and styled with TailwindCSS.
-
-Requirements:
-- Responsive landing page with Next.js 14
-- Design system with atomic components
-- Storybook documentation
-- Accessible components (Radix UI)
-- Component variants (CVA)
-- Animations and transitions
-- SEO optimized
-
----
-
-## Architecture / Arquitetura
+## A estrutura
 
 ```
 landing-page/
 ├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── page.tsx           # Home page
-│   │   └── layout.tsx         # Root layout
+│   ├── app/
+│   │   ├── page.tsx          # Home
+│   │   └── layout.tsx        # Layout global (Header + Footer)
 │   ├── components/
-│   │   ├── ui/                # Design system components
-│   │   │   ├── Button.tsx     # Button with CVA variants
+│   │   ├── ui/               # Design system
+│   │   │   ├── Button.tsx
 │   │   │   ├── Card.tsx
-│   │   │   ├── Dialog.tsx     # Radix Dialog
-│   │   │   ├── Dropdown.tsx   # Radix Dropdown
-│   │   │   └── Tooltip.tsx    # Radix Tooltip
-│   │   └── sections/          # Page sections
+│   │   │   ├── Dialog.tsx
+│   │   │   └── Tooltip.tsx
+│   │   └── sections/         # Seções da página
 │   │       ├── Hero.tsx
 │   │       ├── Features.tsx
-│   │       └── Footer.tsx
-│   ├── lib/
-│   │   └── design-system/
-│   │       ├── colors.ts
-│   │       ├── typography.ts
-│   │       ├── spacing.ts
-│   │       └── tokens.ts
-│   └── stories/               # Storybook stories
-└── .storybook/
-    ├── main.ts
-    └── preview.ts
+│   │       └── CTA.tsx
+│   └── lib/
+│       ├── tokens.ts         # Cores, tipografia, spacing
+│       └── cn.ts             # classname merge
+├── .storybook/
+└── tailwind.config.ts
 ```
 
-## Tech Stack
+---
 
-| Technology | Purpose |
-|------------|---------|
-| **Next.js 14** | React framework (App Router) |
-| **React 18** | UI library |
-| **TypeScript** | Type safety |
-| **TailwindCSS** | Utility-first CSS |
-| **Radix UI** | Accessible primitives |
-| **CVA** | Class Variance Authority |
-| **Storybook** | Component documentation |
-| **Lucide React** | Icons |
-| **Tailwind Merge** | Class conflict resolution |
+## O que faz diferença
 
-## Design Tokens / Tokens de Design
+### Design tokens que funcionam
 
 ```typescript
-// colors.ts
-export const colors = {
-  primary: {
-    50: '#f5f3ff',
-    100: '#ede9fe',
-    500: '#8b5cf6',
-    600: '#7c3aed',
-    900: '#4c1d95',
+// lib/tokens.ts
+export const tokens = {
+  colors: {
+    primary: {
+      50: '#f5f3ff',
+      100: '#ede9fe',
+      200: '#ddd6fe',
+      500: '#8b5cf6',
+      600: '#7c3aed',
+      700: '#6d28d9',
+    },
+    neutral: {
+      50: '#fafafa',
+      100: '#f5f5f5',
+      800: '#262626',
+      900: '#171717',
+    },
   },
-  neutral: {
-    50: '#fafafa',
-    100: '#f5f5f5',
-    900: '#171717',
-  }
-}
+  spacing: {
+    0: '0px',
+    1: '4px',
+    2: '8px',
+    3: '12px',
+    4: '16px',
+    5: '20px',
+    6: '24px',
+    8: '32px',
+    10: '40px',
+    12: '48px',
+    16: '64px',
+  },
+} as const;
+```
 
-// typography.ts
-export const typography = {
-  fontFamily: {
-    sans: 'Inter, system-ui, sans-serif',
-    mono: 'JetBrains Mono, monospace',
-  },
-  fontSize: {
-    'display-lg': ['4rem', { lineHeight: '1.1' }],
-    'heading-xl': ['2.25rem', { lineHeight: '1.2' }],
+### Button com CVA (Class Variance Authority)
+
+```typescript
+// components/ui/Button.tsx
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/cn';
+
+const buttonVariants = cva(
+  'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-2 focus-visible:outline-blue-600 disabled:pointer-events-none disabled:opacity-50',
+  {
+    variants: {
+      variant: {
+        primary: 'bg-violet-600 text-white hover:bg-violet-700',
+        secondary: 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200',
+        outline: 'border border-zinc-300 hover:bg-zinc-50',
+        ghost: 'text-zinc-600 hover:bg-zinc-100',
+      },
+      size: {
+        sm: 'h-9 px-3 text-sm',
+        md: 'h-10 px-4 text-sm',
+        lg: 'h-12 px-6 text-base',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+    },
   }
+);
+
+interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {}
+
+export function Button({ variant, size, className, ...props }: ButtonProps) {
+  return (
+    <button
+      className={cn(buttonVariants({ variant, size }), className)}
+      {...props}
+    />
+  );
 }
 ```
 
-## How to Run / Como Executar
+### Dialog com Radix (acessível de verdade)
+
+```typescript
+// components/ui/Dialog.tsx
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { X } from 'lucide-react';
+
+export function Dialog({ children, ...props }: DialogPrimitive.DialogProps) {
+  return <DialogPrimitive.Root {...props}>{children}</DialogPrimitive.Root>;
+}
+
+export function DialogContent({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <DialogPrimitive.Portal>
+      <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-in" />
+      <DialogPrimitive.Content className={cn(
+        'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6 shadow-xl',
+        'w-full max-w-md',
+        className
+      )}>
+        {children}
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100">
+          <X className="h-4 w-4" />
+        </DialogPrimitive.Close>
+      </DialogPrimitive.Content>
+    </DialogPrimitive.Portal>
+  );
+}
+```
+
+---
+
+## Storybook
+
+Cada componente tem sua história:
+
+```typescript
+// Button.stories.tsx
+import { Button } from './Button';
+
+export default {
+  title: 'UI/Button',
+  component: Button,
+  argTypes: {
+    variant: { control: 'select', options: ['primary', 'secondary', 'outline', 'ghost'] },
+    size: { control: 'select', options: ['sm', 'md', 'lg'] },
+  },
+};
+
+export const Primary = { args: { children: 'Clicar', variant: 'primary' } };
+export const Secondary = { args: { children: 'Cancelar', variant: 'secondary' } };
+export const Disabled = { args: { children: 'Não pode', disabled: true } };
+```
+
+Roda com `pnpm storybook` em `localhost:6006`.
+
+---
+
+## Por que essa estrutura funciona
+
+1. **Tailwind + CVA** — Você não precisa escrever CSS novo pra cada botão. As variantes são tipadas.
+2. **Radix UI** — Acessibilidade sem pensar. Foco, teclado, ARIA attributes. Tudo pronto.
+3. **Storybook** — O dev de backend consegue ver os componentes sem rodar o app. O designer consegue revisar sem saber React.
+4. **cn() helper** — Evita conflito de classes do Tailwind quando você junta classes de props com classes fixas.
+
+```typescript
+// lib/cn.ts
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+```
+
+---
+
+## Como rodar
 
 ```bash
-# Development
+# Landing page
 pnpm --filter @banking/landing-page dev
+# http://localhost:3000
 
 # Storybook
 pnpm --filter @banking/landing-page storybook
-
-# Build
-pnpm --filter @banking/landing-page build
+# http://localhost:6006
 ```
-
-- Landing Page: `http://localhost:3000`
-- Storybook: `http://localhost:6006`

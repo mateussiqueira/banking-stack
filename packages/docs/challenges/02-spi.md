@@ -1,57 +1,40 @@
-# Desafio 02 — SPI Simulator
+# 02 — SPI Simulator
 
-**O que é:** Um simulador do Sistema de Pagamentos Instantâneos (SPI) do Banco Central do Brasil.
+**🇧🇷** Simulador do Sistema de Pagamentos Instantâneos  
+**🇬🇧** Instant Payment System Simulator
 
-**Por que existe:** Todo Pix que você manda passa pelo SPI. É ele que faz a compensação entre bancos em tempo real.
+---
 
-## O problema
+Você já mandou um Pix e parou pra pensar no que acontece entre o "confirmar" e o "dinheiro caiu"? Pois é. Não é mágica. É o SPI.
 
-Quando você manda um Pix de R$ 50 do Nubank pro Itaú, acontece isso:
+SPI é o Sistema de Pagamentos Instantâneos do Banco Central. Ele é o meio de campo entre seu banco e o banco de quem recebe. Toda transação Pix passa por ele. Se ele cai, o Pix cai. Se ele é lento, o Pix demora. Se ele tem bug, dinheiro some.
+
+Esse desafio é sobre construir um simulador dele. E depois reescrever em Go porque TypeScript não deu conta.
+
+---
+
+## O fluxo de um Pix
 
 ```
-Seu celular → Nubank → SPI (Banco Central) → Itaú → Conta de destino
+Seu celular → Nubank → SPI (BC) → Itaú → Conta do destino
 ```
 
-O SPI precisa:
-1. Validar a transação
-2. Verificar se o banco tem saldo
-3. Fazer a compensação
+O SPI precisa fazer 5 coisas em menos de 10 segundos:
+1. Validar a transação (forma, fundos, limites)
+2. Verificar se o banco do destino existe e aceita
+3. Fazer a compensação entre os bancos
 4. Notificar ambos os bancos
-5. Tudo isso em menos de 10 segundos
+5. Se algo der errado, reverter
 
-Se o SPI cai, o Pix cai. Se o SPI é lento, o Pix é lento. Se o SPI tem bug, dinheiro some.
+Tudo isso em XML. ISO 20022. Um padrão que veio pra ficar.
 
-## A arquitetura
+---
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      SPI Simulator                           │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐  │
-│  │   pacs.008   │───▶│   Validação  │───▶│   Estoque    │  │
-│  │  (Crédito)   │    │              │    │              │  │
-│  └──────────────┘    └──────────────┘    └──────────────┘  │
-│                                                              │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐  │
-│  │   pacs.002   │◀───│   Status     │◀───│   Logger     │  │
-│  │  (Relatório) │    │              │    │              │  │
-│  └──────────────┘    └──────────────┘    └──────────────┘  │
-│                                                              │
-│  ┌──────────────┐    ┌──────────────┐                       │
-│  │   pacs.004   │───▶│   Reversão   │                       │
-│  │  (Devolução) │    │              │                       │
-│  └──────────────┘    └──────────────┘                       │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-```
+## A primeira versão (TypeScript)
 
-## Por que começamos com TypeScript
-
-A primeira versão foi em Node.js + Fastify. Ficou pronta em 2 horas. Funcionou. Testamos. Publicamos.
+Comecei com Node.js + Fastify. Ficou pronta em 2 horas. Funcionava.
 
 ```typescript
-// Era assim. Simples. Direto.
 app.post('/spi/pacs.008', async (request, reply) => {
   const xml = request.body
   const result = processPayment(xml)
@@ -59,55 +42,89 @@ app.post('/spi/pacs.008', async (request, reply) => {
 })
 ```
 
-Mas aí começaram os problemas:
+Simples. Direto. Testado. Publicado.
 
-1. **Parsing de XML** — fastify-xml-body-parser não compilava direito com TypeScript estrito
-2. **Performance** — 50ms por request não é suficiente quando você processa 10 mil por segundo
-3. **Memória** — 50MB de heap pra fazer基本 o mesmo que Go faz com 10MB
+Mas aí vieram os problemas:
 
-## Por que migramos pra Go
+1. **XML é um inferno** — `fastify-xml-body-parser` não compilava com TypeScript estrito. Tive que fazer parsing na mão.
+2. **Performance** — 50ms por request. Parece pouco, mas quando você processa 10 mil por segundo, cada milissegundo é um banco reclamando.
+3. **Memória** — 50MB de heap. O Node.js decide quando fazer garbage collection. E quando ele faz, tudo para por 100ms. Em sistema financeiro, 100ms de pause é uma transação perdida.
 
-Não porque Go é "melhor". Porque Go é mais adequado pra esse caso específico.
+E o pior: não tem como prever quando vai acontecer. É loteria.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Comparação                                │
-├─────────────────┬─────────────────┬─────────────────────────┤
-│ Métrica         │ TypeScript      │ Go                      │
-├─────────────────┼─────────────────┼─────────────────────────┤
-│ Startup time    │ ~2s             │ ~50ms                   │
-│ Memória (idle)  │ ~50MB           │ ~10MB                   │
-│ Latência/pars   │ ~5ms            │ ~0.2ms                  │
-│ Throughput      │ ~2K req/s       │ ~50K req/s              │
-│ Binary size     │ N/A (node)      │ ~15MB                   │
-└─────────────────┴─────────────────┴─────────────────────────┘
-```
+---
 
-O benefício real não é só velocidade. É previsibilidade.
+## A reescrita em Go
 
-Node.js tem garbage collector. Às vezes ele decide pausar tudo por 100ms pra limpar memória. Em um sistema financeiro, 100ms de pause pode significar uma transação perdida.
-
-Go não tem essa surpresa. A memória é gerenciada de forma determinística. Você sabe exatamente quando e quanto vai usar.
-
-## O código
-
-O SPI Simulator em Go tem 4 endpoints principais:
+Não foi porque Go é "melhor". Foi porque Go é mais adequado pra esse caso específico.
 
 ```go
-// Recebe pacs.008 (crédito)
-r.POST("/spi/pacs.008", processPayment)
+package main
 
-// Lista transações
-r.GET("/spi/transactions", getTransactions)
+import (
+    "encoding/xml"
+    "net/http"
+    "github.com/gin-gonic/gin"
+)
 
-// Consulta por EndToEndId
-r.GET("/spi/transactions/:endToEndId", getTransactionByEndToEndID)
+type PACS008 struct {
+    XMLName     xml.Name `xml:"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08 Document"`
+    GrpHdr      GroupHeader
+    CdtTrfTxInf CreditTransfer
+}
 
-// Health check
-r.GET("/spi/health", healthCheck)
+type GroupHeader struct {
+    MsgId   string  `xml:"FIToFICstmrCdtTrf>GrpHdr>MsgId"`
+    NbOfTxs int     `xml:"FIToFICstmrCdtTrf>GrpHdr>NbOfTxs"`
+    Amount  float64 `xml:"FIToFICstmrCdtTrf>GrpHdr>TtlIntrBkSttlmAmt"`
+}
+
+type CreditTransfer struct {
+    EndToEndId string `xml:"FIToFICstmrCdtTrf>CdtTrfTxInf>PmtId>EndToEndId"`
+    Sender     string `xml:"FIToFICstmrCdtTrf>CdtTrfTxInf>InstgAgt>FinInstnId>ClrSysMmbId>MmbId"`
+    Receiver   string `xml:"FIToFICstmrCdtTrf>CdtTrfTxInf>CdtrAgt>FinInstnId>ClrSysMmbId>MmbId"`
+    Amount     float64 `xml:"FIToFICstmrCdtTrf>CdtTrfTxInf>IntrBkSttlmAmt"`
+}
+
+func main() {
+    r := gin.Default()
+
+    r.POST("/spi/pacs.008", func(c *gin.Context) {
+        var msg PACS008
+        if err := c.ShouldBindXML(&msg); err != nil {
+            c.JSON(400, gin.H{"error": err.Error()})
+            return
+        }
+
+        tx := processPayment(msg)
+        
+        c.XML(200, pacs002Response(tx))
+    })
+
+    r.GET("/spi/transactions", getTransactions)
+    r.GET("/spi/health", healthCheck)
+
+    r.Run(":3002")
+}
 ```
 
-Cada transação segue o padrão ISO 20022:
+A diferença?
+
+| Métrica | TypeScript | Go |
+|---------|-----------|-----|
+| Startup | ~2s | ~50ms |
+| Memória | ~50MB | ~10MB |
+| Parsing XML | ~5ms | ~0.2ms |
+| Throughput | ~2K req/s | ~50K req/s |
+| Binário | N/A (precisa Node) | ~15MB (standalone) |
+
+Mas o benefício real não é velocidade bruta. É **previsibilidade**. Go não tem garbage collector surpresa. A memória é gerenciada de forma determinística. Você sabe exatamente quando e quanto vai usar.
+
+---
+
+## O XML que o SPI engole
+
+Toda transação Pix chega como um XML ISO 20022. É feio. É verboso. Mas é o padrão.
 
 ```xml
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
@@ -121,45 +138,65 @@ Cada transação segue o padrão ISO 20022:
       <PmtId>
         <EndToEndId>E2E202606260001</EndToEndId>
       </PmtId>
+      <IntrBkSttlmAmt Ccy="BRL">150.00</IntrBkSttlmAmt>
       <InstgAgt>
         <FinInstnId>
           <ClrSysMmbId>
-            <MmbId>12345678</MmbId>  <!-- ISPB do banco remetente -->
+            <MmbId>12345678</MmbId>
           </ClrSysMmbId>
         </FinInstnId>
       </InstgAgt>
       <CdtrAgt>
         <FinInstnId>
           <ClrSysMmbId>
-            <MmbId>87654321</MmbId>  <!-- ISPB do banco destinatário -->
+            <MmbId>87654321</MmbId>
           </ClrSysMmbId>
         </FinInstnId>
       </CdtrAgt>
-      <IntrBkSttlmAmt Ccy="BRL">150.00</IntrBkSttlmAmt>
     </CdtTrfTxInf>
   </FIToFICstmrCdtTrf>
 </Document>
 ```
 
+Cada campo importa:
+- `MmbId` é o ISPB do banco (código de 8 dígitos)
+- `EndToEndId` identifica a transação ponta a ponta
+- `IntrBkSttlmAmt` é o valor em reais
+
+---
+
+## Os 4 endpoints
+
+```go
+r.POST("/spi/pacs.008", processPayment)        // Recebe crédito
+r.GET("/spi/transactions", getTransactions)      // Lista transações
+r.GET("/spi/transactions/:endToEndId", getByID)  // Consulta por ID
+r.GET("/spi/health", healthCheck)                // Health check
+```
+
+---
+
 ## Como testar
 
 ```bash
-# 1. Subir o SPI
+# Sobe o SPI
 cd packages/backend/spi-simulator-go
 go run .
 
-# 2. Mandar uma transação
+# Manda uma transação
 curl -X POST http://localhost:3002/spi/pacs.008 \
   -H "Content-Type: application/xml" \
   -d @testdata/pacs008-example.xml
 
-# 3. Ver a transação
+# Ver o resultado
 curl http://localhost:3002/spi/transactions
 ```
 
-## O que aprendemos
+---
+
+## O que aprendi
 
 1. **XML é chato, mas necessário** — O mundo financeiro roda em XML desde os anos 90. Não vai mudar amanhã.
-2. **ISO 20022 é o futuro** — O Pix já usa. O SPI já usa. Quem não adotar vai ficar pra trás.
-3. **Go não é bala de prata** — É uma ferramenta. Use onde faz sentido.
-4. **Performance importa** — Mas não a qualquer custo. Às vezes 50ms é suficiente.
+2. **ISO 20022 é o futuro** — Pix já usa. SPI já usa. Quem não adotar vai ficar pra trás.
+3. **Go não é bala de prata** — É uma ferramenta. Use onde faz sentido. Mas quando faz sentido, faz muito sentido.
+4. **Performance importa** — Mas não a qualquer custo. Às vezes 50ms é suficiente. E às vezes 50ms é a diferença entre o banco aprovar ou não sua transação.
