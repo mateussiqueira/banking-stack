@@ -13,10 +13,7 @@ O desafio com REST: N+1 problem, paginação `page=1&limit=10` que desvia quando
 
 ## Switch: TypeScript vs Go
 
-<div class="switch-container">
-  <button class="switch-btn active" data-lang="ts">TypeScript</button>
-  <button class="switch-btn" data-lang="go">Go</button>
-</div>
+<LanguageToggle />
 
 <div class="lang-content ts" style="display:block;">
 
@@ -603,36 +600,6 @@ graph LR
 **Conclusão:** No banco real, usam TypeScript pra interface do usuário e Go pro core financeiro. Cada tecnologia onde brilha.
 
 </div>
-
-<script>
-  if (typeof window !== 'undefined') {
-    document.querySelectorAll('.switch-btn').forEach(button => {
-      button.addEventListener('click', () => {
-        document.querySelectorAll('.switch-btn').forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        const lang = button.getAttribute('data-lang');
-        document.querySelectorAll('.lang-content').forEach(content => content.style.display = 'none');
-        document.querySelector(`.lang-content.${lang}`).style.display = 'block';
-      });
-    });
-  }
-</script>
-
----
-
-## Comparação: TypeScript vs Go
-
-| Aspecto | TypeScript | Go |
-|---------|-----------|-----|
-| **Produtividade GraphQL** | Excelente (codegen, playground) | Baixa (gqlgen verboso) |
-| **Atomicidade** | Session do MongoDB | `FindOneAndUpdate` nativo |
-| **Concorrência** | Event loop | Goroutines + channels |
-| **Tratamento de erro** | try/catch | error returns (explícito) |
-| **Performance** | ~2-3x mais lento | Benchmark vence |
-| **Ecosystemo** | graphql-relay, dataloader | mongo-go-driver, gqlgen |
-| **Deploy** | Precisa de Node runtime | Binário único estático |
-
-**A resposta:** use os dois em camadas diferentes — GraphQL gateway em TS, serviço de ledger em Go, comunicação via gRPC.
 
 ---
 
