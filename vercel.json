@@ -1,0 +1,14 @@
+{
+  "buildCommand": "cd packages/docs && npm run build",
+  "outputDirectory": "packages/docs/.vitepress/dist",
+  "framework": null,
+  "routes": [
+    { "src": "/guides/(.*)", "dest": "/guides/$1.html" },
+    { "src": "/architecture/(.*)", "dest": "/architecture/$1.html" },
+    { "src": "/challenges/(.*)", "dest": "/challenges/$1.html" },
+    { "src": "/decisions/(.*)", "dest": "/decisions/$1.html" },
+    { "src": "/rfc/(.*)", "dest": "/rfc/$1.html" },
+    { "src": "/en/(.*)", "dest": "/en/$1.html" },
+    { "src": "/(.*)", "dest": "/$1.html" }
+  ]
+}
