@@ -96,6 +96,7 @@ export default withMermaid(defineConfig({
                 { text: '14 — RFC', link: '/challenges/14-rfc' },
                 { text: '15 — PISP', link: '/challenges/15-pisp' },
                 { text: '16 — Antecipação', link: '/challenges/16-anticipation' },
+                { text: '17 — Fraud Detection', link: '/challenges/17-fraud-detection' },
               ]
             },
             {
@@ -172,6 +173,7 @@ export default withMermaid(defineConfig({
                 { text: '14 — RFC', link: '/en/challenges/14-rfc' },
                 { text: '15 — PISP', link: '/en/challenges/15-pisp' },
                 { text: '16 — Antecipação', link: '/en/challenges/16-anticipation' },
+                { text: '17 — Fraud Detection', link: '/en/challenges/17-fraud-detection' },
               ]
             },
             {
