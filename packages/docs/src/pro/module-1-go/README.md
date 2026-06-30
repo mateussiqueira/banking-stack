@@ -6,14 +6,14 @@
 
 | # | Aula | Status | Duração |
 |---|------|--------|---------|
-| 01 | Introdução a Go para Engenheiros Financeiros | ⏳ Pendente | 45min |
-| 02 | Goroutines — Concorrência Real vs Paralelismo | ⏳ Pendente | 60min |
-| 03 | Channels — Comunicação Segura entre Goroutines | ⏳ Pendente | 50min |
-| 04 | Pacote sync — Mutex, RWMutex, WaitGroup | ⏳ Pendente | 55min |
-| 05 | Context — Cancelamento e Timeout em Go | ⏳ Pendente | 40min |
-| 06 | gRPC com Go — Proto definitions e streaming | ⏳ Pendente | 65min |
-| 07 | Otimização do Garbage Collector | ⏳ Pendente | 50min |
-| 08 | Profiling com pprof — CPU, Memory, Goroutines | ⏳ Pendente | 45min |
+| 01 | Introdução a Go para Engenheiros Financeiros | ✅ Concluída | 45min |
+| 02 | Goroutines — Concorrência Real vs Paralelismo | ✅ Concluída | 60min |
+| 03 | Channels — Comunicação Segura entre Goroutines | ✅ Concluída | 50min |
+| 04 | Pacote sync — Mutex, RWMutex, WaitGroup | ✅ Concluída | 55min |
+| 05 | Context — Cancelamento e Timeout em Go | ✅ Concluída | 40min |
+| 06 | gRPC com Go — Proto definitions e streaming | ✅ Concluída | 65min |
+| 07 | Otimização do Garbage Collector | ✅ Concluída | 50min |
+| 08 | Profiling com pprof — CPU, Memory, Goroutines | ✅ Concluída | 45min |
 | 09 | Testes de Carga com k6 em Go | ⏳ Pendente | 55min |
 | 10 | Go em Produção — Graceful Shutdown, Health Checks | ⏳ Pendente | 50min |
 
@@ -21,9 +21,9 @@
 
 | # | Desafio | Baseado em | Status |
 |---|---------|------------|--------|
-| 01 | SPI Simulator em Go | Challenge 02 (Node.js) | ⏳ Pendente |
-| 02 | DICT Simulator em Go | Challenge 03 (Node.js) | ⏳ Pendente |
-| 03 | Ledger Contábil em Go | Challenge 01 (Node.js) | ⏳ Pendente |
+| 01 | SPI Simulator em Go | Challenge 02 (Node.js) | ✅ Concluído |
+| 02 | DICT Simulator em Go | Challenge 03 (Node.js) | ✅ Concluído |
+| 03 | Ledger Contábil em Go | Challenge 01 (Node.js) | ✅ Concluído |
 
 ## Tópicos Chave
 
