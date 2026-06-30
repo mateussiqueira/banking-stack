@@ -33,11 +33,13 @@
 
     <div v-if="showFullDiagram" class="id-full">
       <button @click="showFullDiagram = false" class="id-close-full">Fechar diagrama completo</button>
-      <slot />
+      <div class="mermaid-placeholder">
+        O diagrama completo esta logo acima nesta pagina. Role para cima para ve-lo.
+      </div>
     </div>
 
-    <button v-if="!showFullDiagram" @click="showFullDiagram = true" class="id-show-full">
-      Ver diagrama completo
+    <button v-if="!showFullDiagram && hasOriginalDiagram" @click="showFullDiagram = true" class="id-show-full">
+      Ver diagrama completo acima
     </button>
   </div>
 </template>
@@ -59,6 +61,10 @@ const props = defineProps<{
 
 const currentStep = ref(0)
 const showFullDiagram = ref(false)
+const hasOriginalDiagram = computed(() => {
+  if (typeof document === 'undefined') return true
+  return document.querySelectorAll('.mermaid svg, .language-mermaid').length > 0
+})
 
 const percent = computed(() => ((currentStep.value + 1) / props.steps.length) * 100)
 

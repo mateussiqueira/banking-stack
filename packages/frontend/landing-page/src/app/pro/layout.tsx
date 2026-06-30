@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../globals.css";
-import { ProSidebar } from "@/components/pro/sidebar";
-import { ProHeader } from "@/components/pro/header";
+import { Providers } from "@/components/pro/providers";
+import { ProLayoutClient } from "@/components/pro/pro-layout-client";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,12 +18,8 @@ export default function ProLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen bg-surface">
-      <ProSidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <ProHeader />
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8">{children}</main>
-      </div>
-    </div>
+    <Providers>
+      <ProLayoutClient>{children}</ProLayoutClient>
+    </Providers>
   );
 }

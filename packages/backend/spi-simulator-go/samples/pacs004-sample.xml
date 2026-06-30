@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.004.001.09">
+  <FIToFIPmtRtr>
+    <GrpHdr>
+      <MsgId>PACS00420240315ABC123DEF456</MsgId>
+      <CreDtTm>2024-03-15T11:00:00.000Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <TtlIntrBkSttlmAmt>150.50</TtlIntrBkSttlmAmt>
+      <IntrBkSttlmDt>2024-03-15</IntrBkSttlmDt>
+      <SttlmInf>
+        <SttlmMtd>CLRG</SttlmMtd>
+      </SttlmInf>
+    </GrpHdr>
+    <TxInf>
+      <PmtId>
+        <EndToEndId>E2E20240315RETURN001</EndToEndId>
+        <TxId>RTN20240315001</TxId>
+      </PmtId>
+      <IntrBkSttlmAmt>150.50</IntrBkSttlmAmt>
+      <ChrgBr>SLEV</ChrgBr>
+      <InstgAgt>
+        <FinInstnId>
+          <ClrSysMmbId>
+            <MmbId>18236120</MmbId>
+          </ClrSysMmbId>
+        </FinInstnId>
+      </InstgAgt>
+      <DbtrAgt>
+        <FinInstnId>
+          <ClrSysMmbId>
+            <MmbId>18236120</MmbId>
+          </ClrSysMmbId>
+        </FinInstnId>
+      </DbtrAgt>
+      <CdtrAgt>
+        <FinInstnId>
+          <ClrSysMmbId>
+            <MmbId>16501555</MmbId>
+          </ClrSysMmbId>
+        </FinInstnId>
+      </CdtrAgt>
+      <Dbtr>
+        <Nm>Maria Souza</Nm>
+      </Dbtr>
+      <Cdtr>
+        <Nm>João Silva</Nm>
+      </Cdtr>
+      <RtrInf>
+        <Rsn>
+          <Cd>FRAD</Cd>
+        </Rsn>
+        <AddtlInf>Fraude identificada pelo cliente</AddtlInf>
+      </RtrInf>
+      <OrgnlGrpInf>
+        <OrgnlMsgId>PACS00820240315ABC123DEF456</OrgnlMsgId>
+        <OrgnlMsgNmId>pacs.008.001.08</OrgnlMsgNmId>
+        <OrgnlCreDtTm>2024-03-15T10:30:00.000Z</OrgnlCreDtTm>
+      </OrgnlGrpInf>
+      <OrgnlPmtInfAndSts>
+        <OrgnlEndToEndId>E2E20240315ABC123DEF</OrgnlEndToEndId>
+        <OrgnlTxId>TXN20240315001</OrgnlTxId>
+        <TxSts>RETURN</TxSts>
+      </OrgnlPmtInfAndSts>
+    </TxInf>
+  </FIToFIPmtRtr>
+</Document>
