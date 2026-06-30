@@ -388,4 +388,4 @@ func main() {
 
 ---
 
-**Exercício:** [timeout-spi/](../exercises/05-timeout-spi/)
+**Exercício:** **Exercicio:** timeout-spi/

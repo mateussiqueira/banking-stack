@@ -372,4 +372,4 @@ export const options = {
 
 ---
 
-**Exercício:** [k6-loadtest/](../exercises/09-k6-loadtest/)
+**Exercício:** **Exercicio:** k6-loadtest/

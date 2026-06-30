@@ -14,8 +14,8 @@
 | 06 | gRPC com Go — Proto definitions e streaming | ✅ Concluída | 65min |
 | 07 | Otimização do Garbage Collector | ✅ Concluída | 50min |
 | 08 | Profiling com pprof — CPU, Memory, Goroutines | ✅ Concluída | 45min |
-| 09 | Testes de Carga com k6 em Go | ⏳ Pendente | 55min |
-| 10 | Go em Produção — Graceful Shutdown, Health Checks | ⏳ Pendente | 50min |
+| 09 | Testes de Carga com k6 em Go | ✅ Concluída | 55min |
+| 10 | Go em Produção — Graceful Shutdown, Health Checks | ✅ Concluída | 50min |
 
 ## Desafios Práticos
 

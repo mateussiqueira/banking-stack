@@ -345,4 +345,4 @@ func main() {
 
 ---
 
-**Exercício:** [processor-spi/](../exercises/02-processor-spi/)
+**Exercício:** **Exercicio:** processor-spi/

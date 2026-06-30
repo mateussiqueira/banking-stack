@@ -502,4 +502,4 @@ Criar um servidor e client SPI usando gRPC com:
 
 ---
 
-**Exercício:** [grpc-spi/](../exercises/06-grpc-spi/)
+**Exercício:** **Exercicio:** grpc-spi/

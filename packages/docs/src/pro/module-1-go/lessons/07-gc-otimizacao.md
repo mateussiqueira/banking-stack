@@ -431,4 +431,4 @@ func main() {
 
 ---
 
-**Exercício:** [gc-optimize/](../exercises/07-gc-optimize/)
+**Exercício:** **Exercicio:** gc-optimize/

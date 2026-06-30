@@ -411,4 +411,4 @@ func main() {
 
 ---
 
-**Exercício:** [bank-account/](../exercises/04-bank-account/)
+**Exercício:** **Exercicio:** bank-account/

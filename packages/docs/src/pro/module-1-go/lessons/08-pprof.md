@@ -392,4 +392,4 @@ func main() {
 
 ---
 
-**Exercício:** [pprof-spi/](../exercises/08-pprof-spi/)
+**Exercício:** **Exercicio:** pprof-spi/

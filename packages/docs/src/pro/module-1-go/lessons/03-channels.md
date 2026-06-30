@@ -382,4 +382,4 @@ func main() {
 
 ---
 
-**Exercício:** [worker-pool/](../exercises/03-worker-pool/)
+**Exercício:** **Exercicio:** worker-pool/
