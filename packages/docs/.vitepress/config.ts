@@ -27,12 +27,12 @@ export default withMermaid(defineConfig({
     lineNumbers: true,
     theme: {
       light: 'github-light',
-      dark: 'github-dark'
+      dark: 'dracula'
     }
   },
   
   mermaid: {
-    theme: 'default',
+    theme: 'dark',
     themeVariables: {
       dark: {
         primaryColor: '#3b82f6',

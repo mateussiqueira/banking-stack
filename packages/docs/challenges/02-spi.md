@@ -244,6 +244,21 @@ sequenceDiagram
     PSP_D->>R: Credita conta recebedor
 ```
 
+<InteractiveDiagram title="Fluxo Completo do PIX — passo a passo" :steps="[
+  { from: 'Pagador', to: 'PSP Origem', message: 'Inicia PIX (chave ou dados)', explanation: 'O usuario abre o app do banco e digita a chave PIX ou dados bancarios do recebedor.' },
+  { from: 'PSP Origem', to: 'DICT', message: 'Consulta chave PIX', explanation: 'Se foi informada uma chave (CPF, email, telefone, aleatoria), o PSP consulta o DICT para resolver em ISPB+conta.' },
+  { from: 'DICT', to: 'PSP Origem', message: 'Retorna ISPB + dados conta', explanation: 'O DICT retorna o ISPB do banco destino e os dados da conta associada a chave.' },
+  { from: 'PSP Origem', to: 'PSP Origem', message: 'Valida saldo e fraudes', explanation: 'Verifica se o pagador tem saldo suficiente e se a transacao nao e fraudulenta (anti-fraud em tempo real).' },
+  { from: 'PSP Origem', to: 'PSP Origem', message: 'Reserva fundos no ledger', explanation: 'Reserva o valor no ledger do pagador para evitar gasto duplo. O dinheiro ainda nao saiu.' },
+  { from: 'PSP Origem', to: 'SPI/BCB', message: 'pacs.008 (XML assinado)', explanation: 'Envia a instrucao de transferencia em formato ISO 20022, assinada digitalmente com certificado A1/A3.' },
+  { from: 'SPI/BCB', to: 'SPI/BCB', message: 'Valida mensagens e assinatura', explanation: 'O SPI valida o XML, a assinatura digital, o certificado do PSP, e os dados da transacao.' },
+  { from: 'SPI/BCB', to: 'PSP Destino', message: 'Encaminha pacs.008', explanation: 'O SPI encaminha a mensagem para o banco do recebedor, que valida se a conta destino existe.' },
+  { from: 'PSP Destino', to: 'SPI/BCB', message: 'pacs.002 (ACSC)', explanation: 'Banco destino confirma que a conta e valida. ACSC = AcceptedSettlementCompleted — pagamento liquidado.' },
+  { from: 'SPI/BCB', to: 'PSP Origem', message: 'pacs.002 (status final)', explanation: 'O PSP de origem recebe a confirmacao final. Agora sabe que o dinheiro foi transferido com sucesso.' },
+  { from: 'PSP Origem', to: 'Pagador', message: 'Notifica pagamento confirmado', explanation: 'Push notification ou atualizacao no app: PIX concluido. O dinheiro ja esta na conta do recebedor.' },
+  { from: 'PSP Destino', to: 'Recebedor', message: 'Credita conta recebedor', explanation: 'O banco destino credita o valor na conta do recebedor. O dinheiro ja esta disponivel para uso.' },
+]" />
+
 ### Conciliação Diária — O Momento da Verdade
 
 ```mermaid

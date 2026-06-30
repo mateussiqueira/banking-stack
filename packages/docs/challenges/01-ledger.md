@@ -201,6 +201,20 @@ sequenceDiagram
     K-->>C: JSON { data }
 ```
 
+<InteractiveDiagram title="Fluxo de uma Requisicao — passo a passo" :steps="[
+  { from: 'Cliente', to: 'Koa', message: 'POST /graphql', explanation: 'O cliente envia uma query GraphQL via POST. O Koa recebe e inicia o pipeline de middlewares.' },
+  { from: 'Koa', to: 'Auth', message: 'Valida token JWT', explanation: 'O middleware de autenticacao extrai e valida o token JWT. Se invalido, retorna 401 imediatamente.' },
+  { from: 'Koa', to: 'Idempotency', message: 'Verifica idempotency key', explanation: 'Se o request tem idempotency key, verifica se ja foi processado. Se sim, retorna o resultado cacheado.' },
+  { from: 'Koa', to: 'DataLoader', message: 'Cria instancias por request', explanation: 'DataLoader factory cria novas instancias isoladas para este request. Cada usuario tem seus proprios loaders.' },
+  { from: 'Koa', to: 'Resolver', message: 'Executa GraphQL resolver', explanation: 'O schema GraphQL e executado. Cada campo resolvido dispara chamadas ao DataLoader.' },
+  { from: 'DataLoader', to: 'MongoDB', message: 'Account.find({ _id: { \$in: ids } })', explanation: 'Em vez de N queries individuais, o DataLoader agrupa todas em uma unica query com operador IN.' },
+  { from: 'Resolver', to: 'Use Case', message: 'createTransaction(data)', explanation: 'O resolver chama o use case que contem a logica de negocio — validacoes, regras, orquestracao.' },
+  { from: 'Use Case', to: 'MongoDB', message: 'startSession + startTransaction', explanation: 'Inicia uma sessao e transacao ACID no MongoDB. Todas as operacoes seguintes ficam dentro dessa transacao.' },
+  { from: 'Use Case', to: 'MongoDB', message: 'Debita sender, credita receiver, salva transacao', explanation: 'As 3 operacoes sao atomicas: ou todas acontecem, ou nenhuma. O MongoDB garante isso via Replica Set.' },
+  { from: 'Use Case', to: 'MongoDB', message: 'commitTransaction', explanation: 'Confirma a transacao. Se houver WriteConflict (concorrencia), o commit falha e o use case faz retry.' },
+  { from: 'Koa', to: 'Cliente', message: 'JSON { data }', explanation: 'Resposta GraphQL padrao. Se houve erro em qualquer etapa, o erro e capturado e retornado no formato GraphQL errors.' },
+]" />
+
 Repare em dois detalhes sutis desse diagrama de sequência. O primeiro: o DataLoader batcha as chamadas `AccountLoader.load()` — mesmo que o resolver chame `load("Id_1")` e `load("Id_2")` em pontos diferentes do código, o DataLoader acumula essas chamadas durante o mesmo _"Tick"_ do event loop e dispara uma única query `find({ _id: { $in: [...] } })`. Isso é o que elimina o N+1: não é mágica, é batching no event loop.
 
 O segundo detalhe: a sessão do MongoDB (`startSession`) envolve **todas** as operações — find, create, save, commit. Se qualquer uma dessas operações falhar, o `abortTransaction` reverte tudo. Isso é atomicidade real: ou todas as 5 operações acontecem, ou nenhuma. O MongoDB garante isso no nível do Replica Set com write-ahead log (WAL) — o mesmo mecanismo que o PostgreSQL usa, aliás.

@@ -241,6 +241,16 @@ sequenceDiagram
     DICT-->>PSP_O: 200 OK + dados conta
 ```
 
+<InteractiveDiagram title="Resolucao de Chave PIX — passo a passo" :steps="[
+  { from: 'PSP', to: 'DICT', message: 'GET /dict/keys/{key}', explanation: 'O PSP consulta o DICT para resolver uma chave PIX em dados bancarios.' },
+  { from: 'DICT', to: 'Cache Redis', message: 'Verifica cache (TTL curto)', explanation: 'Primeiro verifica o cache Redis. Cache hit economiza ida ao banco. TTL de 5 minutos.' },
+  { from: 'Cache', to: 'DICT', message: 'Retorna dados ou miss', explanation: 'Se encontrou no cache e TTL nao expirou, retorna direto. Se miss, vai pro PostgreSQL.' },
+  { from: 'DICT', to: 'PostgreSQL', message: 'SELECT key, ispb, account WHERE key=X', explanation: 'Cache miss — busca no banco de dados. PostgreSQL e a fonte da verdade.' },
+  { from: 'PostgreSQL', to: 'DICT', message: 'Retorna registro', explanation: 'Retorna o registro completo: ISPB, agencia, conta, tipo de conta, nome do titular.' },
+  { from: 'DICT', to: 'Cache', message: 'Atualiza cache (write-through)', explanation: 'Escreve no cache para as proximas consultas. Estrategia write-through: cache sempre atualizado apos consulta.' },
+  { from: 'DICT', to: 'PSP', message: 'Resposta JSON com dados bancarios', explanation: 'Retorna os dados bancarios para o PSP. Agora o PSP pode montar o pacs.008 com destino correto.' },
+]" />
+
 ### Fluxo de Portabilidade (Claim)
 
 ```mermaid

@@ -14,67 +14,9 @@ import AchievementToast from './components/AchievementToast.vue'
 import SidebarProgress from './components/SidebarProgress.vue'
 import FlashcardReview from './components/FlashcardReview.vue'
 import ExportNotes from './components/ExportNotes.vue'
+import InteractiveDiagram from './components/InteractiveDiagram.vue'
 import Layout from './Layout.vue'
 import './custom.css'
-
-function setupMermaidZoom() {
-  if (typeof window === 'undefined') return
-
-  function attachZoom(container: HTMLElement) {
-    const svg = container.querySelector('svg')
-    if (!svg || container.dataset.zoomAttached) return
-    container.dataset.zoomAttached = 'true'
-
-    container.style.cursor = 'zoom-in'
-
-    container.addEventListener('click', () => {
-      if (document.querySelector('.mermaid-zoom-overlay')) return
-
-      const overlay = document.createElement('div')
-      overlay.className = 'mermaid-zoom-overlay'
-
-      const closeBtn = document.createElement('button')
-      closeBtn.className = 'mermaid-zoom-close'
-      closeBtn.innerHTML = '&times;'
-
-      const clonedSvg = svg.cloneNode(true) as SVGElement
-      clonedSvg.style.maxWidth = '95vw'
-      clonedSvg.style.maxHeight = '95vh'
-      overlay.appendChild(clonedSvg)
-      overlay.appendChild(closeBtn)
-      document.body.appendChild(overlay)
-
-      const remove = () => {
-        overlay.remove()
-        document.removeEventListener('keydown', onKey)
-      }
-
-      const onKey = (ev: KeyboardEvent) => {
-        if (ev.key === 'Escape') remove()
-      }
-
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) remove()
-      })
-      closeBtn.addEventListener('click', (e) => {
-        e.stopPropagation()
-        remove()
-      })
-      document.addEventListener('keydown', onKey)
-    })
-  }
-
-  let attempts = 0
-  function tryAttach() {
-    const blocks = document.querySelectorAll<HTMLElement>('.mermaid')
-    blocks.forEach(attachZoom)
-    if (blocks.length === 0 || attempts < 20) {
-      attempts++
-      setTimeout(tryAttach, 500)
-    }
-  }
-  setTimeout(tryAttach, 300)
-}
 
 function setupCopyCodeButtons() {
   if (typeof window === 'undefined') return
@@ -196,36 +138,70 @@ export default {
     app.component('SidebarProgress', SidebarProgress)
     app.component('FlashcardReview', FlashcardReview)
     app.component('ExportNotes', ExportNotes)
+    app.component('InteractiveDiagram', InteractiveDiagram)
   },
   setup() {
     const { lang } = useData()
 
     onMounted(() => {
-      import('mermaid').then((mermaid) => {
-        mermaid.default.initialize({
-          startOnLoad: false,
-          theme: 'default',
-          securityLevel: 'loose',
-        })
-        mermaid.default.run().then(() => {
-          setupMermaidZoom()
-          setupCopyCodeButtons()
-          setupReadingPosition()
-          setupScrollSpy()
-          injectReadingTime()
-        })
-      })
+      setupCopyCodeButtons()
+      setupReadingPosition()
+      setupScrollSpy()
+      injectReadingTime()
+      // Mermaid zoom: retry until SVGs are rendered by the plugin
+      let attempts = 0
+      const tryZoom = () => {
+        const mermaidBlocks = document.querySelectorAll<HTMLElement>('.mermaid')
+        if (mermaidBlocks.length > 0) {
+          mermaidBlocks.forEach((block) => {
+            if (!block.dataset.zoomAttached) {
+              block.dataset.zoomAttached = 'true'
+              block.style.cursor = 'zoom-in'
+              block.addEventListener('click', () => {
+                if (document.querySelector('.mermaid-zoom-overlay')) return
+                const svg = block.querySelector('svg')
+                if (!svg) return
+                const overlay = document.createElement('div')
+                overlay.className = 'mermaid-zoom-overlay'
+                const closeBtn = document.createElement('button')
+                closeBtn.className = 'mermaid-zoom-close'
+                closeBtn.innerHTML = '&times;'
+                const clonedSvg = svg.cloneNode(true) as SVGElement
+                clonedSvg.style.maxWidth = '95vw'
+                clonedSvg.style.maxHeight = '95vh'
+                overlay.appendChild(clonedSvg)
+                overlay.appendChild(closeBtn)
+                document.body.appendChild(overlay)
+                const remove = () => {
+                  overlay.remove()
+                  document.removeEventListener('keydown', onKey)
+                }
+                const onKey = (ev: KeyboardEvent) => {
+                  if (ev.key === 'Escape') remove()
+                }
+                overlay.addEventListener('click', (e) => {
+                  if (e.target === overlay) remove()
+                })
+                closeBtn.addEventListener('click', (e) => {
+                  e.stopPropagation()
+                  remove()
+                })
+                document.addEventListener('keydown', onKey)
+              })
+            }
+          })
+        } else if (attempts < 30) {
+          attempts++
+          setTimeout(tryZoom, 500)
+        }
+      }
+      setTimeout(tryZoom, 800)
     })
 
     watch(lang, () => {
       nextTick(() => {
-        import('mermaid').then((mermaid) => {
-          mermaid.default.run().then(() => {
-            setupMermaidZoom()
-            setupCopyCodeButtons()
-            setupScrollSpy()
-          })
-        })
+        setupCopyCodeButtons()
+        setupScrollSpy()
       })
     })
   },
