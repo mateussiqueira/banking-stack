@@ -125,6 +125,21 @@ export default defineConfig({
               ]
             },
             {
+              text: 'Pro',
+              collapsed: true,
+              items: [
+                { text: 'Visão Geral', link: '/src/pro/' },
+                { text: 'Roadmap 24 Meses', link: '/src/pro/ROADMAP-24MESES' },
+                { text: 'ADRs (5 decisões)', link: '/src/pro/adrs/001-use-go-for-spi-simulator' },
+                { text: 'Módulo 1: Go', link: '/src/pro/module-1-go/' },
+                { text: 'Módulo 2: Rust', link: '/src/pro/module-2-rust/' },
+                { text: 'Módulo 3: Distributed', link: '/src/pro/module-3-distributed/' },
+                { text: 'Certificação', link: '/src/pro/certification/banking-stack-cert' },
+                { text: 'Comunidade', link: '/src/pro/community/discord-structure' },
+                { text: 'Enterprise', link: '/src/pro/enterprise/corporate-plan' },
+              ]
+            },
+            {
               text: 'Referência',
               collapsed: false,
               items: [
@@ -207,6 +222,21 @@ export default defineConfig({
                 { text: 'Credit on Pix', link: '/en/rfc/credit-on-pix' },
                 { text: 'Data Lake', link: '/en/rfc/data-lake' },
                 { text: 'Financial Monitoring', link: '/en/rfc/financial-monitoring' },
+              ]
+            },
+            {
+              text: 'Pro',
+              collapsed: true,
+              items: [
+                { text: 'Overview', link: '/en/src/pro/' },
+                { text: '24-Month Roadmap', link: '/en/src/pro/ROADMAP-24MESES' },
+                { text: 'ADRs (5 decisions)', link: '/en/src/pro/adrs/001-use-go-for-spi-simulator' },
+                { text: 'Module 1: Go', link: '/en/src/pro/module-1-go/' },
+                { text: 'Module 2: Rust', link: '/en/src/pro/module-2-rust/' },
+                { text: 'Module 3: Distributed', link: '/en/src/pro/module-3-distributed/' },
+                { text: 'Certification', link: '/en/src/pro/certification/banking-stack-cert' },
+                { text: 'Community', link: '/en/src/pro/community/discord-structure' },
+                { text: 'Enterprise', link: '/en/src/pro/enterprise/corporate-plan' },
               ]
             },
             {
