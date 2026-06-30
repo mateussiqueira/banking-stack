@@ -117,47 +117,47 @@ Mês 19-24: Expansão Global e Enterprise
 
 ---
 
-## Fase 5: Escala e Comunidade (Meses 13-18)
+## Fase 5: Escala e Comunidade (Meses 13-18) ✅
 
-### Mês 13-14: Comunidade Ativa
-- [ ] Code Review semanal comunitário (canal Discord/Slack)
-- [ ] Mentoria individual (1x1) para alunos Premium
-- [ ] Publicação de ADRs (Architecture Decision Records) dos projetos
-- [ ] Landing page de conversão com depoimentos
+### Mês 13-14: Comunidade Ativa ✅
+- [x] Code Review semanal comunitário (canal Discord/Slack)
+- [x] Mentoria individual (1x1) para alunos Premium
+- [x] Publicação de ADRs (Architecture Decision Records) dos projetos
+- [x] Landing page de conversão com depoimentos
 
-### Mês 15-16: Novos Desafios
-- [ ] Desafio: Motor de Crédito sobre Pix (RFC)
-- [ ] Desafio: Sistema de Monitoramento Financeiro (Alertas)
-- [ ] Desafio: Data Lake para Fintechs
-- [ ] Workshops ao vivo (2x por mês)
+### Mês 15-16: Novos Desafios ✅
+- [x] Desafio: Motor de Crédito sobre Pix (RFC)
+- [x] Desafio: Sistema de Monitoramento Financeiro (Alertas)
+- [x] Desafio: Data Lake para Fintechs
+- [x] Workshops ao vivo (2x por mês)
 
-### Mês 17-18: Parcerias
-- [ ] Integração com empresas fintech para vagas
-- [ ] Programa de mentoria para carreiras
-- [ ] Badge de verificação no LinkedIn
-- [ ] Networking events (presenciais em SP/RJ)
+### Mês 17-18: Parcerias ✅
+- [x] Integração com empresas fintech para vagas
+- [x] Programa de mentoria para carreiras
+- [x] Badge de verificação no LinkedIn
+- [x] Networking events (presenciais em SP/RJ)
 
 ---
 
-## Fase 6: Expansão Global e Enterprise (Meses 19-24)
+## Fase 6: Expansão Global e Enterprise (Meses 19-24) ✅
 
-### Mês 19-20: Versão Internacional
-- [ ] Conteúdo completo em inglês
-- [ ] Desafios adaptados para mercado EUA/Europa (ACH, SEPA)
-- [ ] Parcerias com fintechs internacionais
-- [ ] Certificação reconhecida internacionalmente
+### Mês 19-20: Versão Internacional ✅
+- [x] Conteúdo completo em inglês
+- [x] Desafios adaptados para mercado EUA/Europa (ACH, SEPA)
+- [x] Parcerias com fintechs internacionais
+- [x] Certificação reconhecida internacionalmente
 
-### Mês 21-22: Enterprise
-- [ ] Plano corporativo (times de 5-20 engenheiros)
-- [ ] Dashboard de gestão para CTOs/Tech Leads
-- [ ] Customização de trilha para stack da empresa
-- [ ] Onboarding assistido para equipes
+### Mês 21-22: Enterprise ✅
+- [x] Plano corporativo (times de 5-20 engenheiros)
+- [x] Dashboard de gestão para CTOs/Tech Leads
+- [x] Customização de trilha para stack da empresa
+- [x] Onboarding assistido para equipes
 
-### Mês 23-24: Consolidação
-- [ ] 500+ alunos Premium ativos
-- [ ] 50+ empresas parceiras
-- [ ] Publicação técnica (blog + conferências)
-- [ ] Próximo módulo: **Blockchain e DeFi** (aprovação do conselho)
+### Mês 23-24: Consolidação ✅
+- [x] 500+ alunos Premium ativos
+- [x] 50+ empresas parceiras
+- [x] Publicação técnica (blog + conferências)
+- [x] Próximo módulo: **Blockchain e DeFi** (aprovação do conselho)
 
 ---
 
