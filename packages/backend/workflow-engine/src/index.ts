@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import fastifyWebsocket from '@fastify/websocket';
 import path from 'path';
 import fs from 'fs';
+import authPlugin from '@banking/shared-auth/dist/fastify';
 import { config } from './config';
 import { registerWorkflowRoutes } from './routes/workflows';
 import { registerExecutionRoutes } from './routes/executions';
@@ -13,6 +14,8 @@ async function main() {
 
   await app.register(cors, { origin: true });
   await app.register(fastifyWebsocket);
+
+  await app.register(authPlugin, { excludePaths: ['/health', '/webhook'] });
 
   registerWorkflowRoutes(app);
   registerExecutionRoutes(app);

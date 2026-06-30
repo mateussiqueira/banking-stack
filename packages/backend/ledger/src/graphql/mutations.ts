@@ -39,6 +39,7 @@ export const CreateTransactionMutation = mutationWithClientMutationId({
     amount: { type: new GraphQLNonNull(GraphQLFloat) },
     description: { type: GraphQLString },
     type: { type: new GraphQLNonNull(GraphQLString) },
+    idempotencyKey: { type: GraphQLString },
   },
   mutateAndGetPayload: async ({
     senderAccount,
@@ -46,6 +47,7 @@ export const CreateTransactionMutation = mutationWithClientMutationId({
     amount,
     description,
     type,
+    idempotencyKey,
   }) => {
     const { id: senderId } = fromGlobalId(senderAccount);
     const { id: receiverId } = fromGlobalId(receiverAccount);
@@ -56,6 +58,7 @@ export const CreateTransactionMutation = mutationWithClientMutationId({
       amount,
       description,
       type,
+      idempotencyKey,
     });
     return { transaction };
   },

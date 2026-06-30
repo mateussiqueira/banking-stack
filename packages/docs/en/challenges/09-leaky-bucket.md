@@ -16,7 +16,7 @@ The Leaky Bucket is one of the most widely used algorithms: water comes in at a 
 ## Architecture
 
 ```mermaid
-graph LR
+flowchart LR
     A[Client] --> B[API Gateway]
     B --> C{Leaky Bucket}
     C -->|Has token| D[Process]

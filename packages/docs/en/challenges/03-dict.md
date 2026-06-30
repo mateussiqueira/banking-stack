@@ -22,7 +22,7 @@ In other words: DICT is a distributed system with controlled eventual consistenc
 ## Architecture
 
 ```mermaid
-graph TD
+flowchart TD
     A[Bank App] --> B[DICT API]
     B --> C{Validate Key}
     C -->|Valid| D[Register in MongoDB]

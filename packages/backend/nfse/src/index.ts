@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import authPlugin from '@banking/shared-auth/dist/fastify';
 import { config } from './config';
 import { nfseRoutes } from './routes/nfse';
 
@@ -15,6 +16,8 @@ async function main() {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
   });
+
+  await app.register(authPlugin, { excludePaths: ['/health'] });
 
   await app.register(nfseRoutes);
 

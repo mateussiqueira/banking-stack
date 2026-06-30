@@ -26,7 +26,7 @@ The **PISP** (or **ISP - Payment Transaction Initiator**) is the figure introduc
 ### Complete Ecosystem
 
 ```mermaid
-graph TB
+flowchart TB
     subgraph "Clients"
       U[Consumer]
       M[Merchant]

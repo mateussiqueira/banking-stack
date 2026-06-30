@@ -1,6 +1,7 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import mongoose from 'mongoose'
+import authPlugin from '@banking/shared-auth/dist/fastify'
 import { config } from './config'
 import { registerEntriesRoutes } from './routes/entries'
 import { registerClaimsRoutes } from './routes/claims'
@@ -15,6 +16,8 @@ async function start(): Promise<void> {
   await app.register(cors, {
     origin: true,
   })
+
+  await app.register(authPlugin, { excludePaths: ['/dict/health'] })
 
   await mongoose.connect(config.mongoUri)
   app.log.info(`Connected to MongoDB at ${config.mongoUri}`)

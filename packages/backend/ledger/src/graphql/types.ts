@@ -149,5 +149,6 @@ export const CreateTransactionInput = new GraphQLInputObjectType({
     amount: { type: new GraphQLNonNull(GraphQLFloat) },
     description: { type: GraphQLString },
     type: { type: new GraphQLNonNull(TransactionTypeEnum) },
+    idempotencyKey: { type: GraphQLString },
   },
 });

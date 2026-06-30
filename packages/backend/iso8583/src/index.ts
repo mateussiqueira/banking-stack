@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import authPlugin from '@banking/shared-auth/dist/fastify';
 import { config } from './config';
 import acquirerRoutes from './routes/acquirer';
 import issuerRoutes from './routes/issuer';
@@ -21,6 +22,8 @@ async function start(): Promise<void> {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
   });
+
+  await app.register(authPlugin, { excludePaths: ['/health'] });
 
   await app.register(acquirerRoutes);
   await app.register(issuerRoutes);

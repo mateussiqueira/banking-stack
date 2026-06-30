@@ -1,6 +1,7 @@
 import Koa from 'koa';
 import mongoose from 'mongoose';
 import { graphqlHTTP } from 'koa-graphql';
+import { createKoaAuthMiddleware } from '@banking/shared-auth/dist/koa';
 import { schema } from './graphql/schema';
 import { config } from './config';
 
@@ -28,6 +29,8 @@ app.use(async (ctx, next) => {
     };
   }
 });
+
+app.use(createKoaAuthMiddleware({ excludePaths: ['/health'] }));
 
 app.use(
   graphqlHTTP({

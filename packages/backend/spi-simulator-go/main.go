@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/xml"
 	"fmt"
 	"log"
 	"net/http"
@@ -22,22 +23,22 @@ const (
 )
 
 type Transaction struct {
-	ID               string            `json:"id"`
-	EndToEndID       string            `json:"endToEndId"`
-	TxID             string            `json:"txId,omitempty"`
-	Amount           float64           `json:"amount"`
-	CreditorISPB     string            `json:"creditorIspb"`
-	CreditorKey      string            `json:"creditorKey,omitempty"`
-	CreditorName     string            `json:"creditorName,omitempty"`
-	DebtorISPB       string            `json:"debtorIspb"`
-	DebtorKey        string            `json:"debtorKey,omitempty"`
-	DebtorName       string            `json:"debtorName,omitempty"`
-	Status           TransactionStatus `json:"status"`
-	ReturnReason     string            `json:"returnReason,omitempty"`
-	CreatedAt        time.Time         `json:"createdAt"`
-	SettledAt        *time.Time        `json:"settledAt,omitempty"`
-	ReturnedAt       *time.Time        `json:"returnedAt,omitempty"`
-	OriginalEndToEndID string          `json:"originalEndToEndId,omitempty"`
+	ID                 string            `json:"id"`
+	EndToEndID         string            `json:"endToEndId"`
+	TxID               string            `json:"txId,omitempty"`
+	Amount             float64           `json:"amount"`
+	CreditorISPB       string            `json:"creditorIspb"`
+	CreditorKey        string            `json:"creditorKey,omitempty"`
+	CreditorName       string            `json:"creditorName,omitempty"`
+	DebtorISPB         string            `json:"debtorIspb"`
+	DebtorKey          string            `json:"debtorKey,omitempty"`
+	DebtorName         string            `json:"debtorName,omitempty"`
+	Status             TransactionStatus `json:"status"`
+	ReturnReason       string            `json:"returnReason,omitempty"`
+	CreatedAt          time.Time         `json:"createdAt"`
+	SettledAt          *time.Time        `json:"settledAt,omitempty"`
+	ReturnedAt         *time.Time        `json:"returnedAt,omitempty"`
+	OriginalEndToEndID string            `json:"originalEndToEndId,omitempty"`
 }
 
 type TransactionStore struct {
@@ -92,77 +93,76 @@ func (s *TransactionStore) Update(endToEndID string, updates map[string]interfac
 
 var store = NewTransactionStore()
 
-func processPayment(c *gin.Context) {
-	var request struct {
-		Document struct {
-			FIToFICstmrCdtTrf struct {
-				GrpHdr struct {
-					MsgID                string `xml:"MsgId"`
-					NbOfTxs              string `xml:"NbOfTxs"`
-					TtlIntrBkSttlmAmt   struct {
-						Value string `xml:",chardata"`
-						Ccy  string `xml:"Ccy,attr"`
-					} `xml:"TtlIntrBkSttlmAmt"`
-				} `xml:"GrpHdr"`
-				CdtTrfTxInf struct {
-					PmtID struct {
-						EndToEndID string `xml:"EndToEndId"`
-						TxID       string `xml:"TxId"`
-					} `xml:"PmtId"`
-					InstgAgt struct {
-						FinInstnID struct {
-							ClrSysMmbID struct {
-								MmbID string `xml:"MmbId"`
-							} `xml:"ClrSysMmbId"`
-						} `xml:"FinInstnId"`
-					} `xml:"InstgAgt"`
-					Dbtr struct {
-						Nm string `xml:"Nm"`
-					} `xml:"Dbtr"`
-					DbtrKey string `xml:"DbtrKey"`
-					CdtrAgt struct {
-						FinInstnID struct {
-							ClrSysMmbID struct {
-								MmbID string `xml:"MmbId"`
-							} `xml:"ClrSysMmbId"`
-						} `xml:"FinInstnId"`
-					} `xml:"CdtrAgt"`
-					Cdtr struct {
-						Nm string `xml:"Nm"`
-					} `xml:"Cdtr"`
-					CdtrKey string `xml:"CdtrKey"`
-					IntrBkSttlmAmt struct {
-						Value string `xml:",chardata"`
-						Ccy  string `xml:"Ccy,attr"`
-					} `xml:"IntrBkSttlmAmt"`
-				} `xml:"CdtTrfTxInf"`
-			} `xml:"FIToFICstmrCdtTrf"`
-		} `xml:"Document"`
-	}
+type pacs008Document struct {
+	XMLName xml.Name
+	FIToFICstmrCdtTrf struct {
+		GrpHdr struct {
+			MsgID   string `xml:"MsgId"`
+			NbOfTxs string `xml:"NbOfTxs"`
+		} `xml:"GrpHdr"`
+		CdtTrfTxInf struct {
+			PmtID struct {
+				EndToEndID string `xml:"EndToEndId"`
+				TxID       string `xml:"TxId"`
+			} `xml:"PmtId"`
+			InstgAgt struct {
+				FinInstnID struct {
+					ClrSysMmbID struct {
+						MmbID string `xml:"MmbId"`
+					} `xml:"ClrSysMmbId"`
+				} `xml:"FinInstnId"`
+			} `xml:"InstgAgt"`
+			Dbtr struct {
+				Nm string `xml:"Nm"`
+			} `xml:"Dbtr"`
+			DbtrKey string `xml:"DbtrKey"`
+			CdtrAgt struct {
+				FinInstnID struct {
+					ClrSysMmbID struct {
+						MmbID string `xml:"MmbId"`
+					} `xml:"ClrSysMmbId"`
+				} `xml:"FinInstnId"`
+			} `xml:"CdtrAgt"`
+			Cdtr struct {
+				Nm string `xml:"Nm"`
+			} `xml:"Cdtr"`
+			CdtrKey  string  `xml:"CdtrKey"`
+			IntrBkSttlmAmt struct {
+				Value string `xml:",chardata"`
+				Ccy   string `xml:"Ccy,attr"`
+			} `xml:"IntrBkSttlmAmt"`
+		} `xml:"CdtTrfTxInf"`
+	} `xml:"FIToFICstmrCdtTrf"`
+}
 
-	// Read raw body first for debugging
-	body, err := c.GetRawData()
-	if err != nil {
-		c.XML(http.StatusBadRequest, gin.H{
-			"status": "REJECTED",
-			"reason": "CannotReadBody",
-			"details": err.Error(),
-		})
-		return
+func parseAmountValue(s string) (float64, error) {
+	var v float64
+	if s == "" {
+		return 0, fmt.Errorf("empty amount")
 	}
-	
-	if err := c.ShouldBindXML(&request); err != nil {
+	if _, err := fmt.Sscanf(s, "%f", &v); err != nil {
+		return 0, fmt.Errorf("cannot parse amount: %s", s)
+	}
+	if v <= 0 {
+		return 0, fmt.Errorf("amount must be positive, got %f", v)
+	}
+	return v, nil
+}
+
+func processPayment(c *gin.Context) {
+	var doc pacs008Document
+
+	decoder := xml.NewDecoder(c.Request.Body)
+	if err := decoder.Decode(&doc); err != nil {
 		c.XML(http.StatusBadRequest, gin.H{
 			"status": "REJECTED",
 			"reason": "InvalidRequest",
 			"details": err.Error(),
-			"body": string(body),
 		})
 		return
 	}
 
-	fitof := request.Document.FIToFICstmrCdtTrf
-	pmt := fitof.CdtTrfTxInf
+	pmt := doc.FIToFICstmrCdtTrf.CdtTrfTxInf
 
 	// Check for duplicate
 	if _, exists := store.Get(pmt.PmtID.EndToEndID); exists {
@@ -174,34 +174,29 @@ func processPayment(c *gin.Context) {
 		return
 	}
 
-	// Validate amount - try parsing from Ccy attribute value
-	amount := 0.0
-	// The XML parser might put the value in different places
-	amountStr := pmt.IntrBkSttlmAmt.Value
-	if amountStr == "" {
-		// Try to get from the raw XML
-		amountStr = pmt.IntrBkSttlmAmt.Ccy
-	}
-	if amountStr != "" {
-		fmt.Sscanf(amountStr, "%f", &amount)
-	}
-	if amount <= 0 {
-		// Default to 100.00 for testing if parsing fails
-		amount = 100.00
+	// Validate amount
+	amount, err := parseAmountValue(pmt.IntrBkSttlmAmt.Value)
+	if err != nil {
+		c.XML(http.StatusBadRequest, gin.H{
+			"status": "REJECTED",
+			"reason": "InvalidAmount",
+			"details": err.Error(),
+		})
+		return
 	}
 
 	// Create transaction
 	tx := &Transaction{
-		ID:             uuid.New().String(),
-		EndToEndID:     pmt.PmtID.EndToEndID,
-		TxID:           pmt.PmtID.TxID,
-		Amount:         amount,
-		CreditorISPB:   pmt.CdtrAgt.FinInstnID.ClrSysMmbID.MmbID,
-		CreditorName:   pmt.Cdtr.Nm,
-		DebtorISPB:     pmt.InstgAgt.FinInstnID.ClrSysMmbID.MmbID,
-		DebtorName:     pmt.Dbtr.Nm,
-		Status:         StatusAccepted,
-		CreatedAt:      time.Now(),
+		ID:           uuid.New().String(),
+		EndToEndID:   pmt.PmtID.EndToEndID,
+		TxID:         pmt.PmtID.TxID,
+		Amount:       amount,
+		CreditorISPB: pmt.CdtrAgt.FinInstnID.ClrSysMmbID.MmbID,
+		CreditorName: pmt.Cdtr.Nm,
+		DebtorISPB:   pmt.InstgAgt.FinInstnID.ClrSysMmbID.MmbID,
+		DebtorName:   pmt.Dbtr.Nm,
+		Status:       StatusAccepted,
+		CreatedAt:    time.Now(),
 	}
 
 	store.Add(tx)

@@ -1,5 +1,6 @@
 import Fastify from 'fastify'
 import xmlBodyParser from 'fastify-xml-body-parser'
+import authPlugin from '@banking/shared-auth/dist/fastify'
 import { registerPacs008Routes } from './routes/pacs008'
 import { registerPacs002Routes } from './routes/pacs002'
 import { registerPacs004Routes } from './routes/pacs004'
@@ -16,6 +17,7 @@ async function start(): Promise<void> {
   })
 
   await app.register(xmlBodyParser)
+  await app.register(authPlugin, { excludePaths: ['/spi/health'] })
 
   registerPacs008Routes(app)
   registerPacs002Routes(app)

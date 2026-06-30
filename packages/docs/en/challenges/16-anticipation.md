@@ -77,7 +77,7 @@ sequenceDiagram
 ### Architecture
 
 ```mermaid
-graph TB
+flowchart TB
     subgraph "Merchants"
       M1[Physical Store]
       M2[E-commerce]

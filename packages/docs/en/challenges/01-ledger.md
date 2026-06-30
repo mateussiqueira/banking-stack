@@ -16,7 +16,7 @@ That's what I built. But it wasn't a walk in the park: reverse pagination with `
 ## Architecture
 
 ```mermaid
-graph TD
+flowchart TD
     A[Client] --> B[GraphQL API]
     B --> C[Resolvers]
     C --> D[DataLoader]

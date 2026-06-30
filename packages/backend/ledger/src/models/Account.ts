@@ -15,7 +15,7 @@ const AccountSchema = new Schema<IAccount>(
     document: { type: String, required: true, unique: true },
     balance: { type: Number, required: true, default: 0, min: 0 },
   },
-  { timestamps: true }
+  { timestamps: true, optimisticConcurrency: true }
 );
 
 AccountSchema.pre('save', function (next) {

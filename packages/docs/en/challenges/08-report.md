@@ -16,7 +16,7 @@ This challenge is about doing it right, with a queue, retry, and notification.
 ## Architecture
 
 ```mermaid
-graph LR
+flowchart LR
     A[Client] --> B[API]
     B --> C[BullMQ Queue]
     C --> D[Worker 1]

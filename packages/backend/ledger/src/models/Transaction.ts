@@ -11,6 +11,7 @@ export interface ITransaction extends Document {
   description?: string;
   type: TransactionType;
   status: TransactionStatus;
+  idempotencyKey?: string;
   createdAt: Date;
   completedAt?: Date;
 }
@@ -40,6 +41,7 @@ const TransactionSchema = new Schema<ITransaction>(
       default: 'PENDING',
     },
     completedAt: { type: Date },
+    idempotencyKey: { type: String, unique: true, sparse: true },
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );

@@ -1,6 +1,6 @@
-module github.com/mateussiqueira/banking-stack/spi-simulator
+module github.com/mateussiqueira/banking-stack/spi-simulator-go
 
-go 1.23
+go 1.25
 
 require (
 	github.com/gin-gonic/gin v1.10.0

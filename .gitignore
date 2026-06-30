@@ -8,5 +8,4 @@ build/
 *.log
 .DS_Store
 coverage/
-.turbo/
 .vercel

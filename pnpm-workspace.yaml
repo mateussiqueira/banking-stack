@@ -3,3 +3,4 @@ packages:
   - "packages/frontend/*"
   - "packages/devops/*"
   - "packages/docs/*"
+  - "packages/shared/*"

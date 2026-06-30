@@ -83,7 +83,7 @@ O Banking Challenges é um **monorepo** gerenciado pelo **Turborepo** com **pnpm
 ### Fluxo de Dados
 
 ```mermaid
-graph LR
+flowchart LR
     subgraph "Frontend"
       WEB[Web App]
       MOB[Mobile App]
@@ -169,7 +169,7 @@ graph LR
 ### Arquitetura Go
 
 ```mermaid
-graph TB
+flowchart TB
     subgraph "Clients"
       POS[POS Terminal]
       APP[App]

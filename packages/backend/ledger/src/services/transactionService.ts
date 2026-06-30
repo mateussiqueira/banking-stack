@@ -9,6 +9,7 @@ export const transactionService = {
     amount: number;
     description?: string;
     type: string;
+    idempotencyKey?: string;
   }): Promise<ITransaction> {
     if (data.amount <= 0) {
       throw new Error('Amount must be positive');
@@ -16,6 +17,14 @@ export const transactionService = {
 
     if (data.senderAccount === data.receiverAccount) {
       throw new Error('Sender and receiver must be different');
+    }
+
+    // Check idempotency before starting session
+    if (data.idempotencyKey) {
+      const existing = await Transaction.findOne({ idempotencyKey: data.idempotencyKey });
+      if (existing) {
+        return existing;
+      }
     }
 
     const session = await mongoose.startSession();
@@ -45,6 +54,7 @@ export const transactionService = {
             description: data.description ?? '',
             type: data.type,
             status: 'COMPLETED' as TransactionStatus,
+            idempotencyKey: data.idempotencyKey,
             completedAt: new Date(),
           },
         ],
@@ -138,4 +148,3 @@ export const transactionService = {
   },
 };
 
-// TODO: add idempotency key to prevent duplicate transactions on retry

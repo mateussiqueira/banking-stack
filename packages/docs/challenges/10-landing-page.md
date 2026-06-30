@@ -7,7 +7,7 @@
 
 Fazer uma landing page é fácil. Qualquer um com HTML básico faz uma landing page. Fazer uma landing page com um design system que não quebra quando alguém muda a cor primária — isso é mais difícil.
 
-Eu já vi o cenário: o designer chega e fala "muda o tom de violeta pra tal tom de azul". Aí você vai lá e descobre que o violeta estava hardcoded em 47 lugares diferentes. Button.tsx, Card.tsx, Hero.tsx, CTA.tsx — cada um com sua própria cor. Você passa a tarde inteira caçando `#8b5cf6` e substituindo por `#2563eb`. E no dia seguinte o designer volta: "na verdade, era outro azul".
+Eu já vi o cenário: o designer chega e fala "Muda o tom de violeta pra tal tom de azul". Aí você vai lá e descobre que o violeta estava hardcoded em 47 lugares diferentes. Button.tsx, Card.tsx, Hero.tsx, CTA.tsx — cada um com sua própria cor. Você passa a tarde inteira caçando `#8b5cf6` e substituindo por `#2563eb`. E no dia seguinte o designer volta: "Na verdade, era outro azul".
 
 Design system resolve isso. Você define as cores uma vez, num lugar só. Os componentes usam variáveis. Quando muda, muda em tudo.
 
@@ -40,7 +40,7 @@ landing-page/
 └── tailwind.config.ts
 ```
 
-Essa estrutura separa o design system (ui/) das seções de negócio (sections/). O motivo? Você pode reutilizar o `ui/` em outro projeto. O `sections/` é específico dessa landing page. Quando o designer pedir "faz uma página nova", você reusa os componentes de UI e só cria novas seções.
+Essa estrutura separa o design system (ui/) das seções de negócio (sections/). O motivo? Você pode reutilizar o `ui/` em outro projeto. O `sections/` é específico dessa landing page. Quando o designer pedir "Faz uma página nova", você reusa os componentes de UI e só cria novas seções.
 
 ---
 
@@ -257,13 +257,13 @@ export function Button({
       {...props}
     >
       {isLoading ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <Loader2 className="Mr-2 h-4 w-4 animate-spin" />
       ) : leftIcon ? (
-        <span className="mr-2">{leftIcon}</span>
+        <span className="Mr-2">{leftIcon}</span>
       ) : null}
       {children}
       {rightIcon && !isLoading && (
-        <span className="ml-2">{rightIcon}</span>
+        <span className="Ml-2">{rightIcon}</span>
       )}
     </button>
   );
@@ -352,15 +352,15 @@ export function Dialog({ children, ...props }: DialogPrimitive.DialogProps) {
 export function DialogContent({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-in" />
+      <DialogPrimitive.Overlay className="Fixed inset-0 bg-black/50 data-[state=open]:animate-in" />
       <DialogPrimitive.Content className={cn(
         'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6 shadow-xl',
         'w-full max-w-md',
         className
       )}>
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100">
-          <X className="h-4 w-4" />
+        <DialogPrimitive.Close className="Absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100">
+          <X className="H-4 w-4" />
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>
     </DialogPrimitive.Portal>
@@ -417,7 +417,7 @@ export function Tooltip({ children, content, side = 'top' }: {
         )}
       >
         {content}
-        <TooltipPrimitive.Arrow className="fill-zinc-900" />
+        <TooltipPrimitive.Arrow className="Fill-zinc-900" />
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Root>
   );
@@ -435,37 +435,37 @@ import { ArrowRight, Play } from 'lucide-react';
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-violet-50 to-white px-6 py-24 sm:py-32">
-      <div className="mx-auto max-w-6xl">
-        <div className="text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-1.5 text-sm text-violet-700">
-            <span className="h-2 w-2 rounded-full bg-violet-500 animate-pulse" />
+    <section className="Relative overflow-hidden bg-gradient-to-b from-violet-50 to-white px-6 py-24 sm:py-32">
+      <div className="Mx-auto max-w-6xl">
+        <div className="Text-center">
+          <div className="Mb-6 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-1.5 text-sm text-violet-700">
+            <span className="H-2 w-2 rounded-full bg-violet-500 animate-pulse" />
             Novo: Open Finance Brasil compatível
           </div>
 
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900 sm:text-6xl">
+          <h1 className="Text-4xl font-bold tracking-tight text-zinc-900 sm:text-6xl">
             Banking Stack
-            <span className="block text-violet-600">para desenvolvedores</span>
+            <span className="Block text-violet-600">para desenvolvedores</span>
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-600">
+          <p className="Mx-auto mt-6 max-w-2xl text-lg text-zinc-600">
             A plataforma completa para construir sistemas financeiros no Brasil.
             Pix, boletos, Open Finance, NFS-e — tudo que você precisa, num lugar só.
           </p>
 
-          <div className="mt-10 flex items-center justify-center gap-4">
-            <Button size="lg" variant="primary" rightIcon={<ArrowRight className="h-4 w-4" />}>
+          <div className="Mt-10 flex items-center justify-center gap-4">
+            <Button size="Lg" variant="Primary" rightIcon={<ArrowRight className="H-4 w-4" />}>
               Começar agora
             </Button>
-            <Button size="lg" variant="outline" leftIcon={<Play className="h-4 w-4" />}>
+            <Button size="Lg" variant="Outline" leftIcon={<Play className="H-4 w-4" />}>
               Ver demo
             </Button>
           </div>
         </div>
 
-        <div className="mt-16 rounded-2xl border border-zinc-200 bg-white p-2 shadow-xl">
-          <div className="aspect-video rounded-xl bg-gradient-to-br from-violet-100 to-zinc-100 flex items-center justify-center">
-            <span className="text-zinc-400">Dashboard Preview</span>
+        <div className="Mt-16 rounded-2xl border border-zinc-200 bg-white p-2 shadow-xl">
+          <div className="Aspect-video rounded-xl bg-gradient-to-br from-violet-100 to-zinc-100 flex items-center justify-center">
+            <span className="Text-zinc-400">Dashboard Preview</span>
           </div>
         </div>
       </div>
@@ -520,20 +520,20 @@ const features: Feature[] = [
 
 export function Features() {
   return (
-    <section className="px-6 py-24">
-      <div className="mx-auto max-w-6xl">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-zinc-900 sm:text-4xl">
+    <section className="Px-6 py-24">
+      <div className="Mx-auto max-w-6xl">
+        <div className="Text-center mb-16">
+          <h2 className="Text-3xl font-bold text-zinc-900 sm:text-4xl">
             Tudo que você precisa pra construir
           </h2>
-          <p className="mt-4 text-lg text-zinc-600">
+          <p className="Mt-4 text-lg text-zinc-600">
             Da autenticação ao relatório financeiro, cada componente é pensado pro cenário brasileiro.
           </p>
         </div>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="Grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((feature) => (
-            <Card key={feature.title} variant="elevated">
+            <Card key={feature.title} variant="Elevated">
               <CardHeader>
                 <feature.icon className={cn('h-10 w-10 mb-2', feature.color)} />
                 <CardTitle>{feature.title}</CardTitle>
@@ -557,19 +557,19 @@ import { ArrowRight, Github } from 'lucide-react';
 
 export function CTA() {
   return (
-    <section className="bg-zinc-900 px-6 py-24">
-      <div className="mx-auto max-w-4xl text-center">
-        <h2 className="text-3xl font-bold text-white sm:text-4xl">
+    <section className="Bg-zinc-900 px-6 py-24">
+      <div className="Mx-auto max-w-4xl text-center">
+        <h2 className="Text-3xl font-bold text-white sm:text-4xl">
           Pronto pra começar?
         </h2>
-        <p className="mt-4 text-lg text-zinc-400">
+        <p className="Mt-4 text-lg text-zinc-400">
           Banking Stack é open source. Clone o repositório, rode local, e comece a construir.
         </p>
-        <div className="mt-10 flex items-center justify-center gap-4">
-          <Button size="lg" variant="primary" rightIcon={<ArrowRight className="h-4 w-4" />}>
+        <div className="Mt-10 flex items-center justify-center gap-4">
+          <Button size="Lg" variant="Primary" rightIcon={<ArrowRight className="H-4 w-4" />}>
             Ver documentação
           </Button>
-          <Button size="lg" variant="outline" className="border-zinc-600 text-white hover:bg-zinc-800" leftIcon={<Github className="h-4 w-4" />}>
+          <Button size="Lg" variant="Outline" className="Border-zinc-600 text-white hover:bg-zinc-800" leftIcon={<Github className="H-4 w-4" />}>
             GitHub
           </Button>
         </div>
@@ -600,7 +600,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR">
+    <html lang="Pt-BR">
       <body className={cn(inter.className, 'min-h-screen bg-white text-zinc-900 antialiased')}>
         <TooltipProvider>
           <Header />
@@ -707,16 +707,16 @@ export const Simple = {
   render: () => (
     <Dialog>
       <DialogTrigger>
-        <Button variant="primary">Abrir Dialog</Button>
+        <Button variant="Primary">Abrir Dialog</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Confirmação</DialogTitle>
         </DialogHeader>
-        <p className="text-sm text-zinc-600">Tem certeza que deseja continuar?</p>
-        <div className="mt-6 flex justify-end gap-3">
-          <Button variant="outline">Cancelar</Button>
-          <Button variant="primary">Confirmar</Button>
+        <p className="Text-sm text-zinc-600">Tem certeza que deseja continuar?</p>
+        <div className="Mt-6 flex justify-end gap-3">
+          <Button variant="Outline">Cancelar</Button>
+          <Button variant="Primary">Confirmar</Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -814,12 +814,12 @@ describe('Button', () => {
   });
 
   it('applies variant classes', () => {
-    const { rerender } = render(<Button variant="primary">Botão</Button>);
+    const { rerender } = render(<Button variant="Primary">Botão</Button>);
     const button = screen.getByRole('button');
 
     expect(button.className).toContain('bg-violet-600');
 
-    rerender(<Button variant="outline">Botão</Button>);
+    rerender(<Button variant="Outline">Botão</Button>);
     expect(button.className).toContain('border');
   });
 });
@@ -846,12 +846,12 @@ describe('Card', () => {
   });
 
   it('applies variant classes', () => {
-    const { rerender } = render(<Card variant="elevated">Conteúdo</Card>);
+    const { rerender } = render(<Card variant="Elevated">Conteúdo</Card>);
     const card = screen.getByText('Conteúdo').parentElement!;
 
     expect(card.className).toContain('shadow-md');
 
-    rerender(<Card variant="outlined">Conteúdo</Card>);
+    rerender(<Card variant="Outlined">Conteúdo</Card>);
     expect(card.className).toContain('border-zinc-300');
   });
 });
@@ -876,7 +876,7 @@ export function HeroImage() {
       width={1200}
       height={675}
       priority // Carrega antes do resto (acima da dobra)
-      className="rounded-xl"
+      className="Rounded-xl"
     />
   );
 }
@@ -921,13 +921,13 @@ export const metadata: Metadata = {
 
 ## Por que essa estrutura funciona
 
-1. **Tailwind + CVA** — Você não precisa escrever CSS novo pra cada botão. As variantes são tipadas. O TypeScript te guia: se você escrever `variant="primery"`, o compilador reclama.
+1. **Tailwind + CVA** — Você não precisa escrever CSS novo pra cada botão. As variantes são tipadas. O TypeScript te guia: se você escrever `variant="Primery"`, o compilador reclama.
 
-2. **Radix UI** — Acessibilidade sem pensar. Foco, teclado, ARIA attributes. Tudo pronto. Você não precisa lembrar de colocar `role="dialog"`, `aria-modal`, focus trap — o Radix faz.
+2. **Radix UI** — Acessibilidade sem pensar. Foco, teclado, ARIA attributes. Tudo pronto. Você não precisa lembrar de colocar `role="Dialog"`, `aria-modal`, focus trap — o Radix faz.
 
 3. **Storybook** — O dev de backend consegue ver os componentes sem rodar o app. O designer consegue revisar sem saber React. E o addon-a11y escaneia acessibilidade automaticamente.
 
-4. **cn() helper** — Evita conflito de classes do Tailwind quando você junta classes de props com classes fixas. O `twMerge` resolve conflitos de forma inteligente: se você passar `className="bg-red-500"` e o componente tiver `bg-blue-500`, o `twMerge` mantém a classe da prop.
+4. **cn() helper** — Evita conflito de classes do Tailwind quando você junta classes de props com classes fixas. O `twMerge` resolve conflitos de forma inteligente: se você passar `className="Bg-red-500"` e o componente tiver `bg-blue-500`, o `twMerge` mantém a classe da prop.
 
 5. **Componentes puros** — Cada componente UI não tem estado de negócio. Não sabe de API, de formulário, de nada. É puramente visual. Isso permite reuso em qualquer projeto.
 
@@ -978,3 +978,7 @@ pnpm --filter @banking/landing-page test
 6. **Teste de componente não testa o Radix** — Teste seu componente, não a biblioteca. Se você testar que o Dialog abre, está testando o Radix. Teste que seu botão chama `onClick`, que o loading mostra spinner, que o disabled desabilita.
 
 7. **Acessibilidade não é opcional** — Contraste, foco visível, labels, ARIA. O addon-a11y no Storybook te ajuda a não esquecer. A LGPD não exige acessibilidade, mas o bom senso sim.
+
+<Quiz />
+
+<GiscusComments />

@@ -18,7 +18,7 @@ This is how n8n, Zapier, and Power Automate work under the hood.
 ## Architecture
 
 ```mermaid
-graph TD
+flowchart TD
     A[Trigger] --> B[Validate Node]
     B --> C{Condition}
     C -->|Success| D[HTTP Action]

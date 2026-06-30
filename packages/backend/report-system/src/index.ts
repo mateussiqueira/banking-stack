@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import mongoose from 'mongoose';
+import authPlugin from '@banking/shared-auth/dist/fastify';
 import { config } from './config';
 import { reportRoutes } from './routes/reports';
 
@@ -12,6 +13,8 @@ async function main() {
   });
 
   await app.register(cors, { origin: true });
+
+  await app.register(authPlugin, { excludePaths: ['/health'] });
 
   await app.register(reportRoutes);
 

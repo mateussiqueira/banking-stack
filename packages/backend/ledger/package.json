@@ -17,6 +17,7 @@
     "graphql-http": "^1.22.1",
     "graphql-playground-middleware-koa": "^1.6.22",
     "graphql-relay": "^0.10.1",
+    "@banking/shared-auth": "workspace:*",
     "dataloader": "^2.2.2",
     "koa": "^2.15.3",
     "koa-graphql": "^0.12.0",
