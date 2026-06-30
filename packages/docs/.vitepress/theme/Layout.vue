@@ -4,6 +4,7 @@ import SidebarProgress from './components/SidebarProgress.vue'
 import AchievementToast from './components/AchievementToast.vue'
 import FlashcardReview from './components/FlashcardReview.vue'
 import ExportNotes from './components/ExportNotes.vue'
+import CertificateBanner from './components/CertificateBanner.vue'
 
 const { Layout } = DefaultTheme
 </script>
@@ -16,4 +17,5 @@ const { Layout } = DefaultTheme
   </Layout>
   <AchievementToast />
   <ExportNotes />
+  <CertificateBanner />
 </template>

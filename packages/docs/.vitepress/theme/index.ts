@@ -15,6 +15,8 @@ import SidebarProgress from './components/SidebarProgress.vue'
 import FlashcardReview from './components/FlashcardReview.vue'
 import ExportNotes from './components/ExportNotes.vue'
 import InteractiveDiagram from './components/InteractiveDiagram.vue'
+import CertificateBanner from './components/CertificateBanner.vue'
+import ProfileDashboard from './components/ProfileDashboard.vue'
 import Layout from './Layout.vue'
 import './custom.css'
 
@@ -117,8 +119,47 @@ function injectReadingTime() {
 
   const el = document.createElement('span')
   el.className = 'reading-time-inline'
-  el.innerHTML = `⏱️ ${minutes} min de leitura · ~${words.toLocaleString()} palavras`
+  el.innerHTML = `${minutes} min de leitura / ${words.toLocaleString()} palavras`
   h1.insertAdjacentElement('afterend', el)
+}
+
+function setupMermaidZoomInline() {
+  document.querySelectorAll<HTMLElement>('.mermaid').forEach((block) => {
+    if (block.dataset.zoomAttached) return
+    block.dataset.zoomAttached = 'true'
+    block.style.cursor = 'zoom-in'
+    block.addEventListener('click', () => {
+      if (document.querySelector('.mermaid-zoom-overlay')) return
+      const svg = block.querySelector('svg')
+      if (!svg) return
+      const overlay = document.createElement('div')
+      overlay.className = 'mermaid-zoom-overlay'
+      const closeBtn = document.createElement('button')
+      closeBtn.className = 'mermaid-zoom-close'
+      closeBtn.innerHTML = '&times;'
+      const clonedSvg = svg.cloneNode(true) as SVGElement
+      clonedSvg.style.maxWidth = '95vw'
+      clonedSvg.style.maxHeight = '95vh'
+      overlay.appendChild(clonedSvg)
+      overlay.appendChild(closeBtn)
+      document.body.appendChild(overlay)
+      const remove = () => {
+        overlay.remove()
+        document.removeEventListener('keydown', onKey)
+      }
+      const onKey = (ev: KeyboardEvent) => {
+        if (ev.key === 'Escape') remove()
+      }
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) remove()
+      })
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation()
+        remove()
+      })
+      document.addEventListener('keydown', onKey)
+    })
+  })
 }
 
 export default {
@@ -139,63 +180,45 @@ export default {
     app.component('FlashcardReview', FlashcardReview)
     app.component('ExportNotes', ExportNotes)
     app.component('InteractiveDiagram', InteractiveDiagram)
+    app.component('CertificateBanner', CertificateBanner)
+    app.component('ProfileDashboard', ProfileDashboard)
   },
   setup() {
     const { lang } = useData()
 
     onMounted(() => {
+      // Convert mermaid code blocks (Shiki renders as div.language-mermaid) to .mermaid divs
+      document.querySelectorAll<HTMLDivElement>('.vp-doc div.language-mermaid').forEach((block) => {
+        const text = block.textContent?.trim() || ''
+        if (!text) return
+        const div = document.createElement('div')
+        div.className = 'mermaid'
+        div.textContent = text
+        div.style.textAlign = 'center'
+        div.style.margin = '1.5rem 0'
+        div.style.padding = '1rem'
+        div.style.background = 'var(--vp-c-bg-soft)'
+        div.style.borderRadius = '8px'
+        div.style.border = '1px solid var(--vp-c-border)'
+        block.parentNode?.replaceChild(div, block)
+      })
+
+      // Render mermaid after conversion
+      import('mermaid').then((mermaid) => {
+        mermaid.default.initialize({
+          startOnLoad: false,
+          theme: 'dark',
+          securityLevel: 'loose',
+        })
+        mermaid.default.run().then(() => {
+          setupMermaidZoomInline()
+        })
+      })
+
       setupCopyCodeButtons()
       setupReadingPosition()
       setupScrollSpy()
       injectReadingTime()
-      // Mermaid zoom: retry until SVGs are rendered by the plugin
-      let attempts = 0
-      const tryZoom = () => {
-        const mermaidBlocks = document.querySelectorAll<HTMLElement>('.mermaid')
-        if (mermaidBlocks.length > 0) {
-          mermaidBlocks.forEach((block) => {
-            if (!block.dataset.zoomAttached) {
-              block.dataset.zoomAttached = 'true'
-              block.style.cursor = 'zoom-in'
-              block.addEventListener('click', () => {
-                if (document.querySelector('.mermaid-zoom-overlay')) return
-                const svg = block.querySelector('svg')
-                if (!svg) return
-                const overlay = document.createElement('div')
-                overlay.className = 'mermaid-zoom-overlay'
-                const closeBtn = document.createElement('button')
-                closeBtn.className = 'mermaid-zoom-close'
-                closeBtn.innerHTML = '&times;'
-                const clonedSvg = svg.cloneNode(true) as SVGElement
-                clonedSvg.style.maxWidth = '95vw'
-                clonedSvg.style.maxHeight = '95vh'
-                overlay.appendChild(clonedSvg)
-                overlay.appendChild(closeBtn)
-                document.body.appendChild(overlay)
-                const remove = () => {
-                  overlay.remove()
-                  document.removeEventListener('keydown', onKey)
-                }
-                const onKey = (ev: KeyboardEvent) => {
-                  if (ev.key === 'Escape') remove()
-                }
-                overlay.addEventListener('click', (e) => {
-                  if (e.target === overlay) remove()
-                })
-                closeBtn.addEventListener('click', (e) => {
-                  e.stopPropagation()
-                  remove()
-                })
-                document.addEventListener('keydown', onKey)
-              })
-            }
-          })
-        } else if (attempts < 30) {
-          attempts++
-          setTimeout(tryZoom, 500)
-        }
-      }
-      setTimeout(tryZoom, 800)
     })
 
     watch(lang, () => {

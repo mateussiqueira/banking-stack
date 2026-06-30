@@ -1,7 +1,6 @@
 import { defineConfig } from 'vitepress'
-import { withMermaid } from 'vitepress-plugin-mermaid'
 
-export default withMermaid(defineConfig({
+export default defineConfig({
   title: 'Banking Challenges',
   description: 'Desafios técnicos full-stack para fintechs',
   cleanUrls: true,
@@ -121,6 +120,7 @@ export default withMermaid(defineConfig({
               text: 'Referência',
               collapsed: false,
               items: [
+                { text: 'Perfil', link: '/profile' },
                 { text: 'API Reference', link: '/api-reference' },
                 { text: 'Deploy', link: '/guides/deployment' },
                 { text: 'Changelog', link: '/changelog' },
@@ -198,6 +198,7 @@ export default withMermaid(defineConfig({
               text: 'Reference',
               collapsed: false,
               items: [
+                { text: 'Profile', link: '/en/profile' },
                 { text: 'API Reference', link: '/en/api-reference' },
                 { text: 'Deployment', link: '/en/guides/deployment' },
                 { text: 'Changelog', link: '/en/changelog' },
@@ -264,4 +265,4 @@ export default withMermaid(defineConfig({
     darkModeSwitchTitle: 'Modo escuro',
     systemModeSwitchTitle: 'Modo sistema'
   }
-}))
+})
