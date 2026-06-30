@@ -1,1 +1,0 @@
-/Volumes/BACKUP/projects/banking-stack/packages/docs/src/pro/module-2-rust/exercises/14-transaction-iterator/target/debug/transaction-iterator: /Volumes/BACKUP/projects/banking-stack/packages/docs/src/pro/module-2-rust/exercises/14-transaction-iterator/main.rs
