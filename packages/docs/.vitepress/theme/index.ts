@@ -19,6 +19,7 @@ import ProfileDashboard from './components/ProfileDashboard.vue'
 import TTSEar from './components/TTSEar.vue'
 import AIHelper from './components/AIHelper.vue'
 import APIPlayground from './components/APIPlayground.vue'
+import LeaderboardWidget from './components/LeaderboardWidget.vue'
 import Layout from './Layout.vue'
 import { initAnalytics } from './data/analytics'
 import './custom.css'
@@ -187,6 +188,7 @@ export default {
     app.component('TTSEar', TTSEar)
     app.component('AIHelper', AIHelper)
     app.component('APIPlayground', APIPlayground)
+    app.component('LeaderboardWidget', LeaderboardWidget)
   },
   setup() {
     const { lang } = useData()

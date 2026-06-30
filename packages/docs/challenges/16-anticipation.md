@@ -1843,6 +1843,8 @@ func (j *ReconciliationJob) Execute(ctx context.Context, date time.Time) error {
 - Custo de infraestrutura é crítico (100MB vs 2GB por instância)
 - Você está construindo o core que Stone, PagSeguro e Mercado Pago usam
 
+<FlashcardReview />
+
 <Quiz />
 
 <GiscusComments />

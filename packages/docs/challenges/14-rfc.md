@@ -1517,6 +1517,8 @@ func GenerateLog(rfcDir string) (*DecisionLog, error) {
 
 **Conclusão:** Ambos funcionam. Go tem vantagem em ferramentas CLI distribuíveis (binário único, sem runtime). TypeScript tem vantagem em integração com GitHub Actions e ecossistema Node (a maioria dos times já tem Node instalado). O importante não é a linguagem da ferramenta — é a disciplina do processo.
 
+<FlashcardReview />
+
 <Quiz />
 
 <GiscusComments />

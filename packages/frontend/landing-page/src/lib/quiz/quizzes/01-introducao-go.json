@@ -1,0 +1,67 @@
+{
+  "lessonId": "lesson-1",
+  "title": "Introdução a Go",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Por que Go é usado por fintechs como Nubank e Banco Central?",
+      "options": [
+        "Porque é mais fácil que Python",
+        "Porque tem binário nativo e baixa latência de GC",
+        "Porque tem mais bibliotecas que Java",
+        "Porque foi criado pelo Facebook"
+      ],
+      "correctIndex": 1,
+      "explanation": "Go compila para binário nativo e tem GC com pausas < 1ms, ideal para sistemas financeiros de baixa latência."
+    },
+    {
+      "id": "q2",
+      "question": "Qual a forma correta de declarar uma variável em Go?",
+      "options": [
+        "var x = 10",
+        "x := 10",
+        "let x = 10",
+        "int x = 10"
+      ],
+      "correctIndex": 1,
+      "explanation": "O operador := declara e inicializa uma variável com inferência de tipo."
+    },
+    {
+      "id": "q3",
+      "question": "Por que NÃO devemos usar float64 para dinheiro?",
+      "options": [
+        "Porque é muito grande",
+        "Porque tem erros de precisão (0.1 + 0.2 ≠ 0.3)",
+        "Porque Go não suporta",
+        "Porque é lento"
+      ],
+      "correctIndex": 1,
+      "explanation": "Floats têm erros de precisão. Use inteiros (centavos) ou decimal.Decimal."
+    },
+    {
+      "id": "q4",
+      "question": "O que faz a função fmt.Sprintf()?",
+      "options": [
+        "Imprime na tela",
+        "Formata uma string sem imprimir",
+        "Lê input do usuário",
+        "Converte tipos"
+      ],
+      "correctIndex": 1,
+      "explanation": "Sprintf formata e retorna uma string, sem imprimir (diferente de Printf)."
+    },
+    {
+      "id": "q5",
+      "question": "Como se declara uma função em Go?",
+      "options": [
+        "function nome() {}",
+        "func nome() {}",
+        "def nome() {}",
+        "fn nome() {}"
+      ],
+      "correctIndex": 1,
+      "explanation": "Go usa a palavra-chave 'func' para declarar funções."
+    }
+  ]
+}

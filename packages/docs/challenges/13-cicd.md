@@ -2020,6 +2020,8 @@ changelog:
 
 O GoReleaser faz o que você faria manualmente: cross-compila, gera checksums, builda imagens Docker multi-arch, cria manifest lists, e publica release no GitHub — tudo com um comando. E o `ko` builda imagens Go diretamente, sem Dockerfile. Ele detecta o `go.mod`, compila, e empacota em container com `FROM scratch` automaticamente.
 
+<FlashcardReview />
+
 <Quiz />
 
 <GiscusComments />

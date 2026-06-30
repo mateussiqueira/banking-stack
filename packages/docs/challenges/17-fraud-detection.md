@@ -1773,6 +1773,8 @@ Go leva vantagem em latência pura (quase 2x mais rápido) e throughput (7x mais
 - O modelo roda em batch ou sob demanda, não no hot path
 - A latência extra do Python (5-15ms) é aceitável porque é só uma chamada gRPC
 
+<FlashcardReview />
+
 <Quiz />
 
 <GiscusComments />

@@ -9,8 +9,10 @@ import {
   CheckCircle2,
   Circle,
   Lock,
+  Flame,
 } from "lucide-react";
 import Link from "next/link";
+import { ProgressCard } from "@/components/pro/progress-card";
 
 const stats = [
   {
@@ -111,27 +113,33 @@ export default function ProDashboard() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title} className="border-surface-200 bg-surface-50">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-body-sm text-surface-400">{stat.title}</p>
-                  <p className="text-heading-lg font-bold text-neutral-50">
-                    {stat.value}
-                  </p>
-                </div>
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.bg}`}
-                >
-                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Progress Dashboard */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-4">
+            {stats.map((stat) => (
+              <Card key={stat.title} className="border-surface-200 bg-surface-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-body-sm text-surface-400">{stat.title}</p>
+                      <p className="text-heading-lg font-bold text-neutral-50">
+                        {stat.value}
+                      </p>
+                    </div>
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.bg}`}
+                    >
+                      <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+        <ProgressCard />
       </div>
 
       {/* Modules */}

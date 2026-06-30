@@ -1183,6 +1183,8 @@ export async function submitPersonalData(formData: FormData) {
 - **C6 Bank** (Next.js) — 20M+ clientes, App Router
 - **Nubank** (React Native + React) — 80M+ clientes
 
+<FlashcardReview />
+
 <Quiz />
 
 <GiscusComments />

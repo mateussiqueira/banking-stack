@@ -1,0 +1,67 @@
+{
+  "lessonId": "lesson-2",
+  "title": "Goroutines",
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Quanto de memória uma goroutine consome?",
+      "options": [
+        "~1MB",
+        "~100KB",
+        "~2KB",
+        "~10MB"
+      ],
+      "correctIndex": 2,
+      "explanation": "Goroutines são muito leves: ~2KB vs ~1MB de threads tradicionais."
+    },
+    {
+      "id": "q2",
+      "question": "Como criar uma goroutine?",
+      "options": [
+        "thread(func())",
+        "go func()",
+        "async func()",
+        "spawn func()"
+      ],
+      "correctIndex": 1,
+      "explanation": "A palavra-chave 'go' antes de uma chamada de função cria uma goroutine."
+    },
+    {
+      "id": "q3",
+      "question": "Para que serve sync.WaitGroup?",
+      "options": [
+        "Proteger variáveis compartilhadas",
+        "Aguardar goroutines concluírem",
+        "Criar pools de conexões",
+        "Gerenciar timeouts"
+      ],
+      "correctIndex": 1,
+      "explanation": "WaitGroup permite que uma goroutine espere até que outras terminem."
+    },
+    {
+      "id": "q4",
+      "question": "O que é uma race condition?",
+      "options": [
+        "Quando goroutines competem por CPU",
+        "Quando múltiplas goroutines acessam dados compartilhados sem sincronização",
+        "Quando uma goroutine trava",
+        "Quando o GC executa"
+      ],
+      "correctIndex": 1,
+      "explanation": "Race condition ocorre quando o acesso concorrente a dados compartilhados causa comportamento indefinido."
+    },
+    {
+      "id": "q5",
+      "question": "Como detectar race conditions no Go?",
+      "options": [
+        "Com pprof",
+        "Com go test -race",
+        "Com go vet",
+        "Com go lint"
+      ],
+      "correctIndex": 1,
+      "explanation": "A flag -race do go test detecta race conditions em tempo de execução."
+    }
+  ]
+}

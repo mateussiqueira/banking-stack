@@ -1917,6 +1917,8 @@ flowchart LR
 
 **Conclusão:** Em 2026, o Proxmox VE é a resposta mais pragmática para fintechs que precisam de soberania de dados, performance previsível e custos controlados. Não é sobre "Open-source vs enterprise" — é sobre "Controlar sua própria infraestrutura vs alugar a infra de outro". E no mercado financeiro, quem controla a infraestrutura controla o destino da empresa.
 
+<FlashcardReview />
+
 <Quiz />
 
 <GiscusComments />

@@ -1,0 +1,67 @@
+{
+  "lessonId": "06-grpc",
+  "lessonTitle": "gRPC com Go — Proto definitions e streaming",
+  "passingScore": 60,
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Qual é a principal vantagem de gRPC sobre REST para comunicação entre microsserviços bancários?",
+      "options": [
+        "Suporte a múltiplos formatos de mídia",
+        "Serialização binária com Protocol Buffers — mais rápido e menor que JSON, com contratos fortemente tipados",
+        "Melhor suporte a navegação de browsers",
+        "Não precisa de definição de contrato"
+      ],
+      "correctIndex": 1,
+      "explanation": "Protocol Buffers serializa dados em binário, resultando em payloads menores e parsing mais rápido que JSON. As .proto files definem contratos fortemente tipados, evitando erros."
+    },
+    {
+      "id": "q2",
+      "question": "Qual dos seguintes padrões de streaming gRPC é mais adequado para monitorar transações em tempo real?",
+      "options": [
+        "Unary RPC (request-response único)",
+        "Server Streaming — o servidor envia múltiplas respostas ao longo do tempo",
+        "Client Streaming — o cliente envia múltiplas mensagens",
+        "Bidirectional Streaming"
+      ],
+      "correctIndex": 1,
+      "explanation": "Server Streaming permite que o servidor envie um stream de atualizações de transações ao cliente, ideal para monitoramento em tempo real sem polling."
+    },
+    {
+      "id": "q3",
+      "question": "Em um arquivo .proto, como você define uma mensagem com campos tipados?",
+      "options": [
+        "struct Message { field Type; }",
+        "message TransactionRequest { string id = 1; double amount = 2; }",
+        "class TransactionRequest { String id; double amount; }",
+        "type TransactionRequest = { id: string, amount: number }"
+      ],
+      "correctIndex": 1,
+      "explanation": "Protocol Buffers usam a sintaxe 'message' com campos tipados e números de campo. Cada campo tem um tipo, nome e número de campo que identifica unicamente o campo."
+    },
+    {
+      "id": "q4",
+      "question": "O que o código 'protoc --go_out=. *.proto' faz?",
+      "options": [
+        "Executa o servidor gRPC",
+        "Gera código Go a partir dos arquivos de definição .proto",
+        "Testa a conectividade entre clientes e servidores",
+        "Compacta arquivos para deploy"
+      ],
+      "correctIndex": 1,
+      "explanation": "O protoc é o compilador de Protocol Buffers. O flag --go_out instrui a geração de código Go (stubs) para clientes e servidores a partir das definições .proto."
+    },
+    {
+      "id": "q5",
+      "question": "Em um sistema de processamento de cartões, qual padrão de gRPC é ideal para o servidor verificar uma transação e receber resposta em tempo real?",
+      "options": [
+        "Bidirectional Streaming",
+        "Server Streaming",
+        "Client Streaming",
+        "Unary RPC"
+      ],
+      "correctIndex": 3,
+      "explanation": "Para uma verificação de transação que envia uma solicitação e espera uma resposta (autorizada/recusada), Unary RPC é o padrão correto — simples, rápido e com contrato definido."
+    }
+  ]
+}

@@ -21,27 +21,27 @@ Mês 19-24: Expansão Global e Enterprise
 
 ## Fase 1: Fundação (Meses 1-3) — MVP Pro
 
-### Mês 1: Infraestrutura e Design System
-- [ ] Scaffold do Dashboard VIP (Next.js 14+ App Router)
-- [ ] Design System unificado (shared-ui) com tokens premium
-- [ ] Autenticação e área de membros (NextAuth.js / Clerk)
-- [ ] Sistema de progresso do aluno (milestones completados)
-- [ ] Paginação e navegação entre módulos/aulas
+### Mês 1: Infraestrutura e Design System ✅
+- [x] Scaffold do Dashboard VIP (Next.js 14+ App Router)
+- [x] Design System unificado (shared-ui) com tokens premium
+- [x] Autenticação e área de membros (NextAuth.js / Clerk)
+- [x] Sistema de progresso do aluno (milestones completados)
+- [x] Paginação e navegação entre módulos/aulas
 
-### Mês 2: Primeiras Aulas Go
-- [ ] Aula 01: Introdução a Go para Engenheiros Financeiros
-- [ ] Aula 02: Goroutines — Concorrência Real vs Paralelismo
-- [ ] Aula 03: Channels — Comunicação Segura entre Goroutines
-- [ ] Exercício Prático: Motor de processamento assíncrono de transações
-- [ ] Quiz de validação por aula
+### Mês 2: Primeiras Aulas Go ✅
+- [x] Aula 01: Introdução a Go para Engenheiros Financeiros
+- [x] Aula 02: Goroutines — Concorrência Real vs Paralelismo
+- [x] Aula 03: Channels — Comunicação Segura entre Goroutines
+- [x] Exercício Prático: Motor de processamento assíncrono de transações
+- [x] Quiz de validação por aula
 
-### Mês 3: Go Intermediário + Primeiro Desafio
-- [ ] Aula 04: Pacote sync — Mutex, RWMutex, WaitGroup
-- [ ] Aula 05: Context — Cancelamento e Timeout em Go
-- [ ] Aula 06: gRPC com Go — Proto definitions e streaming
-- [ ] **Desafio 01:** Implementar SPI Simulator em Go (reimplementar Challenge 02)
-- [ ] Milestone 1 do Desafio: Persistência ACID
-- [ ] Milestone 2: Locks Distribuídos com Redis
+### Mês 3: Go Intermediário + Primeiro Desafio ✅
+- [x] Aula 04: Pacote sync — Mutex, RWMutex, WaitGroup
+- [x] Aula 05: Context — Cancelamento e Timeout em Go
+- [x] Aula 06: gRPC com Go — Proto definitions e streaming
+- [x] **Desafio 01:** Implementar SPI Simulator em Go (reimplementar Challenge 02)
+- [x] Milestone 1 do Desafio: Persistência ACID
+- [x] Milestone 2: Locks Distribuídos com Redis
 
 ---
 

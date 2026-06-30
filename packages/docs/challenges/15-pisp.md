@@ -1649,6 +1649,8 @@ curl http://localhost:3007/api/v1/payments?status=PDNG \
 - [DICT — Diretório de Identificadores de Contas Transacionais](https://www.bcb.gov.br/estabilidadefinanceira/dict)
 - [SPI — Sistema de Pagamentos Instantâneos](https://www.bcb.gov.br/estabilidadefinanceira/spi)
 
+<FlashcardReview />
+
 <Quiz />
 
 <APIPlayground />

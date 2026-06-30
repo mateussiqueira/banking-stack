@@ -1337,6 +1337,8 @@ A vantagem do Go aparece na concorrência. O rate limiter em Go com `sync.Mutex`
 - Precisa de binário único para deploy em edge
 - Rate limit é parte de um API Gateway de alta throughput
 
+<FlashcardReview />
+
 <Quiz />
 
 <GiscusComments />

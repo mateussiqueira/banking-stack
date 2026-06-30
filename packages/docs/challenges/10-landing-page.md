@@ -979,6 +979,8 @@ pnpm --filter @banking/landing-page test
 
 7. **Acessibilidade não é opcional** — Contraste, foco visível, labels, ARIA. O addon-a11y no Storybook te ajuda a não esquecer. A LGPD não exige acessibilidade, mas o bom senso sim.
 
+<FlashcardReview />
+
 <Quiz />
 
 <GiscusComments />

@@ -1,0 +1,67 @@
+{
+  "lessonId": "05-context",
+  "lessonTitle": "Context — Cancelamento e Timeout em Go",
+  "passingScore": 60,
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Qual é o principal propósito do pacote context em Go?",
+      "options": [
+        "Gerenciar configurações globais da aplicação",
+        "Transportar dados de autenticação entre goroutines",
+        "Gerenciar lifecycle de requisições — cancelamento, timeouts e valores-chave",
+        "Substituir o sistema de logging"
+      ],
+      "correctIndex": 2,
+      "explanation": "O context foi projetado para propagar informações de cancelamento, deadlines, e valores de request ao longo de cadeias de chamadas — essencial em microsserviços."
+    },
+    {
+      "id": "q2",
+      "question": "Qual a diferença entre context.WithCancel e context.WithTimeout?",
+      "options": [
+        "WithTimeout só funciona em HTTP requests",
+        "WithTimeout cria um context que é cancelado automaticamente após a duração especificada",
+        "WithCancel não pode ser cancelado pelo parent",
+        "WithTimeout tem melhor performance"
+      ],
+      "correctIndex": 1,
+      "explanation": "context.WithTimeout retorna um context que será cancelado automaticamente após o tempo especificado, e uma função cancel para cancelá-lo antecipadamente."
+    },
+    {
+      "id": "q3",
+      "question": "Em uma chamada gRPC para processamento de pagamento, qual cenário justifica usar context.WithTimeout?",
+      "options": [
+        "Para limitar o tempo de serialização do protobuf",
+        "Para garantir que o pagamento não fique processando infinitamente se o serviço downstream estiver lento",
+        "Para controlar o tempo de compilação do código",
+        "Para limitar o tempo de execução do garbage collector"
+      ],
+      "correctIndex": 1,
+      "explanation": "Em sistemas financeiros, um pagamento que não retorna pode causar bloqueio de recursos. WithTimeout garante que a operação termine dentro de um SLA, liberando recursos."
+    },
+    {
+      "id": "q4",
+      "question": "O que acontece quando um context pai é cancelado?",
+      "options": [
+        "Nada — o cancelamento não se propaga",
+        "Todos os contexts filhos derivados também são cancelados automaticamente",
+        "Apenas a primeira camada filha é cancelada",
+        "O programa entra em panic"
+      ],
+      "correctIndex": 1,
+      "explanation": "O cancelamento se propaga cascata abaixo. Se o contexto da request HTTP é cancelado, todos os contextos derivados (contextos filhos) também recebem o sinal de cancelamento."
+    },
+    {
+      "id": "q5",
+      "question": "Qual é uma boa prática ao passar context.Context em funções?",
+      "options": [
+        "Armazenar context em variáveis globais para reutilização",
+        "Sempre passar context como primeiro parâmetro da função",
+        "Criar um novo context em cada função",
+        "Ignorar o context em funções que não fazem I/O"
+      ],
+      "correctIndex": 1,
+      "explanation": "A convenção em Go é passar context.Context como primeiro parâmetro. Nunca armazene em structs ou variáveis globais — isso quebra o padrão de propagação de cancelamento."
+    }
+  ]
+}

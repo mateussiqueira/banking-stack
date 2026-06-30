@@ -1076,3 +1076,9 @@ Uma vez que você tem acesso aos dados financeiros de múltiplas instituições,
 ### Próximo Desafio
 
 No [Desafio 06: Open Finance & Pagamentos](/challenges/06-open-finance), você vai implementar a integração completa com APIs de pagamento do Open Finance Brasil, incluindo consentimento para PISP, webhooks de confirmação, e reconciliação de pagamentos iniciados.
+
+<FlashcardReview />
+
+<Quiz />
+
+<GiscusComments />

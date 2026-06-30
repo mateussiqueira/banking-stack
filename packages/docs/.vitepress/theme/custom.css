@@ -2302,3 +2302,18 @@ body.focus-mode .floating-nav {
 .ap-time { color: var(--vp-c-text-3); }
 .ap-resp-body { padding: 0.75rem; font-size: 0.78rem; line-height: 1.5; max-height: 300px; overflow: auto; margin: 0; }
 .ap-error { padding: 0.75rem; color: #ef4444; font-size: 0.85rem; }
+
+/* ===== Leaderboard ===== */
+.leaderboard { max-width: 760px; margin: 0 auto; }
+.lb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.lb-header h2 { margin: 0 !important; }
+.lb-rank { font-size: 1.5rem; font-weight: 800; color: var(--vp-c-brand-1); }
+.lb-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+.lb-table th { text-align: left; padding: 0.5rem 0.75rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--vp-c-text-3); border-bottom: 2px solid var(--vp-c-border); }
+.lb-table td { padding: 0.6rem 0.75rem; font-size: 0.85rem; border-bottom: 1px solid var(--vp-c-border); }
+.lb-you td { color: var(--vp-c-brand-1); font-weight: 500; }
+.lb-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
+.lb-metric { text-align: center; padding: 1rem; background: var(--vp-c-bg-soft); border: 1px solid var(--vp-c-border); border-radius: 10px; }
+.lb-num { display: block; font-size: 1.5rem; font-weight: 800; color: var(--vp-c-brand-1); }
+.lb-label { font-size: 0.7rem; color: var(--vp-c-text-3); text-transform: uppercase; letter-spacing: 0.04em; }
+.lb-note { text-align: center; font-size: 0.8rem; color: var(--vp-c-text-3); margin-top: 1rem; }

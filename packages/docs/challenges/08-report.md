@@ -1122,6 +1122,8 @@ func (w *ReportWorker) Process(ctx context.Context, job ReportJob) error {
 
 Se o throughput de relatórios passar de **200K linhas/s** ou a memória dos workers TS estiver batendo em 500MB, migrar o worker pra Go. A API (que é I/O bound) continua em TypeScript. Essa separação — **API em TS, worker em Go** — é o padrão de fintechs maduras.
 
+<FlashcardReview />
+
 <Quiz />
 
 <GiscusComments />

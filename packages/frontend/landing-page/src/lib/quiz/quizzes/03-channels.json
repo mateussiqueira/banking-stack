@@ -1,0 +1,67 @@
+{
+  "lessonId": "03-channels",
+  "lessonTitle": "Channels — Comunicação Segura entre Goroutines",
+  "passingScore": 60,
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Qual é a diferença entre um channel buffered e unbuffered?",
+      "options": [
+        "Um buffered aceita múltiplos tipos de dados",
+        "Um unbuffered sincroniza o sender e receiver — o sender bloqueia até o receiver estar pronto",
+        "Um buffered não pode ser fechado",
+        "Não existe diferença prática"
+      ],
+      "correctIndex": 1,
+      "explanation": "Channels unbuffered são sincronizantes: o sender bloqueia até que o receiver esteja pronto para receber. Channels buffered permitem que o sender continue até o buffer estar cheio."
+    },
+    {
+      "id": "q2",
+      "question": "Qual padrão de channel é usado para distribuir trabalho entre múltiplos workers e coletar resultados?",
+      "options": [
+        "Fan-in",
+        "Fan-out/Fan-in",
+        "Pipeline simples",
+        "Select case"
+      ],
+      "correctIndex": 1,
+      "explanation": "Fan-out distribui trabalho para múltiplos goroutines (workers), e Fan-in combina os resultados de volta em um único channel. É o padrão clássico para processamento paralelo."
+    },
+    {
+      "id": "q3",
+      "question": "O que acontece ao enviar dados para um channel que foi fechado (closed)?",
+      "options": [
+        "Os dados são descartados silenciosamente",
+        "O receiver recebe zero-value do tipo do channel",
+        "Panico em runtime (panic)",
+        "Erro de compilação"
+      ],
+      "correctIndex": 2,
+      "explanation": "Enviar para um channel fechado causa um panic em runtime. É seguro receber de um channel fechado (retorna zero-value), mas nunca enviar."
+    },
+    {
+      "id": "q4",
+      "question": "Em um sistema de pagamentos, qual uso do select é mais adequado?",
+      "options": [
+        "Apenas para selecionar o tipo de pagamento",
+        "Para operar com timeout e receber de múltiplos channels simultaneamente",
+        "Para criar loops infinitos",
+        "Para definir constantes"
+      ],
+      "correctIndex": 1,
+      "explanation": "O select permite aguardar operações em múltiplos channels. Com case <-time.After(), implementa timeouts — essencial em sistemas financeiros onde respostas devem ser rápidas."
+    },
+    {
+      "id": "q5",
+      "question": "Como implementar backpressure em um pipeline de processamento de transações?",
+      "options": [
+        "Usar um channel unbuffered entre cada stage do pipeline",
+        "Usar channels com buffer zero entre stages — cada stage só avança quando o próximo estiver pronto",
+        "Aumentar o número de goroutines indefinidamente",
+        "Usar mutex entre os stages"
+      ],
+      "correctIndex": 1,
+      "explanation": "Channels unbuffered (buffer zero) criam backpressure natural: se o receiver está ocupado, o sender bloqueia. Isso evita que um stage fique sobrecarregado pelo anterior."
+    }
+  ]
+}

@@ -857,6 +857,8 @@ func (c *SOAPClient) SendNFS(ctx context.Context, endpoint string, signedXML []b
 | SOAP send | 200ms | 180ms |
 | Throughput | ~1K/s | ~5K/s |
 
+<FlashcardReview />
+
 <Quiz />
 
 <GiscusComments />

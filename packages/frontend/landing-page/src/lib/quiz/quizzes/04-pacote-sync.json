@@ -1,0 +1,67 @@
+{
+  "lessonId": "04-pacote-sync",
+  "lessonTitle": "Pacote sync — Mutex, RWMutex, WaitGroup",
+  "passingScore": 60,
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Quando você usaria sync.Mutex vs sync.RWMutex em um sistema bancário?",
+      "options": [
+        "Sempre usar Mutex — RWMutex não traz benefício real",
+        "Mutex para operações de escrita pesadas; RWMutex quando há mais leituras que escritas (ex: consulta de saldo)",
+        "RWMutex para qualquer operação de rede",
+        "Mutex e RWMutex são intercambiáveis"
+      ],
+      "correctIndex": 1,
+      "explanation": "RWMutex permite múltiplas leituras simultâneas (RLock), mas bloqueia escritas exclusivas (Lock). Em sistemas com muitas consultas (leituras) e poucas atualizações (escritas), RWMutex é mais eficiente."
+    },
+    {
+      "id": "q2",
+      "question": "O que causa um data race em Go?",
+      "options": [
+        "Uma goroutine esperando muito tempo para executar",
+        "Múltiplas goroutines acessando o mesmo dado sem sincronização pelo menos uma写操作",
+        "Uma goroutine chamando panic()",
+        "Usar um channel com buffer"
+      ],
+      "correctIndex": 1,
+      "explanation": "Um data race ocorre quando duas ou mais goroutines acessam a mesma memória ao mesmo tempo e pelo menos uma é uma escrita, sem sincronização adequada. O detector de race (-race) identifica isso."
+    },
+    {
+      "id": "q3",
+      "question": "Para que serve sync.WaitGroup?",
+      "options": [
+        "Limitar o número máximo de goroutines",
+        "Aguardar que um grupo de goroutines termine antes de prosseguir",
+        "Gerenciar locks de escrita",
+        "Criar timers para timeouts"
+      ],
+      "correctIndex": 1,
+      "explanation": "WaitGroup mantém um contador interno. Goroutines chamam Add() antes de começar e Done() quando terminam. A goroutine principal chama Wait() que bloqueia até o contador chegar a zero."
+    },
+    {
+      "id": "q4",
+      "question": "Qual é o problema com este código?\n\nvar mu sync.Mutex\nmu.Lock()\ngo func() { mu.Lock() // deadlock! ... }()",
+      "options": [
+        "Nenhum problema —.Mutex permite locking aninhado",
+        "O Lock() dentro da goroutine bloqueia para sempre porque o Lock anterior nunca é liberado",
+        "Erro de compilação por mutex não desbloqueado",
+        "Go detecta automaticamente e ignora o segundo Lock"
+      ],
+      "correctIndex": 1,
+      "explanation": "O Lock() original nunca é liberado (não há defer mu.Unlock()), então a segunda goroutine bloqueia indefinidamente ao tentar adquirir o mesmo mutex."
+    },
+    {
+      "id": "q5",
+      "question": "Em um ledger contábil concorrente, qual abordagem é mais segura?",
+      "options": [
+        "Usar map sem sincronização e confiar no GC",
+        "Usar sync.Mutex para proteger cada escrita no ledger, ou sync.Map para operações read-heavy",
+        "Usar canais de buffer zero para cada operação",
+        "Evitar concorrência usando apenas uma goroutine"
+      ],
+      "correctIndex": 1,
+      "explanation": "Um map em Go não é seguro para concorrência. Para um ledger, sync.Mutex protege integridade dos dados em escritas, ou sync.Map se o padrão for majoritariamente leitura."
+    }
+  ]
+}

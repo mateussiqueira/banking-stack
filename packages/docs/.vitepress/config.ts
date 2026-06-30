@@ -120,6 +120,7 @@ export default defineConfig({
               text: 'Referência',
               collapsed: false,
               items: [
+                { text: 'Leaderboard', link: '/leaderboard' },
                 { text: 'Perfil', link: '/profile' },
                 { text: 'Premium', link: '/premium' },
                 { text: 'API Reference', link: '/api-reference' },
@@ -199,6 +200,7 @@ export default defineConfig({
               text: 'Reference',
               collapsed: false,
               items: [
+                { text: 'Leaderboard', link: '/en/leaderboard' },
                 { text: 'Profile', link: '/en/profile' },
                 { text: 'Premium', link: '/en/premium' },
                 { text: 'API Reference', link: '/en/api-reference' },

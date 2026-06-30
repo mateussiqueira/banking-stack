@@ -1451,6 +1451,8 @@ No Go, o erro é retorno. `json.Unmarshal` retorna erro. `rdb.Get` retorna erro.
 
 **Conclusão:** TypeScript pra prototipar o simulador e testar integrações rápido. Go pra versão de produção que vai rodar como mock server em pipelines de CI/CD, onde cada erro precisa ser tratado explicitamente.
 
+<FlashcardReview />
+
 <Quiz />
 
 <GiscusComments />
