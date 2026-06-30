@@ -20,8 +20,8 @@ impl Iso8583Message {
         let mut fields = HashMap::new();
         let mut pos = 12;
 
-        for i in 0..64 {
-            let byte_idx = i / 8;
+        for i in 0..64u32 {
+            let byte_idx = (i / 8) as usize;
             let bit_idx = 7 - (i % 8);
             if bitmap[byte_idx] & (1 << bit_idx) != 0 {
                 let field_num = i + 1;
@@ -55,6 +55,7 @@ fn parse_field(data: &[u8], start: usize) -> Result<(Vec<u8>, usize), String> {
     Ok((value, 2 + len))
 }
 
+#[allow(dead_code)]
 fn hex_to_bytes(hex: &str) -> Vec<u8> {
     (0..hex.len())
         .step_by(2)

@@ -1206,3 +1206,9 @@ func (t *MerkleTree) GenerateProof(index int) [][]byte {
 ---
 
 </div>
+
+<FlashcardReview />
+
+<Quiz />
+
+<GiscusComments />

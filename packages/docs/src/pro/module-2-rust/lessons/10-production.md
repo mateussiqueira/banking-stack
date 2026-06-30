@@ -74,7 +74,7 @@ use tracing_subscriber::{fmt, layer::SubscriberExt, EnvFilter};
 use opentelemetry::global;
 use opentelemetry_otlp::WithExportConfig;
 
-fn init_observability() -> Result<(), Box<dyn std::error::Error>> {
+fn init_observability() -> Result<(), `Box<dyn `std::error::Error>> {
     let otlp_exporter = opentelemetry_otlp::new_exporter()
         .tonic()
         .with_endpoint("http://jaeger:4317");

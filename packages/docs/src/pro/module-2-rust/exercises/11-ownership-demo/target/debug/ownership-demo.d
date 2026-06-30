@@ -1,0 +1,1 @@
+/Volumes/BACKUP/projects/banking-stack/packages/docs/src/pro/module-2-rust/exercises/11-ownership-demo/target/debug/ownership-demo: /Volumes/BACKUP/projects/banking-stack/packages/docs/src/pro/module-2-rust/exercises/11-ownership-demo/main.rs

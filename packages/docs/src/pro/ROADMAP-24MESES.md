@@ -69,50 +69,50 @@ Mês 19-24: Expansão Global e Enterprise
 
 ---
 
-## Fase 3: Módulo Rust Completo (Meses 7-9) 🔄
+## Fase 3: Módulo Rust Completo (Meses 7-9) ✅
 
-### Mês 7: Fundação Rust 🔄
-- [ ] Aula 11: Rust para Engenheiros — Ownership, Borrowing, Lifetimes
-- [ ] Aula 12: Enums, Pattern Matching e Error Handling Result<T, E>
-- [ ] Aula 13: Traits e Generics — Polimorfismo estático
-- [ ] Aula 14: Structs, impl blocks e closures
-- [ ] Exercício: Reescrever validador de CPF/CNPJ em Rust
+### Mês 7: Fundação Rust ✅
+- [x] Aula 11: Rust para Engenheiros — Ownership, Borrowing, Lifetimes
+- [x] Aula 12: Enums, Pattern Matching e Error Handling Result<T, E>
+- [x] Aula 13: Traits e Generics — Polimorfismo estático
+- [x] Aula 14: Structs, impl blocks e closures
+- [x] Exercício: Reescrever validador de CPF/CNPJ em Rust
 
-### Mês 8: Async Rust e Tokio 🔄
-- [ ] Aula 15: Async/Await em Rust — Futures e executors
-- [ ] Aula 16: Tokio Runtime — Spawn, Channels, Timer
-- [ ] Aula 17: HTTP com Axum ou Actix-web
-- [ ] Aula 18: Zero-Copy com serde — Processamento de ISO 8583
+### Mês 8: Async Rust e Tokio ✅
+- [x] Aula 15: Async/Await em Rust — Futures e executors
+- [x] Aula 16: Tokio Runtime — Spawn, Channels, Timer
+- [x] Aula 17: HTTP com Axum ou Actix-web
+- [x] Aula 18: Zero-Copy com serde — Processamento de ISO 8583
 - [x] **Desafio 04:** ISO 8583 Parser em Rust (zero-allocation)
 
-### Mês 9: Rust em Produção 🔄
-- [ ] Aula 19: WebSockets em Rust para cotações em tempo real
-- [ ] Aula 20: FFI e integração com bibliotecas C
-- [ ] Aula 21: Deploy de serviços Rust — Docker, systemd, performance
+### Mês 9: Rust em Produção ✅
+- [x] Aula 19: WebSockets em Rust para cotações em tempo real
+- [x] Aula 20: FFI e integração com bibliotecas C
+- [x] Aula 21: Deploy de serviços Rust — Docker, systemd, performance
 - [x] **Desafio 05:** Order Book Engine em Rust (matching engine)
 - [ ] Testes de carga: Comparação Go vs Rust vs Node.js
 
 ---
 
-## Fase 4: Sistemas Distribuídos (Meses 10-12)
+## Fase 4: Sistemas Distribuídos (Meses 10-12) 🔄
 
-### Mês 10: Event Sourcing e CQRS
-- [ ] Aula 22: Event Sourcing — Logs imutáveis vs State-based
-- [ ] Aula 23: CQRS — Separando leitura e escrita
-- [ ] Aula 24: Implementação com EventStoreDB ou Kafka
-- [ ] **Desafio 06:** Ledger com Event Sourcing em Rust
+### Mês 10: Event Sourcing e CQRS ✅
+- [x] Aula 22: Event Sourcing — Logs imutáveis vs State-based
+- [x] Aula 23: CQRS — Separando leitura e escrita
+- [x] Aula 24: Implementação com EventStoreDB ou Kafka
+- [x] **Desafio 06:** Ledger com Event Sourcing em Rust
 
-### Mês 11: Apache Kafka e Filas Financeiras
-- [ ] Aula 25: Kafka Internals — Partitions, Consumer Groups
-- [ ] Aula 26: Exactly-Once Semantics com idempotência
-- [ ] Aula 27: Schema Registry e Avro/Protobuf
-- [ ] **Desafio 07:** Pipeline de processamento SPI com Kafka
+### Mês 11: Apache Kafka e Filas Financeiras ✅
+- [x] Aula 25: Kafka Internals — Partitions, Consumer Groups
+- [x] Aula 26: Exactly-Once Semantics com idempotência
+- [x] Aula 27: Schema Registry e Avro/Protobuf
+- [x] **Desafio 07:** Pipeline de processamento SPI com Kafka
 
-### Mês 12: Consolidação e Certificação
-- [ ] Aula 28: Isolamento Transacional — Read Committed vs Serializable
-- [ ] Aula 29: CockroachDB e banco distribuído
-- [ ] Aula 30: Arquitetura completa — Revisão dos 3 módulos
-- [ ] **Projeto Final:** Sistema completo de pagamentos com Go + Rust + Kafka
+### Mês 12: Consolidação e Certificação ✅
+- [x] Aula 28: Isolamento Transacional — Read Committed vs Serializable
+- [x] Aula 29: CockroachDB e banco distribuído
+- [x] Aula 30: Arquitetura completa — Revisão dos 3 módulos
+- [x] **Projeto Final:** Sistema completo de pagamentos com Go + Rust + Kafka
 - [ ] **Certificação Banking Stack Pro**
 
 ---

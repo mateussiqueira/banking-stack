@@ -1524,3 +1524,9 @@ func (p *PaymentProcessor) handlePaymentFailure(ctx context.Context, contract *P
 ---
 
 </div>
+
+<FlashcardReview />
+
+<Quiz />
+
+<GiscusComments />

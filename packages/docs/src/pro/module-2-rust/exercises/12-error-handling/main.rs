@@ -1,6 +1,7 @@
 use std::fmt;
 
 #[derive(Debug)]
+#[allow(dead_code)]
 enum TransactionError {
     InsufficientFunds { available: f64, requested: f64 },
     InvalidAccount(u64),
@@ -18,6 +19,8 @@ impl fmt::Display for TransactionError {
         }
     }
 }
+
+impl std::error::Error for TransactionError {}
 
 struct Account {
     id: u64,

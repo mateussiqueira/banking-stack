@@ -23,7 +23,7 @@ use tokio::net::TcpListener;
 use tokio_tungstenite::accept_async;
 use futures_util::{StreamExt, SinkExt};
 
-async fn run_websocket_server() -> Result<(), Box<dyn std::error::Error>> {
+async fn run_websocket_server() -> Result<(), `Box<dyn `std::error::Error>> {
     let listener = TcpListener::bind("0.0.0.0:9001").await?;
     println!("Servidor WebSocket rodando em ws://0.0.0.0:9001");
 
@@ -99,7 +99,7 @@ async fn mock_price_provider(mut tx: broadcast::Sender<PriceUpdate>) {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<(), `Box<dyn `std::error::Error>> {
     let (tx, _) = broadcast::channel::<PriceUpdate>(100);
 
     // Inicia provedor de preços

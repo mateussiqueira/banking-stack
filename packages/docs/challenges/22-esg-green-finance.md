@@ -1231,3 +1231,9 @@ func (s *ESGScorer) scoreMetric(point ESGDataPoint, bm SectorBenchmark) float64 
 ---
 
 </div>
+
+<FlashcardReview />
+
+<Quiz />
+
+<GiscusComments />

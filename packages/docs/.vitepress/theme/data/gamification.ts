@@ -24,6 +24,8 @@ export const CHALLENGES = [
   '08-report', '09-leaky-bucket', '10-landing-page', '11-kyc',
   '12-proxmox', '13-cicd', '14-rfc', '15-pisp',
   '16-anticipation', '17-fraud-detection',
+  '18-pix-automatico', '19-criptomoedas', '20-tokenizacao',
+  '21-cbdc-drex', '22-esg-green-finance',
 ]
 
 export const XP_PER_CHALLENGE = 100

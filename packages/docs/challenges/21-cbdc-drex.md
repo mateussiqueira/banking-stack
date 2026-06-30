@@ -1007,3 +1007,9 @@ type DrexEvent struct {
 ---
 
 </div>
+
+<FlashcardReview />
+
+<Quiz />
+
+<GiscusComments />

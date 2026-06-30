@@ -1229,3 +1229,9 @@ func (b *BalanceChecker) getERC20Balance(ctx context.Context, tokenAddress, wall
 ---
 
 </div>
+
+<FlashcardReview />
+
+<Quiz />
+
+<GiscusComments />

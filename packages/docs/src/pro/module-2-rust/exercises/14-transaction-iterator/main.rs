@@ -14,6 +14,10 @@ impl TransactionList {
     fn new(transactions: Vec<Transaction>) -> Self {
         Self { transactions }
     }
+
+    fn iter(&self) -> impl Iterator<Item = &Transaction> {
+        self.transactions.iter()
+    }
 }
 
 impl IntoIterator for TransactionList {

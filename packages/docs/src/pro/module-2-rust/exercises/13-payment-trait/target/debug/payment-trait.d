@@ -1,0 +1,1 @@
+/Volumes/BACKUP/projects/banking-stack/packages/docs/src/pro/module-2-rust/exercises/13-payment-trait/target/debug/payment-trait: /Volumes/BACKUP/projects/banking-stack/packages/docs/src/pro/module-2-rust/exercises/13-payment-trait/main.rs

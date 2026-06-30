@@ -134,7 +134,7 @@ Agora todas as funções e structs do header estão disponíveis com tipos Rust 
 use openssl::ssl::{SslMethod, SslConnector};
 use std::net::TcpStream;
 
-fn connect_tls(host: &str, port: u16) -> Result<TcpStream, Box<dyn std::error::Error>> {
+fn connect_tls(host: &str, port: u16) -> Result<TcpStream, `Box<dyn `std::error::Error>> {
     let builder = SslConnector::builder(SslMethod::tls())?;
     let ssl = builder.build();
     let stream = TcpStream::connect(format!("{}:{}", host, port))?;
