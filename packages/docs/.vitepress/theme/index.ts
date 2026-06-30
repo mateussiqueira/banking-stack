@@ -15,9 +15,11 @@ import SidebarProgress from './components/SidebarProgress.vue'
 import FlashcardReview from './components/FlashcardReview.vue'
 import ExportNotes from './components/ExportNotes.vue'
 import InteractiveDiagram from './components/InteractiveDiagram.vue'
-import CertificateBanner from './components/CertificateBanner.vue'
 import ProfileDashboard from './components/ProfileDashboard.vue'
+import TTSEar from './components/TTSEar.vue'
+import AIHelper from './components/AIHelper.vue'
 import Layout from './Layout.vue'
+import { initAnalytics } from './data/analytics'
 import './custom.css'
 
 function setupCopyCodeButtons() {
@@ -180,8 +182,9 @@ export default {
     app.component('FlashcardReview', FlashcardReview)
     app.component('ExportNotes', ExportNotes)
     app.component('InteractiveDiagram', InteractiveDiagram)
-    app.component('CertificateBanner', CertificateBanner)
     app.component('ProfileDashboard', ProfileDashboard)
+    app.component('TTSEar', TTSEar)
+    app.component('AIHelper', AIHelper)
   },
   setup() {
     const { lang } = useData()
@@ -219,6 +222,7 @@ export default {
       setupReadingPosition()
       setupScrollSpy()
       injectReadingTime()
+      initAnalytics()
     })
 
     watch(lang, () => {
