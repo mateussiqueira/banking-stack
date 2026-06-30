@@ -218,7 +218,7 @@ flowchart TB
     end
 
     subgraph "Artifacts"
-        REGISTRY[(🐙 GitHub Container Registry<br/>ghcr.io/banking/{service})]
+        REGISTRY[(GitHub Container Registry<br/>ghcr.io/banking/service)]
         COVERAGE[(📈 Codecov<br/>coverage reports)]
         SBOM[(📋 SBOM<br/>CycloneDX JSON)]
     end

@@ -195,14 +195,18 @@ export default {
       // Collect all mermaid code blocks
       const blocks = []
       document.querySelectorAll<HTMLDivElement>('.vp-doc div.language-mermaid').forEach((el) => {
-        const code = (el.textContent || '').trim()
-        if (!code) return
+        // Get code from the inner <pre> or <code>, NOT the outer div (which includes lang label)
+        const pre = el.querySelector('pre')
+        const code = (pre?.textContent || el.textContent || '').trim()
+        // Strip "mermaid" prefix if extracted from outer div
+        const cleanCode = code.replace(/^mermaid\s*/i, '').trim()
+        if (!cleanCode) return
         const div = document.createElement('div')
         div.className = 'mermaid'
         div.style.textAlign = 'center'
         div.style.margin = '1.5rem 0'
         el.parentNode?.replaceChild(div, el)
-        blocks.push({ div, code })
+        blocks.push({ div, code: cleanCode })
       })
 
       if (blocks.length === 0) return

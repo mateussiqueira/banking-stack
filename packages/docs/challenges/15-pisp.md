@@ -169,7 +169,7 @@ flowchart TB
         REDIS[(Redis<br/>Idempotency + Cache)]
     end
 
-    USER -->|1. Clica "Pagar"| CHECKOUT
+    USER -->|1. Clica Pagar| CHECKOUT
     MERCH -->|Integração| CHECKOUT
     CHECKOUT -->|2. POST /consents| AUTH_SRV
     USER -->|3. Autentica + Aprova| AUTH_SRV
@@ -229,7 +229,7 @@ sequenceDiagram
     participant SPI as SPI / BCB
     participant R as Recebedor
 
-    U->>SDK: Clica "Pagar com<br/>Débito em Conta"
+    U->>SDK: Clica Pagar com<br/>Debito em Conta
     SDK->>PISP: POST /consents<br/>(amount, creditor, redirectURI)
     PISP->>PISP: Gera idempotency key
     PISP->>AS: POST /consents<br/>(FAPI + PAR + mTLS)
