@@ -1296,6 +1296,8 @@ flowchart LR
 
 <FlashcardReview />
 
+<APIPlayground />
+
 <GiscusComments />
 
 </div>

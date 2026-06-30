@@ -121,6 +121,7 @@ export default defineConfig({
               collapsed: false,
               items: [
                 { text: 'Perfil', link: '/profile' },
+                { text: 'Premium', link: '/premium' },
                 { text: 'API Reference', link: '/api-reference' },
                 { text: 'Deploy', link: '/guides/deployment' },
                 { text: 'Changelog', link: '/changelog' },
@@ -199,6 +200,7 @@ export default defineConfig({
               collapsed: false,
               items: [
                 { text: 'Profile', link: '/en/profile' },
+                { text: 'Premium', link: '/en/premium' },
                 { text: 'API Reference', link: '/en/api-reference' },
                 { text: 'Deployment', link: '/en/guides/deployment' },
                 { text: 'Changelog', link: '/en/changelog' },

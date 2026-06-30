@@ -1651,6 +1651,8 @@ curl http://localhost:3007/api/v1/payments?status=PDNG \
 
 <Quiz />
 
+<APIPlayground />
+
 <GiscusComments />
 
 </div>

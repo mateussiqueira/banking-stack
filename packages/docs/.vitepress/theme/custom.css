@@ -2264,3 +2264,41 @@ body.focus-mode .floating-nav {
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* ===== API Playground ===== */
+.api-playground {
+  margin: 1.5rem 0;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ap-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.65rem 1rem; background: var(--vp-c-bg-soft);
+  font-weight: 600; font-size: 0.85rem; cursor: pointer; user-select: none;
+  color: var(--vp-c-text-1);
+}
+.ap-header:hover { background: var(--vp-c-bg-mute); }
+.ap-toggle { font-size: 0.75rem; color: var(--vp-c-text-3); }
+.ap-body { padding: 1rem; }
+.ap-controls { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+.ap-select { padding: 0.4rem 0.6rem; border: 1px solid var(--vp-c-border); border-radius: 6px; font-size: 0.8rem; font-weight: 600; background: var(--vp-c-bg); color: var(--vp-c-brand-1); }
+.ap-url { flex: 1; padding: 0.4rem 0.6rem; border: 1px solid var(--vp-c-border); border-radius: 6px; font-size: 0.8rem; font-family: var(--vp-font-family-mono); background: var(--vp-c-bg); color: var(--vp-c-text-1); }
+.ap-send { padding: 0.4rem 1rem; border: none; border-radius: 6px; background: var(--vp-c-brand-1); color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+.ap-send:disabled { opacity: 0.5; }
+.ap-body-input textarea { width: 100%; padding: 0.5rem; border: 1px solid var(--vp-c-border); border-radius: 6px; font-family: var(--vp-font-family-mono); font-size: 0.8rem; background: var(--vp-c-bg); color: var(--vp-c-text-1); resize: vertical; }
+.ap-headers { display: flex; gap: 0.35rem; margin-top: 0.4rem; }
+.ap-header-key, .ap-header-val { padding: 0.25rem 0.4rem; border: 1px solid var(--vp-c-border); border-radius: 4px; font-size: 0.7rem; background: var(--vp-c-bg); color: var(--vp-c-text-1); }
+.ap-header-key { width: 120px; } .ap-header-val { flex: 1; }
+.ap-add-header { padding: 0.2rem 0.5rem; border: 1px solid var(--vp-c-border); border-radius: 4px; background: var(--vp-c-bg-soft); cursor: pointer; font-size: 0.75rem; }
+.ap-header-tag { display: inline-flex; align-items: center; gap: 0.3rem; margin: 0.2rem 0.3rem 0 0; padding: 0.15rem 0.4rem; background: var(--vp-c-bg-soft); border-radius: 4px; font-size: 0.7rem; font-family: var(--vp-font-family-mono); }
+.ap-remove { background: none; border: none; cursor: pointer; color: var(--vp-c-text-3); font-size: 0.8rem; padding: 0; }
+.ap-loading { text-align: center; padding: 1rem; color: var(--vp-c-text-3); }
+.ap-response { margin-top: 0.75rem; border: 1px solid var(--vp-c-border); border-radius: 8px; overflow: hidden; }
+.ap-resp-header { display: flex; justify-content: space-between; padding: 0.4rem 0.75rem; background: var(--vp-c-bg-soft); font-size: 0.8rem; }
+.ap-status.ok { color: #10b981; font-weight: 600; }
+.ap-status.err { color: #ef4444; font-weight: 600; }
+.ap-time { color: var(--vp-c-text-3); }
+.ap-resp-body { padding: 0.75rem; font-size: 0.78rem; line-height: 1.5; max-height: 300px; overflow: auto; margin: 0; }
+.ap-error { padding: 0.75rem; color: #ef4444; font-size: 0.85rem; }
