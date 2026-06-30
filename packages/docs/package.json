@@ -8,6 +8,7 @@
     "preview": "vitepress preview ."
   },
   "dependencies": {
+    "jsdom": "^29.1.1",
     "vitepress": "^1.6.4"
   },
   "devDependencies": {

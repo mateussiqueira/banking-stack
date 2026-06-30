@@ -1,7 +1,7 @@
 import { Hero } from "@/components/layout/hero";
 import { Section, SectionHeader } from "@/components/layout/section";
 import { Container } from "@/components/ui/container";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

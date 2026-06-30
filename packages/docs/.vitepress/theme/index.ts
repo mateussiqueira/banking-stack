@@ -192,31 +192,52 @@ export default {
     const { lang } = useData()
 
     onMounted(() => {
-      // Convert mermaid code blocks (Shiki renders as div.language-mermaid) to .mermaid divs
-      document.querySelectorAll<HTMLDivElement>('.vp-doc div.language-mermaid').forEach((block) => {
-        const text = block.textContent?.trim() || ''
-        if (!text) return
+      // Collect all mermaid code blocks
+      const blocks = []
+      document.querySelectorAll<HTMLDivElement>('.vp-doc div.language-mermaid').forEach((el) => {
+        const code = (el.textContent || '').trim()
+        if (!code) return
         const div = document.createElement('div')
         div.className = 'mermaid'
-        div.textContent = text
         div.style.textAlign = 'center'
         div.style.margin = '1.5rem 0'
-        div.style.padding = '1rem'
-        div.style.background = 'var(--vp-c-bg-soft)'
-        div.style.borderRadius = '8px'
-        div.style.border = '1px solid var(--vp-c-border)'
-        block.parentNode?.replaceChild(div, block)
+        el.parentNode?.replaceChild(div, el)
+        blocks.push({ div, code })
       })
 
-      // Render mermaid after conversion
-      import('mermaid').then((mermaid) => {
-        mermaid.default.initialize({
-          startOnLoad: false,
-          theme: 'dark',
-          securityLevel: 'loose',
-        })
-        mermaid.default.run().then(() => {
-          setupMermaidZoomInline()
+      if (blocks.length === 0) return
+
+      // Render one by one with mermaid.render()
+      import('mermaid').then((m) => {
+        m.default.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' })
+        blocks.forEach(({ div, code }, i) => {
+          m.default.render('m' + Date.now() + i, code).then(({ svg }) => {
+            div.innerHTML = svg
+            div.style.cursor = 'zoom-in'
+            div.addEventListener('click', () => {
+              if (document.querySelector('.mermaid-zoom-overlay')) return
+              const svgEl = div.querySelector('svg')
+              if (!svgEl) return
+              const overlay = document.createElement('div')
+              overlay.className = 'mermaid-zoom-overlay'
+              const close = document.createElement('button')
+              close.className = 'mermaid-zoom-close'
+              close.innerHTML = '&times;'
+              const clone = svgEl.cloneNode(true)
+              clone.style.maxWidth = '95vw'
+              clone.style.maxHeight = '95vh'
+              overlay.appendChild(clone)
+              overlay.appendChild(close)
+              document.body.appendChild(overlay)
+              const cleanup = () => { overlay.remove(); document.removeEventListener('keydown', esc) }
+              const esc = (e) => { if (e.key === 'Escape') cleanup() }
+              overlay.addEventListener('click', (e) => { if (e.target === overlay) cleanup() })
+              close.addEventListener('click', (e) => { e.stopPropagation(); cleanup() })
+              document.addEventListener('keydown', esc)
+            })
+          }).catch((err) => {
+            div.innerHTML = '<pre style="color:#ef4444;font-size:11px;padding:8px;white-space:pre-wrap">' + err.message + '</pre>'
+          })
         })
       })
 
