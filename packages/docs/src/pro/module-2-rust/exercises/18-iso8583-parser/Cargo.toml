@@ -1,0 +1,10 @@
+[package]
+name = "iso8583-parser"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "iso8583-parser"
+path = "main.rs"
+
+[dependencies]

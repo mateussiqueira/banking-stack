@@ -6,24 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { QuizModal } from "./quiz-modal";
-import type { Quiz, QuizResult } from "@/lib/quiz/types";
-
-// Quiz imports
-import quiz01 from "@/lib/quiz/quizzes/01-introducao-go.json";
-import quiz02 from "@/lib/quiz/quizzes/02-goroutines.json";
-import quiz03 from "@/lib/quiz/quizzes/03-channels.json";
-import quiz04 from "@/lib/quiz/quizzes/04-pacote-sync.json";
-import quiz05 from "@/lib/quiz/quizzes/05-context.json";
-import quiz06 from "@/lib/quiz/quizzes/06-grpc.json";
-
-const quizMap: Record<string, Quiz> = {
-  "01-introducao-go": quiz01 as Quiz,
-  "02-goroutines": quiz02 as Quiz,
-  "03-channels": quiz03 as Quiz,
-  "04-pacote-sync": quiz04 as Quiz,
-  "05-context": quiz05 as Quiz,
-  "06-grpc": quiz06 as Quiz,
-};
+import { quizzes } from "@/lib/quiz";
+import type { QuizResult } from "@/lib/quiz/types";
 
 interface QuizButtonProps {
   lessonId: string;
@@ -41,7 +25,7 @@ export function QuizButton({
   onResultSave,
 }: QuizButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const quiz = quizMap[lessonId];
+  const quiz = quizzes[lessonId];
 
   if (!quiz) return null;
 

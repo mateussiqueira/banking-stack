@@ -47,49 +47,49 @@ Mês 19-24: Expansão Global e Enterprise
 
 ## Fase 2: Módulo Go Completo (Meses 4-6)
 
-### Mês 4: Go Avançado para FinTech
-- [ ] Aula 07: Otimização do Garbage Collector
-- [ ] Aula 08: Profiling com pprof — CPU, Memory, Goroutines
-- [ ] Aula 09: Testes de Carga com k6 em Go
-- [ ] Aula 10: Go em Produção — Graceful Shutdown, Health Checks
-- [ ] Exercício: Benchmark de latência entre REST e gRPC
+### Mês 4: Go Avançado para FinTech ✅
+- [x] Aula 07: Otimização do Garbage Collector
+- [x] Aula 08: Profiling com pprof — CPU, Memory, Goroutines
+- [x] Aula 09: Testes de Carga com k6 em Go
+- [x] Aula 10: Go em Produção — Graceful Shutdown, Health Checks
+- [x] Exercício: Benchmark de latência entre REST e gRPC
 
-### Mês 5: Desafio DICT em Go
-- [ ] **Desafio 02:** Reimplementar DICT Simulator em Go
-- [ ] Milestone 1: Schema MongoDB com transações ACID
-- [ ] Milestone 2: Rate Limiting com Token Bucket em Go
-- [ ] Milestone 3: Anti-enumeration e cache Redis
-- [ ] Testes de stress com k6 (10k req/s)
+### Mês 5: Desafio DICT em Go ✅
+- [x] **Desafio 02:** Reimplementar DICT Simulator em Go
+- [x] Milestone 1: Schema MongoDB com transações ACID
+- [x] Milestone 2: Rate Limiting com Token Bucket em Go
+- [x] Milestone 3: Anti-enumeration e cache Redis
+- [x] Testes de stress com k6 (10k req/s)
 
-### Mês 6: Consolidação Go + Preview Rust
-- [ ] **Desafio 03:** Motor de Ledger Contábil em Go (GraphQL + MongoDB)
+### Mês 6: Consolidação Go + Preview Rust ✅
+- [x] **Desafio 03:** Motor de Ledger Contábil em Go (GraphQL + MongoDB)
 - [ ] Code Review comunitário do projeto Go
 - [ ] Mentoria em grupo: Arquitetura de microsserviços financeiros
-- [ ] Preview do Módulo 2: "Por que Rust?"
+- [x] Preview do Módulo 2: "Por que Rust?"
 
 ---
 
-## Fase 3: Módulo Rust Completo (Meses 7-9)
+## Fase 3: Módulo Rust Completo (Meses 7-9) 🔄
 
-### Mês 7: Fundação Rust
+### Mês 7: Fundação Rust 🔄
 - [ ] Aula 11: Rust para Engenheiros — Ownership, Borrowing, Lifetimes
 - [ ] Aula 12: Enums, Pattern Matching e Error Handling Result<T, E>
 - [ ] Aula 13: Traits e Generics — Polimorfismo estático
 - [ ] Aula 14: Structs, impl blocks e closures
 - [ ] Exercício: Reescrever validador de CPF/CNPJ em Rust
 
-### Mês 8: Async Rust e Tokio
+### Mês 8: Async Rust e Tokio 🔄
 - [ ] Aula 15: Async/Await em Rust — Futures e executors
 - [ ] Aula 16: Tokio Runtime — Spawn, Channels, Timer
 - [ ] Aula 17: HTTP com Axum ou Actix-web
 - [ ] Aula 18: Zero-Copy com serde — Processamento de ISO 8583
-- [ ] **Desafio 04:** ISO 8583 Parser em Rust (zero-allocation)
+- [x] **Desafio 04:** ISO 8583 Parser em Rust (zero-allocation)
 
-### Mês 9: Rust em Produção
+### Mês 9: Rust em Produção 🔄
 - [ ] Aula 19: WebSockets em Rust para cotações em tempo real
 - [ ] Aula 20: FFI e integração com bibliotecas C
 - [ ] Aula 21: Deploy de serviços Rust — Docker, systemd, performance
-- [ ] **Desafio 05:** Order Book Engine em Rust (matching engine)
+- [x] **Desafio 05:** Order Book Engine em Rust (matching engine)
 - [ ] Testes de carga: Comparação Go vs Rust vs Node.js
 
 ---

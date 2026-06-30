@@ -2,41 +2,80 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/mateussiqueira/banking-stack/dict-simulator-go/internal/service"
 )
 
 type DICTHandler struct {
-	dict *service.DICTService
+	dict             *service.DICTService
+	acid             *service.ACIDManager
+	antiEnumeration  *service.AntiEnumeration
 }
 
 func NewDICTHandler(dict *service.DICTService) *DICTHandler {
-	return &DICTHandler{dict: dict}
+	return &DICTHandler{
+		dict:            dict,
+		acid:            service.NewACIDManager(),
+		antiEnumeration: service.NewAntiEnumeration(),
+	}
+}
+
+func NewDICTHandlerWithProtection(dict *service.DICTService, acid *service.ACIDManager, ae *service.AntiEnumeration) *DICTHandler {
+	return &DICTHandler{
+		dict:            dict,
+		acid:            acid,
+		antiEnumeration: ae,
+	}
 }
 
 func (h *DICTHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	// Entries
+	r.Use(h.rateLimitMiddleware)
+
 	r.Post("/entries", h.HandleRegisterKey)
 	r.Get("/entries", h.HandleListKeys)
 	r.Get("/entries/{key}", h.HandleLookupKey)
 	r.Patch("/entries/{key}", h.HandleUpdateKey)
 	r.Delete("/entries/{key}", h.HandleDeactivateKey)
 
-	// Claims
 	r.Post("/claims", h.HandleCreateClaim)
 	r.Get("/claims/{id}", h.HandleGetClaim)
 	r.Post("/claims/{id}/confirm", h.HandleConfirmClaim)
 	r.Post("/claims/{id}/cancel", h.HandleCancelClaim)
 
-	// Health
 	r.Get("/health", h.HandleHealth)
+	r.Get("/transactions", h.HandleListTransactions)
+	r.Get("/transactions/{txId}", h.HandleGetTransaction)
+	r.Get("/anti-enumeration/suspicious", h.HandleGetSuspicious)
 
 	return r
+}
+
+func (h *DICTHandler) rateLimitMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ip := r.RemoteAddr
+		if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
+			ip = strings.Split(forwarded, ",")[0]
+		}
+		if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
+			ip = realIP
+		}
+
+		if !h.antiEnumeration.CheckIPLimit(ip) {
+			log.Printf("[RATE-LIMIT] IP %s exceeded rate limit", ip)
+			h.antiEnumeration.LogSuspicious(ip, "", "IP_RATE_LIMIT_EXCEEDED", h.antiEnumeration.GetIPCount(ip))
+			writeError(w, "rate limit exceeded", http.StatusTooManyRequests)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 // Entries
@@ -78,10 +117,31 @@ func (h *DICTHandler) HandleRegisterKey(w http.ResponseWriter, r *http.Request) 
 func (h *DICTHandler) HandleLookupKey(w http.ResponseWriter, r *http.Request) {
 	key := chi.URLParam(r, "key")
 
+	ip := r.RemoteAddr
+	if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
+		ip = strings.Split(forwarded, ",")[0]
+	}
+	if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
+		ip = realIP
+	}
+
+	if !h.antiEnumeration.CheckAccountLimit(key) {
+		h.antiEnumeration.LogSuspicious(ip, key, "ACCOUNT_LOOKUP_LIMIT", h.antiEnumeration.GetAccountCount(key))
+		log.Printf("[ANTI-ENUM] Account %s lookup limit exceeded from IP %s", h.antiEnumeration.MaskPartialResult(key), ip)
+		writeError(w, "lookup limit exceeded for this key", http.StatusTooManyRequests)
+		return
+	}
+
 	result, err := h.dict.LookupKey(key)
 	if err != nil {
 		writeError(w, "key not found", http.StatusNotFound)
 		return
+	}
+
+	ownISPB := r.Header.Get("X-ISPB")
+	if ownISPB != "" && result.ISPB != ownISPB {
+		result.AccountHolderDoc = h.antiEnumeration.MaskPartialResult(result.AccountHolderDoc)
+		result.AccountNumber = h.antiEnumeration.MaskPartialResult(result.AccountNumber)
 	}
 
 	writeJSON(w, result, http.StatusOK)
@@ -216,6 +276,34 @@ func (h *DICTHandler) HandleHealth(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, map[string]string{
 		"status":  "healthy",
 		"service": "dict-simulator-go",
+	}, http.StatusOK)
+}
+
+func (h *DICTHandler) HandleListTransactions(w http.ResponseWriter, r *http.Request) {
+	log := h.acid.GetLog()
+	writeJSON(w, map[string]interface{}{
+		"log":   log,
+		"count": len(log),
+	}, http.StatusOK)
+}
+
+func (h *DICTHandler) HandleGetTransaction(w http.ResponseWriter, r *http.Request) {
+	txID := chi.URLParam(r, "txId")
+
+	tx, ok := h.acid.GetTransaction(txID)
+	if !ok {
+		writeError(w, "transaction not found", http.StatusNotFound)
+		return
+	}
+
+	writeJSON(w, tx, http.StatusOK)
+}
+
+func (h *DICTHandler) HandleGetSuspicious(w http.ResponseWriter, r *http.Request) {
+	events := h.antiEnumeration.GetSuspiciousLog()
+	writeJSON(w, map[string]interface{}{
+		"events": events,
+		"count":  len(events),
 	}, http.StatusOK)
 }
 

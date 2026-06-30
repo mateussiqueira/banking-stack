@@ -20,6 +20,9 @@ export default defineConfig({
     ['meta', { name: 'author', content: 'Mateus Siqueira' }],
     ['meta', { name: 'robots', content: 'index, follow' }],
     ['meta', { name: 'keywords', content: 'fintech, banking, pix, spi, dict, iso8583, open finance, typescript, go, docker, graphql' }],
+    ['link', { rel: 'manifest', href: '/manifest.json' }],
+    ['meta', { name: 'theme-color', content: '#0f172a' }],
+    ['script', {}, `if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js')}`],
   ],
   
   markdown: {
@@ -96,6 +99,11 @@ export default defineConfig({
                 { text: '15 — PISP', link: '/challenges/15-pisp' },
                 { text: '16 — Antecipação', link: '/challenges/16-anticipation' },
                 { text: '17 — Fraud Detection', link: '/challenges/17-fraud-detection' },
+                { text: '18 — PIX Automático', link: '/challenges/18-pix-automatico' },
+                { text: '19 — Criptomoedas', link: '/challenges/19-criptomoedas' },
+                { text: '20 — Tokenização', link: '/challenges/20-tokenizacao' },
+                { text: '21 — CBDC e Drex', link: '/challenges/21-cbdc-drex' },
+                { text: '22 — ESG Green Finance', link: '/challenges/22-esg-green-finance' },
               ]
             },
             {
@@ -176,6 +184,11 @@ export default defineConfig({
                 { text: '15 — PISP', link: '/en/challenges/15-pisp' },
                 { text: '16 — Antecipação', link: '/en/challenges/16-anticipation' },
                 { text: '17 — Fraud Detection', link: '/en/challenges/17-fraud-detection' },
+                { text: '18 — Pix Automatico', link: '/en/challenges/18-pix-automatico' },
+                { text: '19 — Cryptocurrency', link: '/en/challenges/19-criptomoedas' },
+                { text: '20 — Tokenization', link: '/en/challenges/20-tokenizacao' },
+                { text: '21 — CBDC & Drex', link: '/en/challenges/21-cbdc-drex' },
+                { text: '22 — ESG Green Finance', link: '/en/challenges/22-esg-green-finance' },
               ]
             },
             {
