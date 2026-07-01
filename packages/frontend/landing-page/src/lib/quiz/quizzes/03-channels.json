@@ -1,6 +1,6 @@
 {
   "lessonId": "03-channels",
-  "lessonTitle": "Channels — Comunicação Segura entre Goroutines",
+  "title": "Channels — Comunicação Segura entre Goroutines",
   "passingScore": 60,
   "questions": [
     {

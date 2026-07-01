@@ -1,6 +1,6 @@
 {
   "lessonId": "05-context",
-  "lessonTitle": "Context — Cancelamento e Timeout em Go",
+  "title": "Context — Cancelamento e Timeout em Go",
   "passingScore": 60,
   "questions": [
     {

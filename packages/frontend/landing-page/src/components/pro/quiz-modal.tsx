@@ -77,9 +77,9 @@ export function QuizModal({
   const handleSubmit = useCallback(() => {
     setSubmitted(true);
     const score = answers.reduce((acc, answer, i) => {
-      if (answer === quiz.questions[i].correctIndex) return acc + 1;
+      if (answer != null && answer === quiz.questions[i].correctIndex) return (acc ?? 0) + 1;
       return acc;
-    }, 0);
+    }, 0) as number;
     const percentage = Math.round((score / quiz.questions.length) * 100);
     const passed = percentage >= quiz.passingScore;
 
@@ -109,9 +109,9 @@ export function QuizModal({
 
   const score = submitted
     ? answers.reduce((acc, answer, i) => {
-        if (answer === quiz.questions[i].correctIndex) return acc + 1;
+        if (answer != null && answer === quiz.questions[i].correctIndex) return (acc ?? 0) + 1;
         return acc;
-      }, 0)
+      }, 0) as number
     : 0;
   const percentage = submitted ? Math.round((score / quiz.questions.length) * 100) : 0;
   const passed = submitted ? percentage >= quiz.passingScore : false;
@@ -131,7 +131,7 @@ export function QuizModal({
           <div className="flex items-center justify-between border-b border-surface-200 px-6 py-4">
             <div>
               <h2 className="text-heading-sm font-semibold text-neutral-50">
-                Quiz — {quiz.lessonTitle}
+                Quiz — {quiz.title}
               </h2>
               {!showResult && (
                 <p className="mt-1 text-body-sm text-surface-400">

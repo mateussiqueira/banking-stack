@@ -4,6 +4,13 @@ import { LessonProgress, StudentProgress } from "./types";
 
 const STORAGE_KEY = "banking-stack-pro-progress";
 
+export function getLessonProgress(moduleId: string, lessonId: string): LessonProgress | null {
+  const progress = getProgress();
+  const mod = progress.modules.find(m => m.moduleId === moduleId);
+  if (!mod) return null;
+  return mod.lessons.find(l => l.lessonId === lessonId) || null;
+}
+
 export function getProgress(): StudentProgress {
   if (typeof window === "undefined") {
     return createDefaultProgress();

@@ -1,6 +1,6 @@
 {
   "lessonId": "04-pacote-sync",
-  "lessonTitle": "Pacote sync — Mutex, RWMutex, WaitGroup",
+  "title": "Pacote sync — Mutex, RWMutex, WaitGroup",
   "passingScore": 60,
   "questions": [
     {

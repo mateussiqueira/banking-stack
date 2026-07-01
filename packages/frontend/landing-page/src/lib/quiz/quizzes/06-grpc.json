@@ -1,6 +1,6 @@
 {
   "lessonId": "06-grpc",
-  "lessonTitle": "gRPC com Go — Proto definitions e streaming",
+  "title": "gRPC com Go — Proto definitions e streaming",
   "passingScore": 60,
   "questions": [
     {
